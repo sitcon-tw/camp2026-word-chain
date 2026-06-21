@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro"
-import ChevronRightIcon from '~icons/lucide/chevron-right';
+import ChevronRightIcon from "~icons/lucide/chevron-right"
 ---
 
 <Layout>
@@ -8,16 +8,16 @@ import ChevronRightIcon from '~icons/lucide/chevron-right';
     <h1 class="text-4xl font-bold">AI 謎題接龍</h1>
     <p class="">請輸入你的組別編號登入。</p>
     <div class="join">
-        <input
-          type="number"
-          required
-          min="1"
-          max="10"
-          title="請輸入組別編號"
-          class="input input-primary text-center join-item input-lg w-20"
-        />
+      <input
+        type="number"
+        required
+        min="1"
+        max="10"
+        title="請輸入組別編號"
+        class="input input-primary join-item input-lg w-20 text-center"
+      />
       <button class="btn join-item btn-primary btn-lg w-10">
-          <ChevronRightIcon />
+        <ChevronRightIcon />
       </button>
     </div>
   </div>
