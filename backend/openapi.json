@@ -1,0 +1,474 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SITCON Camp 2026 AI 謎語接龍 — Backend API",
+    "version": "0.2.0",
+    "description": "Contract for the word-chain battle backend.\n\n**Transport:** the gameplay API is **Socket.IO** (WebSocket), not REST. The only plain HTTP endpoint is `GET /health`. All realtime events are documented under the top-level `x-socketio` extension, and every payload lives in `components.schemas` so the frontend can generate types.\n\n**Game model (v0.2):** one device per team. A device joins **unassigned** (`team: null`) and waits; the **host** switches it onto team A or B via `host:assign_team`. The host also curates a question bank (`host:set_questions`), picks/randomises the topic (`host:set_topic`), and edits rules live (`host:set_rules`). Deployment only needs `GEMINI_API_KEY`; rules and questions are set at runtime, not in env.\n\n**Connecting (frontend):**\n```ts\nimport { io } from 'socket.io-client';\nconst socket = io('http://localhost:3001'); // default Socket.IO path /socket.io\nsocket.emit('room:join', { roomId, role: 'player', name }, (ack) => {\n  if (ack.ok) localStorage.setItem('playerId', ack.playerId); // team is null until the host assigns it\n});\nsocket.on('presence:update', ({ players }) => { /* find self; team !== null => assigned */ });\nsocket.on('room:state', (s) => render(s));\n```\nEvery client→server event takes an optional ack callback returning `AckOk` or `AckErr`."
+  },
+  "servers": [
+    {
+      "url": "http://{host}:{port}",
+      "description": "Local dev / camp host",
+      "variables": {
+        "host": { "default": "localhost" },
+        "port": { "default": "3001" }
+      }
+    }
+  ],
+  "tags": [{ "name": "system", "description": "HTTP health/ops" }],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["system"],
+        "summary": "Liveness probe",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service is up",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Health" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-socketio": {
+    "path": "/socket.io",
+    "description": "Socket.IO event contract. Rooms a socket is placed in: the room id (global phase + presence events), `${roomId}:t:${team}` (assigned players, turn-scoped state), `${roomId}:obs` (host/observer, full state). An unassigned device sits only in the room id and is moved into a team room when the host assigns it.",
+    "clientEvents": {
+      "room:join": {
+        "summary": "Join a room. Players join UNASSIGNED (team null) and wait for the host; team/seat are no longer chosen by the player.",
+        "payload": { "$ref": "#/components/schemas/JoinPayload" },
+        "ack": { "$ref": "#/components/schemas/JoinAck" }
+      },
+      "room:rejoin": {
+        "summary": "Reconnect an existing player by playerId (restores their team, which may still be null).",
+        "payload": { "$ref": "#/components/schemas/RejoinPayload" },
+        "ack": { "$ref": "#/components/schemas/RejoinAck" }
+      },
+      "segment:submit": {
+        "summary": "Player only. Submit exactly 5 characters; the server records it for the team's current seat.",
+        "payload": { "$ref": "#/components/schemas/SubmitPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:assign_team": {
+        "summary": "Host only. Switch a waiting device onto team A or B, or pass team:null to release it. One device per team — assigning bumps any current holder back to the waiting area.",
+        "payload": { "$ref": "#/components/schemas/AssignTeamPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:set_questions": {
+        "summary": "Host only. Replace the question bank (each 1–60 chars, up to 200).",
+        "payload": { "$ref": "#/components/schemas/SetQuestionsPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:set_topic": {
+        "summary": "Host only. Choose the next round's topic — an explicit question or a random pick from the bank. Random with an empty bank → ack error NO_QUESTIONS.",
+        "payload": { "$ref": "#/components/schemas/SetTopicPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:set_rules": {
+        "summary": "Host only. Edit rules; applies immediately and reschedules any active timer. All fields optional, at least one required.",
+        "payload": { "$ref": "#/components/schemas/SetRulesPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "match:start": {
+        "summary": "Host only. LOBBY/ROUND_RESULT → start the (next) round.",
+        "payload": { "$ref": "#/components/schemas/Empty" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:skip_turn": {
+        "summary": "Host only. Force-advance a stuck seat (records a forfeit segment).",
+        "payload": { "$ref": "#/components/schemas/TeamPayload" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:pause": {
+        "summary": "Host only. Freeze the active timer.",
+        "payload": { "$ref": "#/components/schemas/Empty" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:resume": {
+        "summary": "Host only. Resume from pause with remaining time preserved (not reset).",
+        "payload": { "$ref": "#/components/schemas/Empty" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "host:force_judge": {
+        "summary": "Host only. End CHAINING early → JUDGING.",
+        "payload": { "$ref": "#/components/schemas/Empty" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      },
+      "observer:subscribe": {
+        "summary": "Subscribe to full-state broadcasts (host/observer dashboard).",
+        "payload": { "$ref": "#/components/schemas/Empty" },
+        "ack": { "$ref": "#/components/schemas/AckResult" }
+      }
+    },
+    "serverEvents": {
+      "room:state": {
+        "summary": "Full room snapshot. Players receive a player-scoped variant where the opponent's segment text is blanked.",
+        "payload": { "$ref": "#/components/schemas/RoomSnapshot" }
+      },
+      "presence:update": {
+        "summary": "Roster changed (join/disconnect/assignment). Players with team:null are waiting to be assigned.",
+        "payload": { "$ref": "#/components/schemas/PresenceUpdate" }
+      },
+      "round:intro": {
+        "summary": "Entering ROUND_INTRO with the topic.",
+        "payload": { "$ref": "#/components/schemas/RoundIntro" }
+      },
+      "turn:changed": {
+        "summary": "A team's current seat advanced (sent to that team's room).",
+        "payload": { "$ref": "#/components/schemas/TurnChanged" }
+      },
+      "segment:accepted": {
+        "summary": "A valid segment was recorded (sent to that team's room).",
+        "payload": { "$ref": "#/components/schemas/SegmentAccepted" }
+      },
+      "judging:started": {
+        "summary": "Entering JUDGING.",
+        "payload": { "$ref": "#/components/schemas/RoundRef" }
+      },
+      "round:result": {
+        "summary": "Judge returned; both answers/scores revealed.",
+        "payload": { "$ref": "#/components/schemas/RoundResultEvent" }
+      },
+      "match:over": {
+        "summary": "A team reached the winsToTakeMatch threshold.",
+        "payload": { "$ref": "#/components/schemas/MatchOver" }
+      },
+      "error": {
+        "summary": "Sent only to the offending socket on an invalid/forbidden action.",
+        "payload": { "$ref": "#/components/schemas/SocketError" }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "required": ["ok", "ts"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "ts": { "type": "integer", "description": "epoch ms" }
+        }
+      },
+      "Phase": {
+        "type": "string",
+        "enum": ["LOBBY", "ROUND_INTRO", "CHAINING", "JUDGING", "ROUND_RESULT", "MATCH_OVER"]
+      },
+      "TeamId": { "type": "string", "enum": ["A", "B"] },
+      "TeamIdOrNull": {
+        "oneOf": [{ "$ref": "#/components/schemas/TeamId" }, { "type": "null" }],
+        "description": "null = device joined but not yet assigned to a team"
+      },
+      "Role": { "type": "string", "enum": ["player", "host", "observer"] },
+      "Winner": { "type": "string", "enum": ["A", "B", "tie"] },
+      "Empty": { "type": "object", "additionalProperties": false },
+      "AckOk": {
+        "type": "object",
+        "required": ["ok"],
+        "properties": { "ok": { "type": "boolean", "const": true } },
+        "additionalProperties": true
+      },
+      "AckErr": {
+        "type": "object",
+        "required": ["ok", "error"],
+        "properties": {
+          "ok": { "type": "boolean", "const": false },
+          "error": { "$ref": "#/components/schemas/ErrorCode" }
+        }
+      },
+      "AckResult": { "oneOf": [{ "$ref": "#/components/schemas/AckOk" }, { "$ref": "#/components/schemas/AckErr" }] },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "ROOM_NOT_FOUND",
+          "NOT_YOUR_TURN",
+          "BAD_LENGTH",
+          "FORBIDDEN",
+          "INVALID_PAYLOAD",
+          "WRONG_PHASE",
+          "NO_QUESTIONS"
+        ]
+      },
+      "RoomRules": {
+        "type": "object",
+        "required": ["introMs", "turnMs", "resultMs", "seats", "winsToTakeMatch"],
+        "properties": {
+          "introMs": { "type": "integer", "minimum": 3000, "maximum": 300000, "description": "ROUND_INTRO duration (ms)" },
+          "turnMs": { "type": "integer", "minimum": 3000, "maximum": 300000, "description": "per-seat answer time (ms)" },
+          "resultMs": { "type": "integer", "minimum": 3000, "maximum": 300000, "description": "ROUND_RESULT duration (ms)" },
+          "seats": { "type": "integer", "minimum": 1, "maximum": 6, "description": "segments per team per round" },
+          "winsToTakeMatch": { "type": "integer", "minimum": 1, "maximum": 10, "description": "round wins needed to take the match" }
+        }
+      },
+      "JoinPayload": {
+        "type": "object",
+        "required": ["roomId", "role"],
+        "properties": {
+          "roomId": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 40, "description": "player device label; blank → '未命名裝置'" },
+          "team": { "$ref": "#/components/schemas/TeamId" }
+        },
+        "description": "role=player normally omits team (joins unassigned). If team is supplied and that team is free, the device is assigned directly; otherwise it joins unassigned."
+      },
+      "JoinAck": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["ok"],
+            "properties": {
+              "ok": { "const": true },
+              "playerId": { "type": "string", "description": "present for role=player; store for reconnect" },
+              "team": { "$ref": "#/components/schemas/TeamIdOrNull" }
+            }
+          },
+          { "$ref": "#/components/schemas/AckErr" }
+        ]
+      },
+      "RejoinPayload": {
+        "type": "object",
+        "required": ["roomId", "playerId"],
+        "properties": {
+          "roomId": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "playerId": { "type": "string", "minLength": 1, "maxLength": 64 }
+        }
+      },
+      "RejoinAck": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["ok", "team"],
+            "properties": {
+              "ok": { "const": true },
+              "team": { "$ref": "#/components/schemas/TeamIdOrNull" }
+            }
+          },
+          { "$ref": "#/components/schemas/AckErr" }
+        ]
+      },
+      "SubmitPayload": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "text": { "type": "string", "description": "Must be exactly 5 Unicode code points." }
+        }
+      },
+      "TeamPayload": {
+        "type": "object",
+        "required": ["team"],
+        "properties": { "team": { "$ref": "#/components/schemas/TeamId" } }
+      },
+      "AssignTeamPayload": {
+        "type": "object",
+        "required": ["playerId", "team"],
+        "properties": {
+          "playerId": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "team": { "$ref": "#/components/schemas/TeamIdOrNull" }
+        }
+      },
+      "SetQuestionsPayload": {
+        "type": "object",
+        "required": ["questions"],
+        "properties": {
+          "questions": {
+            "type": "array",
+            "maxItems": 200,
+            "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+          }
+        }
+      },
+      "SetTopicPayload": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string", "minLength": 1, "maxLength": 60, "description": "explicit question to use next round" },
+          "random": { "type": "boolean", "description": "true → pick a random question from the bank" }
+        },
+        "description": "Provide either `topic` or `random:true`.",
+        "anyOf": [{ "required": ["topic"] }, { "required": ["random"] }]
+      },
+      "SetRulesPayload": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "introMs": { "type": "integer", "minimum": 3000, "maximum": 300000 },
+          "turnMs": { "type": "integer", "minimum": 3000, "maximum": 300000 },
+          "resultMs": { "type": "integer", "minimum": 3000, "maximum": 300000 },
+          "seats": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "winsToTakeMatch": { "type": "integer", "minimum": 1, "maximum": 10 }
+        },
+        "additionalProperties": false,
+        "description": "Partial RoomRules; any subset, at least one field."
+      },
+      "TeamState": {
+        "type": "object",
+        "required": ["currentSeat", "segments", "done", "turnEndsAt"],
+        "properties": {
+          "currentSeat": { "type": "integer", "description": "1..seats, or seats+1 when done" },
+          "segments": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "index i = seat i+1. For the opponent in a player-scoped snapshot, entries are blanked ('')."
+          },
+          "done": { "type": "boolean" },
+          "turnEndsAt": { "type": ["integer", "null"], "description": "epoch ms deadline for current seat" }
+        }
+      },
+      "Score": {
+        "type": "object",
+        "required": ["A", "B"],
+        "properties": { "A": { "type": "integer" }, "B": { "type": "integer" } },
+        "description": "Round wins. Match ends at rules.winsToTakeMatch."
+      },
+      "RoundResult": {
+        "type": "object",
+        "required": ["round", "topic", "answerA", "answerB", "scoreA", "scoreB", "winner", "reason", "breakdown"],
+        "properties": {
+          "round": { "type": "integer" },
+          "topic": { "type": "string" },
+          "answerA": { "type": "string", "description": "team A's full answer" },
+          "answerB": { "type": "string" },
+          "scoreA": { "type": "number", "minimum": 0, "maximum": 100 },
+          "scoreB": { "type": "number", "minimum": 0, "maximum": 100 },
+          "winner": { "$ref": "#/components/schemas/Winner" },
+          "reason": { "type": "string" },
+          "breakdown": { "$ref": "#/components/schemas/JudgeBreakdown" },
+          "degraded": { "type": "boolean", "description": "true = fallback judge (no Gemini)" }
+        }
+      },
+      "RoomSnapshot": {
+        "type": "object",
+        "required": ["roomId", "phase", "round", "topic", "phaseEndsAt", "paused", "score", "rounds", "rules", "questions", "teams"],
+        "properties": {
+          "roomId": { "type": "string" },
+          "phase": { "$ref": "#/components/schemas/Phase" },
+          "round": { "type": "integer", "description": "1-based; 0 in LOBBY" },
+          "topic": { "type": ["string", "null"] },
+          "phaseEndsAt": { "type": ["integer", "null"], "description": "epoch ms; for ROUND_INTRO/ROUND_RESULT" },
+          "paused": { "type": "boolean" },
+          "score": { "$ref": "#/components/schemas/Score" },
+          "rounds": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RoundResult" },
+            "description": "round history; result/match-over screens use the last entry"
+          },
+          "rules": { "$ref": "#/components/schemas/RoomRules" },
+          "questions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "current question bank (for the host panel)"
+          },
+          "teams": {
+            "type": "object",
+            "required": ["A", "B"],
+            "properties": {
+              "A": { "$ref": "#/components/schemas/TeamState" },
+              "B": { "$ref": "#/components/schemas/TeamState" }
+            },
+            "description": "host/observer see both fully; players see their own team full and the opponent's segments blanked"
+          }
+        }
+      },
+      "PublicPlayer": {
+        "type": "object",
+        "required": ["playerId", "team", "name", "connected"],
+        "properties": {
+          "playerId": { "type": "string" },
+          "team": { "$ref": "#/components/schemas/TeamIdOrNull" },
+          "name": { "type": "string" },
+          "connected": { "type": "boolean" }
+        }
+      },
+      "PresenceUpdate": {
+        "type": "object",
+        "required": ["players"],
+        "properties": {
+          "players": { "type": "array", "items": { "$ref": "#/components/schemas/PublicPlayer" } }
+        }
+      },
+      "RoundIntro": {
+        "type": "object",
+        "required": ["round", "topic", "phaseEndsAt"],
+        "properties": {
+          "round": { "type": "integer" },
+          "topic": { "type": "string" },
+          "phaseEndsAt": { "type": "integer" }
+        }
+      },
+      "TurnChanged": {
+        "type": "object",
+        "required": ["team", "currentSeat", "phaseEndsAt", "segments"],
+        "properties": {
+          "team": { "$ref": "#/components/schemas/TeamId" },
+          "currentSeat": { "type": "integer" },
+          "phaseEndsAt": { "type": ["integer", "null"], "description": "the team's turn deadline" },
+          "segments": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "SegmentAccepted": {
+        "type": "object",
+        "required": ["team", "seat", "text"],
+        "properties": {
+          "team": { "$ref": "#/components/schemas/TeamId" },
+          "seat": { "type": "integer" },
+          "text": { "type": "string" }
+        }
+      },
+      "RoundRef": {
+        "type": "object",
+        "required": ["round"],
+        "properties": { "round": { "type": "integer" } }
+      },
+      "Criteria": {
+        "type": "object",
+        "required": ["logic", "relevance", "completeness", "creativity"],
+        "properties": {
+          "logic": { "type": "number", "minimum": 0, "maximum": 100 },
+          "relevance": { "type": "number", "minimum": 0, "maximum": 100 },
+          "completeness": { "type": "number", "minimum": 0, "maximum": 100 },
+          "creativity": { "type": "number", "minimum": 0, "maximum": 100 }
+        }
+      },
+      "JudgeBreakdown": {
+        "type": "object",
+        "required": ["A", "B"],
+        "properties": {
+          "A": { "$ref": "#/components/schemas/Criteria" },
+          "B": { "$ref": "#/components/schemas/Criteria" }
+        }
+      },
+      "RoundResultEvent": {
+        "type": "object",
+        "required": ["round", "scoreA", "scoreB", "winner", "reason", "breakdown"],
+        "properties": {
+          "round": { "type": "integer" },
+          "scoreA": { "type": "number" },
+          "scoreB": { "type": "number" },
+          "winner": { "$ref": "#/components/schemas/Winner" },
+          "reason": { "type": "string" },
+          "breakdown": { "$ref": "#/components/schemas/JudgeBreakdown" },
+          "degraded": { "type": "boolean", "description": "true if the AI judge failed and a deterministic fallback was used" }
+        }
+      },
+      "MatchOver": {
+        "type": "object",
+        "required": ["winner", "finalScore"],
+        "properties": {
+          "winner": { "oneOf": [{ "$ref": "#/components/schemas/TeamId" }, { "type": "null" }] },
+          "finalScore": { "$ref": "#/components/schemas/Score" }
+        }
+      },
+      "SocketError": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "$ref": "#/components/schemas/ErrorCode" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}

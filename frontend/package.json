@@ -1,20 +1,42 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "word-chain-frontend",
+  "version": "0.0.1",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "astro": "astro",
+    "build": "astro build",
+    "check": "astro check",
+    "dev": "astro dev",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "preinstall": "npx only-allow pnpm && husky",
+    "prepare": "husky",
+    "preview": "astro preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.3.0",
-      "onFail": "download"
-    }
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.2",
+    "@tailwindcss/vite": "^4.3.1",
+    "animejs": "^4.3.6",
+    "astro": "^6.1.5",
+    "daisyui": "^5.5.23",
+    "husky": "^9.1.7",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.3.1"
   },
-  "type": "module"
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@iconify-json/lucide": "^1.2.104",
+    "@iconify/json": "^2.2.467",
+    "prettier": "3.8.3",
+    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-astro-organize-imports": "^0.4.12",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "typescript": "^6.0.3",
+    "unplugin-icons": "^23.0.1"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

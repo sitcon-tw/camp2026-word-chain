@@ -1,4 +1,4 @@
-import { SEATS, SEGMENT_LEN, WINS_TO_TAKE_MATCH } from '../config.js';
+import { config, SEATS, SEGMENT_LEN, WINS_TO_TAKE_MATCH } from '../config.js';
 import type {
   RoomState,
   TeamId,
@@ -29,6 +29,14 @@ export function createRoom(roomId: string, hostId: string | null): RoomState {
     score: { A: 0, B: 0 },
     teams: { A: freshTeam(), B: freshTeam() },
     rounds: [],
+    rules: {
+      introMs: config.durations.introMs,
+      turnMs: config.durations.turnMs,
+      resultMs: config.durations.resultMs,
+      seats: SEATS,
+      winsToTakeMatch: WINS_TO_TAKE_MATCH,
+    },
+    questions: [],
     hostId,
     createdAt: now,
     updatedAt: now,
@@ -56,7 +64,7 @@ export const bothTeamsDone = (state: RoomState): boolean =>
 export function appendSegment(state: RoomState, team: TeamId, text: string): RoomState {
   const prev = state.teams[team];
   const segments = [...prev.segments, text];
-  const next: TeamState = advance({ ...prev, segments });
+  const next: TeamState = advance({ ...prev, segments }, state.rules.seats);
   return { ...state, teams: { ...state.teams, [team]: next } };
 }
 
@@ -64,13 +72,13 @@ export function appendSegment(state: RoomState, team: TeamId, text: string): Roo
 export function timeoutSegment(state: RoomState, team: TeamId): RoomState {
   const prev = state.teams[team];
   const segments = [...prev.segments, ''];
-  const next = advance({ ...prev, segments });
+  const next = advance({ ...prev, segments }, state.rules.seats);
   return { ...state, teams: { ...state.teams, [team]: next } };
 }
 
-function advance(t: TeamState): TeamState {
+function advance(t: TeamState, seats: number): TeamState {
   const seat = t.currentSeat + 1;
-  return { ...t, currentSeat: seat, done: t.segments.length >= SEATS };
+  return { ...t, currentSeat: seat, done: t.segments.length >= seats };
 }
 
 export type SubmitError = 'NOT_YOUR_TURN' | 'BAD_LENGTH';
@@ -113,7 +121,11 @@ export function applyJudge(state: RoomState, judge: JudgeOutput): RoomState {
 }
 
 export const isMatchOver = (state: RoomState): boolean =>
-  state.score.A >= WINS_TO_TAKE_MATCH || state.score.B >= WINS_TO_TAKE_MATCH;
+  state.score.A >= state.rules.winsToTakeMatch || state.score.B >= state.rules.winsToTakeMatch;
 
 export const matchWinner = (state: RoomState): TeamId | null =>
-  state.score.A >= WINS_TO_TAKE_MATCH ? 'A' : state.score.B >= WINS_TO_TAKE_MATCH ? 'B' : null;
+  state.score.A >= state.rules.winsToTakeMatch
+    ? 'A'
+    : state.score.B >= state.rules.winsToTakeMatch
+      ? 'B'
+      : null;

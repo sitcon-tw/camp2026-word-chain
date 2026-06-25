@@ -1,0 +1,31 @@
+{
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "strict",
+  "printWidth": 100,
+  "semi": false,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "useTabs": false,
+
+  "plugins": [
+    "prettier-plugin-astro",
+    "prettier-plugin-astro-organize-imports",
+    "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ],
+
+  "importOrder": ["^astro:", "^@/", "^[./]"],
+
+  "overrides": [
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro",
+        "importOrder": ["^$"]
+      }
+    }
+  ]
+}

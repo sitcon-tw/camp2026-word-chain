@@ -1,5 +1,5 @@
 import type { Server } from 'socket.io';
-import { config, SEATS } from '../config.js';
+import { config, SEATS, WINS_TO_TAKE_MATCH } from '../config.js';
 import * as repo from '../state/roomRepo.js';
 import { generateTopic, judge } from '../ai/gemini.js';
 import {
@@ -13,7 +13,7 @@ import {
   timeoutSegment,
   validateSubmit,
 } from './rules.js';
-import type { EventLogEntry, Player, RoomState, TeamId } from '../types/index.js';
+import type { EventLogEntry, Player, RoomRules, RoomState, TeamId } from '../types/index.js';
 
 const r = (id: string) => id; // global room
 const teamRoom = (id: string, t: TeamId) => `${id}:t:${t}`;
@@ -23,6 +23,8 @@ const obsRoom = (id: string) => `${id}:obs`;
 export class GameEngine {
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private pausedRemaining = new Map<string, number>();
+  /** Host-supplied topic for the next round; consumed by toRoundIntro. */
+  private pendingTopic: string | null = null;
 
   private constructor(
     public state: RoomState,
@@ -37,6 +39,15 @@ export class GameEngine {
   }
 
   static async rehydrate(state: RoomState, io: Server): Promise<GameEngine> {
+    // Backfill rules for rooms persisted before per-room rules existed.
+    state.rules ??= {
+      introMs: config.durations.introMs,
+      turnMs: config.durations.turnMs,
+      resultMs: config.durations.resultMs,
+      seats: SEATS,
+      winsToTakeMatch: WINS_TO_TAKE_MATCH,
+    };
+    state.questions ??= [];
     const players = await repo.loadPlayers(state.roomId);
     const eng = new GameEngine(state, io, new Map(players.map((p) => [p.playerId, p])));
     if (!state.paused) eng.scheduleAll();
@@ -47,24 +58,69 @@ export class GameEngine {
   async addPlayer(p: Player): Promise<void> {
     this.players.set(p.playerId, p);
     await repo.savePlayer(this.state.roomId, p);
-    await this.log({ ts: Date.now(), type: 'player_join', team: p.team, seat: p.seat });
+    await this.log({ ts: Date.now(), type: 'player_join', team: p.team ?? undefined });
     this.broadcastPresence();
   }
 
-  async setConnected(playerId: string, connected: boolean): Promise<void> {
+  async setConnected(playerId: string, connected: boolean, socketId?: string): Promise<void> {
     const p = this.players.get(playerId);
     if (!p) return;
     p.connected = connected;
     p.lastSeen = Date.now();
+    if (connected && socketId) p.socketId = socketId;
     await repo.savePlayer(this.state.roomId, p);
     if (!connected) {
-      await this.log({ ts: Date.now(), type: 'player_disconnect', team: p.team, seat: p.seat });
+      await this.log({ ts: Date.now(), type: 'player_disconnect', team: p.team ?? undefined });
     }
     this.broadcastPresence();
   }
 
-  seatTaken(team: TeamId, seat: number): boolean {
-    return [...this.players.values()].some((p) => p.team === team && p.seat === seat);
+  /** True if a team already has an assigned device (one device per team). */
+  teamTaken(team: TeamId): boolean {
+    return [...this.players.values()].some((p) => p.team === team);
+  }
+
+  /** Host assigns / switches a waiting device to a team (or null to release it). */
+  async assignTeam(playerId: string, team: TeamId | null): Promise<boolean> {
+    const p = this.players.get(playerId);
+    if (!p) return false;
+
+    // One device per team: bump any current holder back to the waiting area.
+    if (team) {
+      for (const other of this.players.values()) {
+        if (other !== p && other.team === team) {
+          other.team = null;
+          this.moveSocketToTeam(other.socketId, null);
+          await repo.savePlayer(this.state.roomId, other);
+        }
+      }
+    }
+
+    p.team = team;
+    await repo.savePlayer(this.state.roomId, p);
+    this.moveSocketToTeam(p.socketId, team);
+    await this.log({ ts: Date.now(), type: 'host_action', detail: { assignTeam: { playerId, team } } });
+    this.broadcastPresence();
+    // Push the right view to the (re)assigned device.
+    if (p.socketId) {
+      this.io.to(p.socketId).emit('room:state', team ? this.playerSnapshot(team) : this.fullSnapshot());
+    }
+    return true;
+  }
+
+  private moveSocketToTeam(socketId: string | undefined, team: TeamId | null): void {
+    if (!socketId) return;
+    const id = this.state.roomId;
+    this.io.in(socketId).socketsLeave([teamRoom(id, 'A'), teamRoom(id, 'B')]);
+    if (team) this.io.in(socketId).socketsJoin(teamRoom(id, team));
+  }
+
+  /** Host loads / replaces the question bank. */
+  async setQuestions(questions: string[]): Promise<void> {
+    this.state.questions = questions;
+    await this.save();
+    await this.log({ ts: Date.now(), type: 'host_action', detail: { setQuestions: questions.length } });
+    this.broadcastState();
   }
 
   // ---------- host actions ----------
@@ -109,6 +165,50 @@ export class GameEngine {
     await this.toJudging();
   }
 
+  /** Host chooses the next round's topic — an explicit question or a random pick from the bank. */
+  async setTopic(opts: { topic?: string; random?: boolean }): Promise<boolean> {
+    const topic = opts.random ? this.randomQuestion() : opts.topic;
+    if (!topic) return false; // random requested but bank empty
+    this.pendingTopic = topic;
+    if (this.state.phase === 'ROUND_INTRO' || this.state.phase === 'CHAINING') {
+      this.state.topic = topic;
+      await this.save();
+      this.broadcastState();
+    }
+    await this.log({ ts: Date.now(), type: 'host_action', detail: { setTopic: topic } });
+    return true;
+  }
+
+  private randomQuestion(): string | null {
+    const q = this.state.questions ?? [];
+    return q.length ? q[Math.floor(Math.random() * q.length)]! : null;
+  }
+
+  /** Host edits rules; takes effect immediately, rescheduling any active timer. */
+  async setRules(patch: Partial<RoomRules>): Promise<void> {
+    const now = Date.now();
+    this.state.rules = { ...this.state.rules, ...patch };
+    const rules = this.state.rules;
+
+    // Re-anchor active deadlines to the new durations so the change is felt now.
+    if (!this.state.paused) {
+      if (this.state.phase === 'ROUND_INTRO' && this.state.phaseEndsAt) {
+        this.state.phaseEndsAt = now + rules.introMs;
+      } else if (this.state.phase === 'ROUND_RESULT' && this.state.phaseEndsAt) {
+        this.state.phaseEndsAt = now + rules.resultMs;
+      } else if (this.state.phase === 'CHAINING') {
+        for (const t of ['A', 'B'] as const) {
+          const team = this.state.teams[t];
+          if (!team.done && team.turnEndsAt) team.turnEndsAt = now + rules.turnMs;
+        }
+      }
+      this.scheduleAll();
+    }
+    await this.save();
+    await this.log({ ts: now, type: 'host_action', detail: { setRules: patch } });
+    this.broadcastState();
+  }
+
   async skipTurn(team: TeamId): Promise<void> {
     if (this.state.phase !== 'CHAINING' || this.state.teams[team].done) return;
     await this.handleTurnTimeout(team, 'host_skip');
@@ -121,17 +221,19 @@ export class GameEngine {
   ): Promise<{ ok: true } | { ok: false; code: 'WRONG_PHASE' | 'FORBIDDEN' | 'NOT_YOUR_TURN' | 'BAD_LENGTH' }> {
     if (this.state.phase !== 'CHAINING') return { ok: false, code: 'WRONG_PHASE' };
     const p = this.players.get(playerId);
-    if (!p) return { ok: false, code: 'FORBIDDEN' };
+    if (!p || !p.team) return { ok: false, code: 'FORBIDDEN' };
     const team = this.state.teams[p.team];
-    const err = validateSubmit(team, p.seat, text);
+    // One device per team submits each seat in turn, so the active seat is always the team's.
+    const seat = team.currentSeat;
+    const err = validateSubmit(team, seat, text);
     if (err) return { ok: false, code: err };
 
     this.state = appendSegment(this.state, p.team, text);
     this.setTurnDeadline(p.team);
-    await this.log({ ts: Date.now(), type: 'segment_submitted', team: p.team, seat: p.seat, detail: text });
+    await this.log({ ts: Date.now(), type: 'segment_submitted', team: p.team, seat, detail: text });
     this.io.to(teamRoom(this.state.roomId, p.team)).emit('segment:accepted', {
       team: p.team,
-      seat: p.seat,
+      seat,
       text,
     });
 
@@ -148,10 +250,12 @@ export class GameEngine {
 
   // ---------- phase transitions ----------
   private async toRoundIntro(): Promise<void> {
-    const topic = await generateTopic();
+    // Topic priority: host's explicit/random pick → random from bank → AI/fallback generator.
+    const topic = this.pendingTopic ?? this.randomQuestion() ?? (await generateTopic());
+    this.pendingTopic = null;
     this.state = startRound(this.state, topic);
     this.state.phase = 'ROUND_INTRO';
-    this.state.phaseEndsAt = Date.now() + config.durations.introMs;
+    this.state.phaseEndsAt = Date.now() + this.state.rules.introMs;
     await this.save();
     await this.log({ ts: Date.now(), type: 'phase_change', detail: 'ROUND_INTRO' });
     this.io.to(r(this.state.roomId)).emit('round:intro', {
@@ -223,7 +327,7 @@ export class GameEngine {
       this.state.phase = 'ROUND_RESULT';
     } else {
       this.state.phase = 'ROUND_RESULT';
-      this.state.phaseEndsAt = Date.now() + config.durations.resultMs;
+      this.state.phaseEndsAt = Date.now() + this.state.rules.resultMs;
     }
     await this.save();
     await this.log({ ts: Date.now(), type: 'phase_change', detail: 'ROUND_RESULT' });
@@ -261,7 +365,7 @@ export class GameEngine {
   // ---------- timers ----------
   private setTurnDeadline(team: TeamId): void {
     const t = this.state.teams[team];
-    t.turnEndsAt = t.done ? null : Date.now() + config.durations.turnMs;
+    t.turnEndsAt = t.done ? null : Date.now() + this.state.rules.turnMs;
   }
 
   private activeDeadlines(): Array<[string, number]> {
@@ -330,15 +434,22 @@ export class GameEngine {
     this.io.to(teamRoom(id, 'B')).emit('room:state', this.playerSnapshot('B'));
   }
 
-  private broadcastPresence(): void {
-    const players = [...this.players.values()].map((p) => ({
+  private presenceList() {
+    return [...this.players.values()].map((p) => ({
       playerId: p.playerId,
-      team: p.team,
-      seat: p.seat,
+      team: p.team, // null = waiting for the host to assign a team
       name: p.name,
       connected: p.connected,
     }));
-    this.io.to(r(this.state.roomId)).emit('presence:update', { players });
+  }
+
+  private broadcastPresence(): void {
+    this.io.to(r(this.state.roomId)).emit('presence:update', { players: this.presenceList() });
+  }
+
+  /** Sends the current presence roster to a single freshly-joined socket. */
+  emitPresence(socketId: string): void {
+    this.io.to(socketId).emit('presence:update', { players: this.presenceList() });
   }
 
   private base() {
@@ -351,6 +462,9 @@ export class GameEngine {
       phaseEndsAt: s.phaseEndsAt,
       paused: s.paused,
       score: s.score,
+      rounds: s.rounds,
+      rules: s.rules,
+      questions: s.questions,
     };
   }
 
