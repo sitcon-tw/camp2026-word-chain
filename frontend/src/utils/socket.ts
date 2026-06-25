@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client"
 
-const BACKEND_URL = "http://localhost:3001"
+const BACKEND_URL = import.meta.env.PUBLIC_BACKEND_URL ?? "http://localhost:3001"
 
 export interface GameSession {
   roomId: string
