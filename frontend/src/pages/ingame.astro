@@ -1,0 +1,24 @@
+---
+import Layout from "@/layouts/Layout.astro"
+
+const title = "1+1=2"
+const previousText = "四二混凝土"
+---
+
+<Layout>
+  <div
+    class="radial-progress bg-primary text-primary-content fixed top-5 text-4xl font-bold"
+    style="--value:50; --thickness: 0.5rem; --size: 10rem;"
+    role="progressbar">15s</div
+  >
+  <h2 class="text-4xl font-bold">{title}</h2>
+  <div class="divider"></div>
+  <h2 class="text-2xl font-bold">目前的進度</h2>
+  <p class="text-lg">{previousText}</p>
+  <div class="divider"></div>
+  <h2 class="text-2xl font-bold">作答區</h2>
+  <div class="join">
+    <input type="text" required class="join-item input input-primary input-lg" /></div
+  >
+  <button class="btn btn-primary btn-lg join-item px-8"> 送出 </button>
+</Layout>

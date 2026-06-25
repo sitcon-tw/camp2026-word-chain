@@ -1,0 +1,21 @@
+---
+import Layout from "@/layouts/Layout.astro"
+
+const ready: boolean = true
+---
+
+<Layout>
+  {
+    ready ? (
+      <>
+        <h2 class="text-primary text-4xl font-bold">準備開始</h2>
+        <p class="text-lg">遊戲準備開始，請做好準備！</p>
+      </>
+    ) : (
+      <>
+        <h2 class="text-4xl font-bold">等待中...</h2>
+        <p class="text-lg">正在等待另一個組別加入遊戲</p>
+      </>
+    )
+  }
+</Layout>
