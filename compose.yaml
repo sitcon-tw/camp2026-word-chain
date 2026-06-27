@@ -4,7 +4,7 @@ services:
       context: ./frontend
     restart: unless-stopped
     ports:
-      - "4321:4321"
+      - "4321:80"
     environment:
       PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL:-http://localhost:3001}
     depends_on:
@@ -19,12 +19,9 @@ services:
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
-
-      PORT: ${PORT:-3001}
+      PORT: 3001
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4321}
-
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-
+      REDIS_URL: redis://redis:6379
       INTRO_MS: ${INTRO_MS:-30000}
       TURN_MS: ${TURN_MS:-20000}
       RESULT_MS: ${RESULT_MS:-30000}
@@ -38,5 +35,15 @@ services:
       - redis-server
       - --appendonly
       - "yes"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
