@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro"
 import AwardIcon from "~icons/lucide/award"
+import HomeIcon from "~icons/lucide/home"
 import HourglassIcon from "~icons/lucide/hourglass"
 import PauseIcon from "~icons/lucide/pause"
 import PlayIcon from "~icons/lucide/play"
@@ -16,7 +17,7 @@ import ZapIcon from "~icons/lucide/zap"
       <h1 class="text-neutral-content text-lg font-bold" id="room-info">AI 謎題接龍</h1>
       <!-- 兩隊分數 -->
       <div class="flex items-center gap-x-2">
-        <span class="text-info text-sm font-black">藍隊</span>
+        <span class="text-info text-sm font-bold">藍隊</span>
         <div class="join">
           <span id="match-score-a" class="btn btn-xs btn-info font-mono font-bold">0</span>
           <span class="btn btn-xs btn-disabled font-mono">:</span>
@@ -31,7 +32,7 @@ import ZapIcon from "~icons/lucide/zap"
   <div id="host-live-setup-panel" class="card bg-base-300 hidden">
     <div class="card-body gap-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="card-title text-primary text-base font-black">主持即時設定</h2>
+        <h2 class="card-title text-primary text-base font-bold">主持即時設定</h2>
         <p id="host-live-status" class="text-neutral-content/50 min-h-5 text-xs"></p>
       </div>
 
@@ -51,26 +52,28 @@ import ZapIcon from "~icons/lucide/zap"
         <label class="text-neutral-content/70 text-xs font-bold">題庫</label>
         <textarea id="live-questions-input" class="textarea w-full text-sm" placeholder="每行一題"
         ></textarea>
-        <button id="live-save-questions-btn" class="btn btn-primary btn-xs w-full">儲存題庫</button>
+        <button id="live-save-questions-btn" class="btn btn-primary btn-sm w-full">儲存題庫</button>
       </div>
 
       <div class="grid gap-y-1">
         <label class="text-neutral-content/70 text-xs font-bold">指定下一回合題目</label>
-        <input
-          id="live-topic-input"
-          class="input input-bordered input-sm w-full"
-          maxlength="60"
-          placeholder="請輸入題目"
-        />
-        <div class="grid grid-cols-2 gap-2">
-          <button id="live-set-topic-btn" class="btn btn-primary btn-xs">指定</button>
-          <button id="live-random-topic-btn" class="btn btn-outline btn-primary btn-xs">隨機</button
+        <div class="grid grid-cols-2 gap-x-2 gap-y-1 md:grid-cols-4">
+          <input
+            id="live-topic-input"
+            class="input input-bordered input-sm col-span-2 w-full"
+            maxlength="60"
+            placeholder="請輸入題目"
+          />
+          <button id="live-set-topic-btn" class="btn btn-primary btn-sm">指定題目</button>
+          <button id="live-random-topic-btn" class="btn btn-outline btn-primary btn-sm"
+            >題庫隨機</button
           >
         </div>
+
         <p id="live-next-topic-label" class="text-neutral-content/60 min-h-5 text-xs"></p>
       </div>
 
-      <div class="grid grid-cols-5 gap-x-2 gap-y-1">
+      <div class="grid grid-cols-6 gap-x-2 gap-y-1">
         <label class="form-control">
           <span class="label-text text-[10px] font-bold">開場秒</span>
           <input
@@ -121,90 +124,89 @@ import ZapIcon from "~icons/lucide/zap"
             class="input input-bordered input-sm"
           />
         </label>
-        <button id="live-save-rules-btn" class="btn btn-accent btn-xs col-span-5">套用規則</button>
+        <button id="live-save-rules-btn" class="btn btn-primary btn-sm mt-auto">套用規則</button>
       </div>
     </div>
   </div>
 
   <!-- ================= PHASE 1: ROUND_INTRO ================= -->
-  <div
-    id="phase-intro"
-    class="card bg-base-300 border-primary/20 flex hidden flex-col items-center gap-y-6 border p-8 text-center shadow-2xl">
-    <div class="text-primary animate-bounce text-5xl font-black tracking-widest"
-      >第 <span id="intro-round-num">-</span> 回合即將開始</div
-    >
-    <div class="divider mx-auto my-0 max-w-md"></div>
-    <p class="text-neutral-content/70 text-lg">AI 命題官即將揭曉本次戰局主題：</p>
-    <div class="bg-base-100 border-primary/15 max-w-xl rounded-2xl border p-6 shadow-inner">
-      <h2 id="intro-topic" class="text-secondary text-2xl font-extrabold tracking-wide"
-        >AI 出題生成中...</h2
+  <div id="phase-intro" class="card bg-base-300 hidden">
+    <div class="card-body flex flex-col justify-center text-center">
+      <div class="text-primary text-4xl font-bold tracking-widest"
+        >第 <span id="intro-round-num">-</span> 回合即將開始</div
       >
-    </div>
-
-    <!-- Radial Countdown -->
-    <div class="mt-4 flex flex-col items-center gap-y-2">
-      <div
-        id="intro-radial"
-        class="radial-progress bg-primary/10 text-primary border-primary/20 border-4 font-mono text-3xl font-black shadow-lg"
-        style="--value:100; --size:7rem; --thickness: 6px;"
-        role="progressbar">
-        30s
+      <div class="divider mx-auto my-0 max-w-md"></div>
+      <p class="text-neutral-content/70 text-lg">本次主題為...</p>
+      <div class="bg-base-100 rounded-box px-4 py-2">
+        <h2 id="intro-topic" class="text-secondary text-2xl font-bold tracking-wide"
+          >主題生成中...</h2
+        >
       </div>
-      <span class="text-neutral-content/50 text-xs font-bold">倒數結束後自動開始接龍</span>
+
+      <!-- Radial Countdown -->
+      <div class="mt-4 flex flex-col items-center gap-y-2">
+        <div
+          id="intro-radial"
+          class="radial-progress bg-primary/10 text-primary border-primary/20 border-4 font-mono text-3xl font-bold"
+          style="--value:100; --size:7rem; --thickness: 6px;"
+          role="progressbar">
+          30s
+        </div>
+        <span class="text-neutral-content/50 text-xs font-bold">即將開始接龍</span>
+      </div>
     </div>
   </div>
 
   <!-- ================= PHASE 2: CHAINING (The main gameplay) ================= -->
   <div id="phase-chaining" class="flex hidden flex-col gap-y-6">
     <!-- Topic Header -->
-    <div class="card bg-base-300 border-primary/15 flex flex-col items-center border p-5 shadow-lg">
-      <span class="text-primary/70 mb-1 text-xs font-black tracking-wider uppercase"
-        >本次接龍主題</span
-      >
-      <h2
-        id="chaining-topic"
-        class="text-neutral-content text-center text-2xl font-extrabold tracking-wide">載入中...</h2
-      >
+    <div class="card bg-base-300">
+      <div class="card-body">
+        <span class="text-primary text-center text-xs font-bold tracking-wider">本次接龍主題</span>
+        <h2
+          id="chaining-topic"
+          class="text-neutral-content text-center text-2xl font-bold tracking-wide">載入中...</h2
+        >
+      </div>
     </div>
 
     <!-- Teams Parallel Chaining Lists -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div class="flex flex-col gap-2 md:flex-row">
       <!-- Team A -->
-      <div id="team-a-answer" class="card bg-base-300 border-info/10 border shadow-xl">
-        <div class="card-body p-5">
-          <div class="border-info/20 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-info text-lg font-extrabold">Team A (藍色小隊)</span>
+      <div id="team-a-answer" class="card bg-base-300 flex-1">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <span class="text-info text-lg font-bold">藍隊</span>
             <div
               id="timer-team-a"
               class="badge badge-info hidden animate-pulse py-2.5 font-mono font-bold">--s</div
             >
           </div>
-          <div id="chain-list-a" class="space-y-2">
+          <div id="chain-list-a" class="grid grid-cols-1 gap-2 lg:grid-cols-2">
             <!-- Chaining slots -->
           </div>
           <!-- Host skip btn A -->
-          <button id="skip-team-a-btn" class="btn btn-xs btn-outline btn-error mt-4 hidden w-full"
-            >主辦方：跳過此棒次 (Skip Team A)</button
+          <button id="skip-team-a-btn" class="btn btn-xs btn-outline btn-error hidden w-full"
+            >跳過棒次</button
           >
         </div>
       </div>
 
       <!-- Team B -->
-      <div id="team-b-answer" class="card bg-base-300 border-secondary/10 border shadow-xl">
-        <div class="card-body p-5">
-          <div class="border-secondary/20 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-secondary text-lg font-extrabold">Team B (橘色小隊)</span>
-            <div
-              id="timer-team-b"
-              class="badge badge-secondary hidden animate-pulse py-2.5 font-mono font-bold">--s</div
+      <div id="team-b-answer" class="card bg-base-300 flex-1">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <span class="text-secondary text-lg font-bold">紅隊</span>
+            <div id="timer-team-b" class="badge badge-info hidden animate-pulse font-mono font-bold"
+              >--s</div
             >
           </div>
-          <div id="chain-list-b" class="space-y-2">
+          <div id="chain-list-b" class="grid grid-cols-1 gap-2 md:grid-cols-2">
             <!-- Chaining slots -->
           </div>
-          <!-- Host skip btn B -->
-          <button id="skip-team-b-btn" class="btn btn-xs btn-outline btn-error mt-4 hidden w-full"
-            >主辦方：跳過此棒次 (Skip Team B)</button
+          <!-- Host skip btn A -->
+          <button id="skip-team-b-btn" class="btn btn-xs btn-outline btn-error hidden w-full"
+            >跳過棒次</button
           >
         </div>
       </div>
@@ -229,11 +231,9 @@ import ZapIcon from "~icons/lucide/zap"
           required
           maxlength="5"
           placeholder="請輸入剛好 5 個字"
-          class="input input-primary join-item input-lg w-full text-center text-2xl font-extrabold tracking-widest uppercase"
+          class="input input-primary join-item input-lg w-full text-center text-2xl font-bold tracking-widest uppercase"
         />
-        <button id="submit-btn" class="btn join-item btn-primary btn-lg px-8 font-black">
-          送出答案
-        </button>
+        <button id="submit-btn" class="btn join-item btn-primary btn-lg font-bold">送出</button>
       </div>
       <span id="submit-error" class="text-error min-h-[1.2rem] text-xs font-medium"></span>
     </div>
@@ -244,7 +244,7 @@ import ZapIcon from "~icons/lucide/zap"
     id="phase-judging"
     class="card bg-base-300 border-primary/20 flex hidden flex-col items-center gap-y-6 border p-12 text-center shadow-2xl">
     <RefreshCwIcon class="text-primary h-16 w-16 animate-spin" />
-    <h2 class="text-primary text-3xl font-black tracking-widest">⚖️ 公正 AI 評審分析中</h2>
+    <h2 class="text-primary text-3xl font-bold tracking-widest">⚖️ 公正 AI 評審分析中</h2>
     <p class="text-neutral-content/70 max-w-lg leading-relaxed">
       評審團正依據 <span class="text-secondary font-bold">邏輯性 (25%)</span>、<span
         class="text-secondary font-bold">符合度 (30%)</span
@@ -260,20 +260,18 @@ import ZapIcon from "~icons/lucide/zap"
     <div
       class="card bg-base-300 border-success/20 flex flex-col items-center gap-y-2 border p-6 text-center shadow-xl">
       <AwardIcon class="text-warning h-12 w-12 animate-bounce" />
-      <span class="text-warning text-xs font-black tracking-widest uppercase">單回合評審結果</span>
-      <h2 class="text-4xl font-extrabold tracking-wide" id="result-winner-text"
-        >藍色小隊 (Team A) 獲勝！</h2
-      >
+      <span class="text-warning text-xs font-bold tracking-widest uppercase">單回合評審結果</span>
+      <h2 class="text-4xl font-bold tracking-wide" id="result-winner-text">藍隊 獲勝！</h2>
     </div>
 
     <!-- Scores and Criteria Details -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <!-- Team A Breakdown -->
+      <!-- Team A Breakdown -->px-10
       <div class="card bg-base-300 border-info/20 border shadow-xl">
         <div class="card-body p-5">
           <div class="border-info/10 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-info text-lg font-black">藍色小隊 — Team A</span>
-            <span id="result-score-a" class="text-info font-mono text-3xl font-black">0 分</span>
+            <span class="text-info text-lg font-bold">藍色小隊 — Team A</span>
+            <span id="result-score-a" class="text-info font-mono text-3xl font-bold">0 分</span>
           </div>
 
           <!-- Progress sliders for criteria -->
@@ -287,9 +285,8 @@ import ZapIcon from "~icons/lucide/zap"
       <div class="card bg-base-300 border-secondary/20 border shadow-xl">
         <div class="card-body p-5">
           <div class="border-secondary/10 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-secondary text-lg font-black">橘色小隊 — Team B</span>
-            <span id="result-score-b" class="text-secondary font-mono text-3xl font-black"
-              >0 分</span
+            <span class="text-secondary text-lg font-bold">橘色小隊 — Team B</span>
+            <span id="result-score-b" class="text-secondary font-mono text-3xl font-bold">0 分</span
             >
           </div>
 
@@ -334,20 +331,22 @@ import ZapIcon from "~icons/lucide/zap"
   </div>
 
   <!-- ================= PHASE 5: MATCH_OVER ================= -->
-  <div
-    id="phase-matchover"
-    class="card bg-base-300 border-warning/30 flex hidden flex-col items-center gap-y-6 border p-10 text-center shadow-2xl">
-    <AwardIcon class="text-warning h-20 w-20 animate-pulse" />
-    <h2
-      class="text-warning text-5xl font-black tracking-widest drop-shadow-lg"
-      id="matchover-winner-text">Team A 取得最終勝利！</h2
-    >
-    <p class="text-neutral-content/70 text-lg">經過多回合的智慧謎語接龍激烈交鋒，恭喜獲勝組別！</p>
+  <div id="phase-matchover" class="card bg-base-300 hidden">
+    <div class="card-body justify-center text-center">
+      <AwardIcon class="text-warning mx-auto h-20 w-20 animate-pulse" />
+      <h2
+        class="text-warning text-5xl font-bold tracking-widest drop-shadow-lg"
+        id="matchover-winner-text"></h2>
+      <p class="text-neutral-content/70 text-lg">經過多回合的智慧謎語接龍激烈交鋒，恭喜獲勝組別！</p
+      >
 
-    <div class="divider my-0 max-w-sm"></div>
+      <div class="divider my-0"></div>
 
-    <div class="flex gap-x-4">
-      <button id="back-to-lobby-btn" class="btn btn-primary btn-lg px-10">回到大廳</button>
+      <div class="flex gap-x-4">
+        <button id="back-to-lobby-btn" class="btn btn-primary btn-lg mx-auto"
+          ><HomeIcon />返回大廳</button
+        >
+      </div>
     </div>
   </div>
 </Layout>
@@ -518,7 +517,7 @@ import ZapIcon from "~icons/lucide/zap"
   function renderRoundIntro(state: any) {
     phaseIntro?.classList.remove("hidden")
     if (introRoundNum) introRoundNum.textContent = state.round
-    if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
+    if (introTopic) introTopic.textContent = state.topic || "正在生成主題..."
 
     if (state.phaseEndsAt && introRadial) {
       const endsAt = state.phaseEndsAt
@@ -637,7 +636,7 @@ import ZapIcon from "~icons/lucide/zap"
         submitPanel?.classList.add("border-primary/20")
 
         if (currentTeamState.done) {
-          submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成！等待評審階段開始中 🏁"
+          submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成，請稍待對方隊伍完成接龍。"
         } else {
           submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
         }
@@ -646,7 +645,7 @@ import ZapIcon from "~icons/lucide/zap"
       // Host / Observer
       submitStatusBanner?.classList.remove("hidden")
       submitActionRow?.classList.add("hidden")
-      submitStatusText.textContent = "目前雙方正在進行緊張刺激的接龍比賽，可由右方控制鍵跳過棒次。"
+      submitStatusText.textContent = "接龍比賽進行中，你可透過上方的界面查看目前進度，並控制系統。"
     }
   }
 
@@ -671,23 +670,23 @@ import ZapIcon from "~icons/lucide/zap"
           : "border-neutral/20"
       }`
 
-      const seatBadge = `<span class="badge badge-sm badge-${badgeColor} font-black">棒次 ${i}</span>`
+      const seatBadge = `<span class="badge badge-sm badge-${badgeColor} font-bold">棒次 ${i}</span>`
       let textSpan = `<span class="text-neutral-content/30 italic text-sm">等待作答...</span>`
 
       if (val !== undefined) {
         if (val === "") {
-          textSpan = `<span class="text-error font-extrabold tracking-widest text-base">［超時未答］</span>`
+          textSpan = `<span class="text-error font-bold tracking-widest text-base">［超時未答］</span>`
         } else {
           // If opponent text is empty string (hidden by backend), show block placeholder
           const letters = [...val]
           if (letters.length === 0) {
-            textSpan = `<span class="text-neutral-content/40 tracking-[0.3em] font-mono text-base font-black">▇ ▇ ▇ ▇ ▇</span>`
+            textSpan = `<span class="text-neutral-content/40 tracking-[0.3em] font-mono text-base font-bold">▇ ▇ ▇ ▇ ▇</span>`
           } else {
-            textSpan = `<span class="text-success tracking-[0.25em] text-lg font-black">${val}</span>`
+            textSpan = `<span class="text-success tracking-[0.25em] text-lg font-bold">${val}</span>`
           }
         }
       } else if (isCurrentActive) {
-        textSpan = `<span class="text-${badgeColor} font-extrabold animate-pulse text-sm">正在輸入中...</span>`
+        textSpan = `<span class="text-${badgeColor} font-bold animate-pulse text-sm">正在輸入中...</span>`
       }
 
       card.innerHTML = `
@@ -721,7 +720,7 @@ import ZapIcon from "~icons/lucide/zap"
     const update = () => {
       const rem = Math.max(0, endsAt - Date.now())
       const sec = Math.ceil(rem / 1000)
-      timerBadge.textContent = paused ? `${sec}s (暫停)` : `${sec}s 剩餘`
+      timerBadge.textContent = paused ? `${sec}s（暫停）` : `${sec}s 剩餘`
 
       if (paused) {
         timerBadge.className = "badge badge-warning py-2.5 text-xs font-mono font-bold"
@@ -770,7 +769,7 @@ import ZapIcon from "~icons/lucide/zap"
       if (res.ok) {
         answerInput.value = ""
       } else {
-        if (submitError) submitError.textContent = `提交失敗：${res.error}`
+        if (submitError) submitError.textContent = `答案送出失敗：${res.error}`
         if (answerInput) answerInput.disabled = false
         if (submitBtn) submitBtn.disabled = false
       }
@@ -797,12 +796,12 @@ import ZapIcon from "~icons/lucide/zap"
 
     if (resultWinnerLine) {
       if (lastResult.winner === "tie") {
-        resultWinnerLine.className = "text-4xl font-extrabold tracking-wide text-warning"
+        resultWinnerLine.className = "text-4xl font-bold tracking-wide text-warning"
         resultWinnerLine.textContent = "本局平手！"
       } else {
-        const teamName = lastResult.winner === "A" ? "藍色小隊 (Team A)" : "橘色小隊 (Team B)"
-        resultWinnerLine.className = `text-4xl font-extrabold tracking-wide text-${lastResult.winner === "A" ? "info" : "secondary"}`
-        resultWinnerLine.textContent = `🎉 恭喜 ${teamName} 拿下此局！`
+        const teamName = lastResult.winner === "A" ? "藍隊" : "紅隊"
+        resultWinnerLine.className = `text-4xl font-bold tracking-wide text-${lastResult.winner === "A" ? "info" : "secondary"}`
+        resultWinnerLine.textContent = `恭喜 ${teamName} 拿下此局！`
       }
     }
 
@@ -838,10 +837,10 @@ import ZapIcon from "~icons/lucide/zap"
     container.innerHTML = ""
 
     const items = [
-      { key: "邏輯性 (25%)", val: breakdown.logic },
-      { key: "符合度 (30%)", val: breakdown.relevance },
-      { key: "完整性 (25%)", val: breakdown.completeness },
-      { key: "創意性 (20%)", val: breakdown.creativity },
+      { key: "邏輯性（25%）", val: breakdown.logic },
+      { key: "符合度（30%）", val: breakdown.relevance },
+      { key: "完整性（25%）", val: breakdown.completeness },
+      { key: "創意性（20%）", val: breakdown.creativity },
     ]
 
     for (const item of items) {
@@ -877,9 +876,9 @@ import ZapIcon from "~icons/lucide/zap"
     phaseMatchover?.classList.remove("hidden")
 
     // Determine winner based on score
-    const winner = state.score.A > state.score.B ? "藍色小隊 (Team A)" : "橘色小隊 (Team B)"
+    const winner = state.score.A > state.score.B ? "藍隊" : "紅隊"
     if (matchoverWinnerText) {
-      matchoverWinnerText.textContent = `🏆 恭喜 ${winner} 榮登最終霸主！`
+      matchoverWinnerText.textContent = `恭喜${winner}榮登最終霸主`
     }
   }
 

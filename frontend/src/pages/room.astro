@@ -9,7 +9,7 @@ import PlayIcon from "~icons/lucide/play"
     <div class="card-body gap-y-2">
       <div class="flex">
         <div class="grid flex-1 gap-y-1">
-          <h1 class="text-primary text-2xl font-black tracking-wide">AI 謎題接龍 - 遊戲大廳</h1>
+          <h1 class="text-primary text-2xl font-bold tracking-wide">AI 謎題接龍 - 遊戲大廳</h1>
           <p id="room-id-display" class="text-neutral-content/60 font-mono text-xs">載入中...</p>
           <p id="lobby-status-text" class="text-neutral-content/70">正在與伺服器建立同步連線...</p>
         </div>
@@ -22,39 +22,37 @@ import PlayIcon from "~icons/lucide/play"
   </div>
 
   <div class="card bg-base-300 w-full">
-    <div class="card-body grid grid-cols-2 gap-x-2">
-      <div class="grid gap-y-2">
-        <h2 class="card-title text-info text-xl font-black">藍隊</h2>
+    <div class="card-body grid grid-cols-2 gap-x-2 md:grid-cols-3">
+      <div class="mb-auto grid gap-y-2">
+        <h2 class="text-info text-xl font-bold">藍隊</h2>
         <div id="team-a-players"></div>
       </div>
 
-      <div class="grid gap-y-2">
-        <h2 class="card-title text-secondary text-xl font-black">紅隊</h2>
+      <div class="mb-auto grid gap-y-2">
+        <h2 class="text-secondary text-xl font-bold">紅隊</h2>
         <div id="team-b-players"></div>
       </div>
-    </div>
-  </div>
 
-  <div class="card bg-base-300 w-full">
-    <div class="card-body">
-      <div class="flex items-center justify-between">
-        <h2 class="text-warning text-lg font-bold">未選隊伍</h2>
-        <span id="waiting-count" class="badge badge-warning font-bold">0</span>
+      <div class="col-span-2 grid gap-y-2 md:col-span-1">
+        <div class="flex items-center justify-between">
+          <h2 class="text-warning text-lg font-bold">未選隊伍</h2>
+          <span id="waiting-count" class="badge badge-warning font-bold">0</span>
+        </div>
+        <div id="waiting-players" class="grid grid-cols-2 gap-2"></div>
       </div>
-      <div id="waiting-players" class="grid grid-cols-2 gap-2"></div>
     </div>
   </div>
 
-  <div id="host-setup-panel" class="card bg-base-300 border-primary/10 hidden border shadow-xl">
+  <div id="host-setup-panel" class="card bg-base-300 hidden">
     <div class="card-body gap-y-2">
-      <h2 class="card-title text-primary text-lg font-black">主持設定</h2>
+      <h2 class="text-primary text-lg font-bold">主持設定</h2>
       <p id="host-save-status" class="text-neutral-content/50 text-xs"></p>
 
       <div class="grid gap-y-1">
         <label class="text-xs font-bold">自訂題庫</label>
         <textarea
           id="questions-input"
-          class="textarea w-full font-medium"
+          class="textarea w-full"
           placeholder="請輸入題目（每行一題，最多 200 題）"></textarea>
         <button id="save-questions-btn" class="btn btn-primary btn-sm w-full">儲存題庫</button>
       </div>
@@ -62,71 +60,73 @@ import PlayIcon from "~icons/lucide/play"
       <div class="divider my-0"></div>
 
       <div class="grid gap-y-1">
-        <label class="text-xs font-bold">下一回合題目</label>
-        <input id="topic-input" class="input input-sm w-full" placeholder="指定下一題" />
-        <div class="grid grid-cols-2 gap-x-2">
-          <button id="set-topic-btn" class="btn btn-secondary btn-sm">指定題目</button>
-          <button id="random-topic-btn" class="btn btn-outline btn-secondary btn-sm"
-            >題庫隨機</button
-          >
+        <span class="text-xs font-bold">下一回合題目</span>
+        <div class="grid grid-cols-2 gap-x-2 gap-y-1 md:grid-cols-4">
+          <input
+            id="topic-input"
+            class="input input-sm col-span-2 w-full"
+            placeholder="指定下一題"
+          />
+          <button id="set-topic-btn" class="btn btn-primary btn-sm">指定題目</button>
+          <button id="random-topic-btn" class="btn btn-outline btn-primary btn-sm">題庫隨機</button>
         </div>
-        <p id="next-topic-label" class="text-neutral-content/60 min-h-5 text-xs"></p>
+        <p id="next-topic-label" class="text-neutral-content/70 min-h-5 text-xs"></p>
       </div>
 
       <div class="divider my-0"></div>
 
-      <div class="grid grid-cols-2 gap-x-2 gap-y-1">
-        <label class="">
+      <div class="grid grid-cols-2 gap-x-2 gap-y-1 md:grid-cols-3 lg:grid-cols-6">
+        <div class="grid gap-y-1">
           <span class="label-text text-xs font-bold">開場秒數</span>
           <input
             id="rule-intro"
             type="number"
             min="3"
             max="300"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
           />
-        </label>
-        <label class="">
+        </div>
+        <div class="grid gap-y-1">
           <span class="label-text text-xs font-bold">每棒秒數</span>
           <input
             id="rule-turn"
             type="number"
             min="3"
             max="300"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
           />
-        </label>
-        <label class="">
+        </div>
+        <div class="grid gap-y-1">
           <span class="label-text text-xs font-bold">結果秒數</span>
           <input
             id="rule-result"
             type="number"
             min="3"
             max="300"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
           />
-        </label>
-        <label class="">
+        </div>
+        <div class="grid gap-y-1">
           <span class="label-text text-xs font-bold">棒次數</span>
           <input
             id="rule-seats"
             type="number"
             min="1"
             max="6"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
           />
-        </label>
-        <label class="">
+        </div>
+        <div class="grid gap-y-1">
           <span class="label-text text-xs font-bold">勝場所需局數</span>
           <input
             id="rule-wins"
             type="number"
             min="1"
             max="10"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
           />
-        </label>
-        <button id="save-rules-btn" class="btn btn-accent btn-sm mt-auto w-full">套用規則</button>
+        </div>
+        <button id="save-rules-btn" class="btn btn-primary btn-sm mt-auto w-full">套用規則</button>
       </div>
       <div class="divider my-0"></div>
       <button id="start-game-btn" class="btn btn-success btn-md hidden">
@@ -238,9 +238,9 @@ import PlayIcon from "~icons/lucide/play"
     const row = document.createElement("div")
     const colorClasses =
       color === "info"
-        ? { border: "border-info/20", text: "text-info" }
-        : { border: "border-secondary/20", text: "text-secondary" }
-    row.className = `flex items-center justify-between rounded-xl border ${colorClasses.border} bg-base-200 p-3`
+        ? { border: "border-info/50", text: "text-info" }
+        : { border: "border-secondary/50", text: "text-secondary" }
+    row.className = `flex items-center justify-between rounded-box border-2 ${colorClasses.border} bg-base-200 px-4 py-2`
     const name = player ? `${player.name}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
     const status = player
       ? player.connected
@@ -252,9 +252,9 @@ import PlayIcon from "~icons/lucide/play"
         ? `<button class="btn btn-ghost btn-xs btn-warning" data-assign="" data-player-id="${player.playerId}">移出隊伍</button>`
         : ""
     row.innerHTML = `
-      <div class="">
-        <div class="${colorClasses.text} text-xs font-black">Team ${teamId}</div>
-        <div class="truncate text-base font-extrabold">${escapeHtml(name)}</div>
+      <div>
+        <div class="${colorClasses.text} text-xs font-bold">Team ${teamId}</div>
+        <div class="truncate text-base font-bold">${escapeHtml(name)}</div>
       </div>
       <div class="flex items-center gap-2">${status}${hostControls}</div>
     `
