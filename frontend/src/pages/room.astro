@@ -58,7 +58,7 @@ import PlayIcon from "~icons/lucide/play"
       </div>
 
       <div class="grid gap-y-1">
-        <label class="text-xs font-bold">正式場 5 回合順序（每行 `A組,B組`）</label>
+        <label class="text-xs font-bold">正式場 5 回合順序（每行「A組,B組」）</label>
         <textarea
           id="matchups-input"
           class="textarea w-full font-medium"
@@ -322,19 +322,19 @@ import PlayIcon from "~icons/lucide/play"
     const name = player ? `${player.name}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
     const status = player
       ? player.connected
-        ? '<span class="badge badge-success badge-xs font-bold">ON</span>'
-        : '<span class="badge badge-error badge-xs font-bold">OFF</span>'
+        ? '<span class="badge badge-success badge-xs font-bold">線上</span>'
+        : '<span class="badge badge-error badge-xs font-bold">離線</span>'
       : ""
     const hostControls =
       role === "host" && player
-        ? `<div class="flex items-center gap-1"><button class="btn btn-ghost btn-xs btn-warning" data-assign="" data-player-id="${player.playerId}">移出隊伍</button><button class="btn btn-ghost btn-xs btn-error" data-remove-player="true" data-player-id="${player.playerId}">移除使用者</button></div>`
+        ? `<div class="flex items-center flex-col gap-y-1"><button class="btn btn-ghost btn-xs btn-warning" data-assign="" data-player-id="${player.playerId}">移出隊伍</button><button class="btn btn-ghost btn-xs btn-error" data-remove-player="true" data-player-id="${player.playerId}">移除玩家</button></div>`
         : ""
     row.innerHTML = `
       <div>
         <div class="${colorClasses.text} text-xs font-bold">Team ${teamId}</div>
         <div class="truncate text-base font-bold">${escapeHtml(name)}</div>
       </div>
-      <div class="flex items-center gap-2">${status}${hostControls}</div>
+      <div class="flex flex-col items-center gap-y-1">${status}${hostControls}</div>
     `
     container.appendChild(row)
   }

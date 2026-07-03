@@ -1,4 +1,14 @@
+@import url("https://font.emtech.cc/css/GenKiGothicTW/400");
+@import url("https://font.emtech.cc/css/GenKiGothicTW/700");
+@import url("https://font.emtech.cc/css/JetBrainsMono/400");
+
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "GenKiGothicTW";
+  --font-mono: "JetBrainsMono", var(--font-sans);
+}
+
 @plugin "daisyui" {
   themes: dark --default;
 }

@@ -17,11 +17,16 @@ import ZapIcon from "~icons/lucide/zap"
       <h1 class="text-neutral-content text-lg font-bold" id="room-info">AI 謎題接龍</h1>
       <!-- 兩隊分數 -->
       <div class="flex items-center gap-x-2">
-        <span class="text-info text-sm font-bold">藍隊</span>
+        <span id="header-group-a" class="text-info text-sm font-bold">藍隊</span>
         <div class="join">
-          <span id="match-score-a" class="btn btn-xs btn-info font-mono font-bold">0</span>
-          <span class="btn btn-xs btn-disabled font-mono">:</span>
-          <span id="match-score-b" class="btn btn-xs btn-secondary font-mono font-bold">0</span>
+          <span id="match-score-a" class="btn btn-xs btn-info cursor-default font-mono font-bold"
+            >0</span
+          >
+          <span class="btn btn-xs btn-disabled cursor-default font-mono">:</span>
+          <span
+            id="match-score-b"
+            class="btn btn-xs btn-secondary cursor-default font-mono font-bold">0</span
+          >
         </div>
         <span id="header-group-b" class="text-secondary text-sm font-bold">第 2 組</span>
       </div>
@@ -179,7 +184,7 @@ import ZapIcon from "~icons/lucide/zap"
       <div id="team-a-answer" class="card bg-base-300 flex-1">
         <div class="card-body">
           <div class="flex items-center justify-between">
-            <span class="text-info text-lg font-bold">藍隊</span>
+            <span id="team-a-title" class="text-info text-lg font-bold">藍隊</span>
             <div
               id="timer-team-a"
               class="badge badge-info hidden animate-pulse py-2.5 font-mono font-bold">--s</div
@@ -199,7 +204,7 @@ import ZapIcon from "~icons/lucide/zap"
       <div id="team-b-answer" class="card bg-base-300 flex-1">
         <div class="card-body">
           <div class="flex items-center justify-between">
-            <span class="text-secondary text-lg font-bold">紅隊</span>
+            <span id="team-b-title" class="text-secondary text-lg font-bold">紅隊</span>
             <div id="timer-team-b" class="badge badge-info hidden animate-pulse font-mono font-bold"
               >--s</div
             >
@@ -273,7 +278,7 @@ import ZapIcon from "~icons/lucide/zap"
       <div class="card bg-base-300 border-info/20 border shadow-xl">
         <div class="card-body p-5">
           <div class="border-info/10 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-info text-lg font-bold">藍色小隊 — Team A</span>
+            <span id="result-group-a-title" class="text-info text-lg font-bold">藍隊</span>
             <span id="result-score-a" class="text-info font-mono text-3xl font-bold">0 分</span>
           </div>
 
@@ -288,7 +293,7 @@ import ZapIcon from "~icons/lucide/zap"
       <div class="card bg-base-300 border-secondary/20 border shadow-xl">
         <div class="card-body p-5">
           <div class="border-secondary/10 mb-4 flex items-center justify-between border-b pb-2">
-            <span class="text-secondary text-lg font-bold">橘色小隊 — Team B</span>
+            <span id="result-group-b-title" class="text-secondary text-lg font-bold">紅隊</span>
             <span id="result-score-b" class="text-secondary font-mono text-3xl font-bold">0 分</span
             >
           </div>
@@ -549,7 +554,7 @@ import ZapIcon from "~icons/lucide/zap"
         const remaining = Math.max(0, endsAt - Date.now())
         const seconds = Math.ceil(remaining / 1000)
 
-        introRadial.textContent = `${seconds}s`
+        introRadial.textContent = seconds.toString()
 
         const introMs = state.rules?.introMs ?? 30000
         const pct = Math.min(100, Math.max(0, (remaining / introMs) * 100))
@@ -894,6 +899,7 @@ import ZapIcon from "~icons/lucide/zap"
 
   // ================= RENDER MATCH_OVER =================
   const matchoverWinnerText = document.getElementById("matchover-winner-text") as HTMLHeadingElement
+  const backToLobbyBtn = document.getElementById("back-to-lobby-btn") as HTMLButtonElement
   const endGameBtn = document.getElementById("end-game-btn") as HTMLButtonElement
   const matchoverWaitingBanner = document.getElementById(
     "matchover-waiting-banner"
@@ -1061,5 +1067,11 @@ import ZapIcon from "~icons/lucide/zap"
         if (!res.ok) alert(`操作失敗：${res.error}`)
       })
     }
+  })
+
+  backToLobbyBtn?.addEventListener("click", () => {
+    clearSession()
+    sessionStorage.clear()
+    window.location.href = "/"
   })
 </script>
