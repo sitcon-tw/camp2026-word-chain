@@ -62,18 +62,36 @@ import PlayIcon from "~icons/lucide/play"
         <textarea
           id="matchups-input"
           class="textarea w-full font-medium"
-          placeholder="1,2&#10;3,4&#10;5,6&#10;7,8&#10;9,10"></textarea>
+          placeholder="1,2
+3,4
+5,6
+7,8
+9,10"></textarea>
         <button id="save-matchups-btn" class="btn btn-primary btn-sm w-full">儲存正式場順序</button>
       </div>
 
       <div class="grid gap-y-1">
         <label class="text-xs font-bold">測試場下一回合組別</label>
         <div class="grid grid-cols-[1fr_auto_1fr] gap-2">
-          <input id="test-group-a-input" type="number" min="1" class="input input-sm" placeholder="左側組別" />
+          <input
+            id="test-group-a-input"
+            type="number"
+            min="1"
+            class="input input-sm"
+            placeholder="左側組別"
+          />
           <div class="flex items-center justify-center text-sm font-black">vs</div>
-          <input id="test-group-b-input" type="number" min="1" class="input input-sm" placeholder="右側組別" />
+          <input
+            id="test-group-b-input"
+            type="number"
+            min="1"
+            class="input input-sm"
+            placeholder="右側組別"
+          />
         </div>
-        <button id="save-test-matchup-btn" class="btn btn-secondary btn-sm w-full">設定測試回合組別</button>
+        <button id="save-test-matchup-btn" class="btn btn-secondary btn-sm w-full"
+          >設定測試回合組別</button
+        >
       </div>
 
       <div class="divider my-0"></div>
@@ -550,7 +568,8 @@ import PlayIcon from "~icons/lucide/play"
       if (current) return `測試場：目前顯示第 ${current.groupA} 組 vs 第 ${current.groupB} 組`
       return "測試場：請先指定本回合組別"
     }
-    if (current) return `正式場：目前 / 下一回合為第 ${current.groupA} 組 vs 第 ${current.groupB} 組`
+    if (current)
+      return `正式場：目前 / 下一回合為第 ${current.groupA} 組 vs 第 ${current.groupB} 組`
     return "正式場：請先設定回合順序"
   }
 </script>

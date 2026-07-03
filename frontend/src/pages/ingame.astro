@@ -374,7 +374,9 @@ import ZapIcon from "~icons/lucide/zap"
   const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
   const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
   const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
-  const hostForceEndGameBtn = document.getElementById("host-force-end-game-btn") as HTMLButtonElement
+  const hostForceEndGameBtn = document.getElementById(
+    "host-force-end-game-btn"
+  ) as HTMLButtonElement
   const hostLiveStatus = document.getElementById("host-live-status") as HTMLParagraphElement
   const liveQuestionsInput = document.getElementById("live-questions-input") as HTMLTextAreaElement
   const liveSaveQuestionsBtn = document.getElementById(
@@ -657,7 +659,8 @@ import ZapIcon from "~icons/lucide/zap"
         submitPanel?.classList.add("border-primary/20")
 
         if (currentTeamState.done) {
-          submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成，請稍待對方隊伍完成接龍。"
+          submitStatusText.textContent =
+            "恭喜！您小隊的謎語接龍已全數完成，請稍待對方隊伍完成接龍。"
         } else {
           submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
         }
@@ -892,7 +895,9 @@ import ZapIcon from "~icons/lucide/zap"
   // ================= RENDER MATCH_OVER =================
   const matchoverWinnerText = document.getElementById("matchover-winner-text") as HTMLHeadingElement
   const endGameBtn = document.getElementById("end-game-btn") as HTMLButtonElement
-  const matchoverWaitingBanner = document.getElementById("matchover-waiting-banner") as HTMLDivElement
+  const matchoverWaitingBanner = document.getElementById(
+    "matchover-waiting-banner"
+  ) as HTMLDivElement
 
   function renderMatchOver(state: any) {
     phaseMatchover?.classList.remove("hidden")

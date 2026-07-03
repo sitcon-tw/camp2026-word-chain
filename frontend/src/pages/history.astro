@@ -88,10 +88,7 @@ for (const round of rounds as RoundRecord[]) {
   const lastMatch = groupedMatches[groupedMatches.length - 1]
   const lastRound = lastMatch?.rounds[lastMatch.rounds.length - 1]
   const shouldStartNewMatch =
-    !lastMatch ||
-    lastMatch.key !== matchupKey ||
-    !lastRound ||
-    round.round <= lastRound.round
+    !lastMatch || lastMatch.key !== matchupKey || !lastRound || round.round <= lastRound.round
 
   if (shouldStartNewMatch) {
     groupedMatches.push({
@@ -122,7 +119,7 @@ for (const round of rounds as RoundRecord[]) {
 
       {
         groupedMatches.length === 0 ? (
-          <div class="rounded-xl border border-dashed border-neutral/20 p-4 text-sm text-neutral-content/60">
+          <div class="border-neutral/20 text-neutral-content/60 rounded-xl border border-dashed p-4 text-sm">
             {loadFailed ? "目前無法連線到後端，請稍後再試。" : "目前還沒有任何回合紀錄。"}
           </div>
         ) : (
@@ -137,14 +134,15 @@ for (const round of rounds as RoundRecord[]) {
                     ? `第 ${match.matchup.groupA} 組勝出`
                     : `第 ${match.matchup.groupB} 組勝出`
               return (
-                <article class="rounded-2xl border border-primary/10 bg-base-200 p-5 shadow">
+                <article class="border-primary/10 bg-base-200 rounded-2xl border p-5 shadow">
                   <div class="flex flex-wrap items-center justify-between gap-2">
                     <h3 class="text-lg font-black">
-                      第 {index + 1} 場：第 {match.matchup.groupA} 組 vs 第 {match.matchup.groupB} 組
+                      第 {index + 1} 場：第 {match.matchup.groupA} 組 vs 第 {match.matchup.groupB}{" "}
+                      組
                     </h3>
                     <span class="badge badge-primary">{matchWinnerText}</span>
                   </div>
-                  <p class="mt-2 text-sm text-neutral-content/70">
+                  <p class="text-neutral-content/70 mt-2 text-sm">
                     共 {match.rounds.length} 回合，系列比分 {winsA} : {winsB}
                   </p>
                   <div class="mt-4 grid gap-3">
@@ -157,30 +155,34 @@ for (const round of rounds as RoundRecord[]) {
                             : `第 ${match.matchup.groupB} 組拿下本回合`
 
                       return (
-                        <section class="rounded-xl border border-neutral/15 bg-base-300 p-4">
+                        <section class="border-neutral/15 bg-base-300 rounded-xl border p-4">
                           <div class="flex flex-wrap items-center justify-between gap-2">
                             <h4 class="font-black">第 {round.round} 回合</h4>
                             <span class="badge badge-outline">{roundWinnerText}</span>
                           </div>
-                          <p class="mt-2 text-sm text-neutral-content/70">
+                          <p class="text-neutral-content/70 mt-2 text-sm">
                             題目：{round.topic || "未記錄"}
                           </p>
                           <div class="mt-3 grid gap-3 md:grid-cols-2">
-                            <div class="rounded-xl border border-info/15 bg-base-200 p-4">
+                            <div class="border-info/15 bg-base-200 rounded-xl border p-4">
                               <div class="text-info text-sm font-black">
                                 第 {match.matchup.groupA} 組
                               </div>
-                              <div class="mt-1 font-bold break-all">{round.answerA || "未作答"}</div>
-                              <div class="mt-2 text-xs text-neutral-content/60">
+                              <div class="mt-1 font-bold break-all">
+                                {round.answerA || "未作答"}
+                              </div>
+                              <div class="text-neutral-content/60 mt-2 text-xs">
                                 分數：{round.scoreA}
                               </div>
                             </div>
-                            <div class="rounded-xl border border-secondary/15 bg-base-200 p-4">
+                            <div class="border-secondary/15 bg-base-200 rounded-xl border p-4">
                               <div class="text-secondary text-sm font-black">
                                 第 {match.matchup.groupB} 組
                               </div>
-                              <div class="mt-1 font-bold break-all">{round.answerB || "未作答"}</div>
-                              <div class="mt-2 text-xs text-neutral-content/60">
+                              <div class="mt-1 font-bold break-all">
+                                {round.answerB || "未作答"}
+                              </div>
+                              <div class="text-neutral-content/60 mt-2 text-xs">
                                 分數：{round.scoreB}
                               </div>
                             </div>

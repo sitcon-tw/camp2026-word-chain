@@ -126,10 +126,7 @@ export function saveSession(session: GameSession): void {
   clearLegacySession()
 }
 
-export function updateSessionAssignment(
-  team: "A" | "B" | null,
-  groupNumber?: number | null
-): void {
+export function updateSessionAssignment(team: "A" | "B" | null, groupNumber?: number | null): void {
   if (team) {
     sessionStorage.setItem(SESSION_KEYS.team, team)
   } else {
