@@ -5,6 +5,8 @@ services:
       args:
         PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL:-}
     restart: unless-stopped
+    ports:
+      - "3000:80"
     expose:
       - "80"
     depends_on:
