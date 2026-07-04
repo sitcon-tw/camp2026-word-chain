@@ -264,9 +264,7 @@ import ZapIcon from "~icons/lucide/zap"
       class="card bg-base-300 border-success/20 flex flex-col items-center gap-y-2 border p-6 text-center shadow-xl">
       <AwardIcon class="text-warning h-12 w-12 animate-bounce" />
       <span class="text-warning text-xs font-black tracking-widest uppercase">單回合評審結果</span>
-      <h2 class="text-4xl font-extrabold tracking-wide" id="result-winner-text"
-        >第 1 組獲勝！</h2
-      >
+      <h2 class="text-4xl font-extrabold tracking-wide" id="result-winner-text">第 1 組獲勝！</h2>
     </div>
 
     <!-- Scores and Criteria Details -->
@@ -379,7 +377,9 @@ import ZapIcon from "~icons/lucide/zap"
   const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
   const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
   const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
-  const hostForceEndGameBtn = document.getElementById("host-force-end-game-btn") as HTMLButtonElement
+  const hostForceEndGameBtn = document.getElementById(
+    "host-force-end-game-btn"
+  ) as HTMLButtonElement
   const hostLiveStatus = document.getElementById("host-live-status") as HTMLParagraphElement
   const liveQuestionsInput = document.getElementById("live-questions-input") as HTMLTextAreaElement
   const liveSaveQuestionsBtn = document.getElementById(
@@ -900,7 +900,9 @@ import ZapIcon from "~icons/lucide/zap"
   // ================= RENDER MATCH_OVER =================
   const matchoverWinnerText = document.getElementById("matchover-winner-text") as HTMLHeadingElement
   const endGameBtn = document.getElementById("end-game-btn") as HTMLButtonElement
-  const matchoverWaitingBanner = document.getElementById("matchover-waiting-banner") as HTMLDivElement
+  const matchoverWaitingBanner = document.getElementById(
+    "matchover-waiting-banner"
+  ) as HTMLDivElement
 
   function renderMatchOver(state: any) {
     phaseMatchover?.classList.remove("hidden")
