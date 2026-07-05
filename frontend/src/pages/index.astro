@@ -3,43 +3,106 @@ import Layout from "@/layouts/Layout.astro"
 import ChevronRightIcon from "~icons/lucide/chevron-right"
 ---
 
-<Layout>
-  <div class="card bg-base-300 w-full max-w-sm">
-    <div class="card-body">
-      <h1 class="text-primary text-center text-4xl font-bold tracking-widest">AI 謎題接龍</h1>
-      <div class="flex w-full flex-col items-center gap-y-4">
-        <span id="matchup-label">請選擇目前對戰組別登入</span>
-
-        <div class="grid w-full grid-cols-2 gap-3">
-          <button id="blue-login-btn" class="btn btn-info btn-lg justify-between px-5">
-            <span id="blue-login-label">A 組</span>
-            <ChevronRightIcon class="size-6" />
-          </button>
-          <button id="red-login-btn" class="btn btn-secondary btn-lg justify-between px-5">
-            <span id="red-login-label">B 組</span>
-            <ChevronRightIcon class="size-6" />
-          </button>
+<Layout title="SITCON Camp 2026 AI 謎題接龍">
+  <div class="wc-page wc-page-full">
+    <section class="wc-grid-hero">
+      <div class="wc-panel wc-panel-distribute p-8 md:p-10">
+        <div class="wc-panel-top flex-wrap">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="wc-chip">
+              <img src="/sitcon-mark.svg" alt="SITCON" class="h-5 w-5" />
+              SITCON Camp 2026
+            </span>
+          </div>
         </div>
 
-        <input
-          id="room-id-input"
-          type="text"
-          placeholder="房間編號（非必填）"
-          class="input input-sm w-full"
-        />
+        <div class="wc-panel-mid">
+          <div>
+            <p class="text-sm font-black tracking-[0.3em] text-[#2464ea]">AI WORD CHAIN</p>
+            <h1 class="wc-title mt-3">AI 謎題接龍</h1>
+          </div>
+          <p class="wc-subtitle max-w-2xl">
+            以 AI 生成題目為起點，兩隊依序接出五字答案，在同棒次同步交鋒、逐棒推進。<br />
+            準備好後，請依目前對戰組別進入場上。
+          </p>
 
-        <span id="room-mode-msg" class="text-neutral-content/60 text-center text-sm"></span>
-        <span id="error-msg" class="text-error text-center"></span>
+        </div>
+
+        <div class="wc-panel-bottom sm:grid-cols-3">
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#2464ea]">ROUND</p>
+            <p id="match-round-label" class="mt-2 text-lg font-black">第 1 場</p>
+            <p id="matchup-sub-label" class="mt-2 text-sm leading-6 text-[#5f6673]">第 1 組 vs 第 2 組</p>
+          </div>
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#77b55a]">GM</p>
+            <p class="mt-2 text-lg font-black">AK</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">關主</p>
+          </div>
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#f69977]">DURATION</p>
+            <p class="mt-2 text-lg font-black">25 分鐘</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">單場遊戲時間</p>
+          </div>
+        </div>
       </div>
 
-      <div class="divider my-0">或</div>
+      <div class="wc-panel wc-panel-distribute p-6 md:p-8">
+        <div class="wc-panel-top">
+          <div>
+            <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">PLAYER SIGN-IN</p>
+            <h2 class="mt-2 text-3xl font-black tracking-[-0.04em]">選擇你的隊伍</h2>
+          </div>
+          <img src="/sitcon-mark.svg" alt="SITCON 標誌" class="h-14 w-14 shrink-0 opacity-90" />
+        </div>
 
-      <div class="flex justify-center gap-x-4">
-        <button id="host-login" type="button" class="btn">加入主辦方</button>
-        <button id="obs-login" type="button" class="btn">加入旁觀者</button>
-        <a href="/history" class="btn">查看對戰資料</a>
+        <div class="wc-panel-mid">
+          <div class="grid gap-3 border-b border-[#24272e]/8 pb-5">
+            <p class="text-xs font-black tracking-[0.24em] text-[#2464ea]">OFFICIAL SESSION</p>
+            <div class="text-[clamp(1.8rem,2.7vw,2.5rem)] font-black tracking-[-0.06em] text-[#24272e]">
+              Camp-2026
+            </div>
+          </div>
+
+          <div class="grid gap-3">
+            <button
+              id="blue-login-btn"
+              class="btn btn-info btn-lg h-auto justify-between rounded-[1.4rem] px-5 py-5 text-left">
+              <span class="grid gap-1">
+                <span class="text-xs font-black tracking-[0.2em] opacity-80">TEAM A</span>
+                <span id="blue-login-label" class="text-xl font-black">A 組</span>
+              </span>
+              <ChevronRightIcon class="size-6" />
+            </button>
+            <button
+              id="red-login-btn"
+              class="btn btn-secondary btn-lg h-auto justify-between rounded-[1.4rem] px-5 py-5 text-left">
+              <span class="grid gap-1">
+                <span class="text-xs font-black tracking-[0.2em] opacity-80">TEAM B</span>
+                <span id="red-login-label" class="text-xl font-black">B 組</span>
+              </span>
+              <ChevronRightIcon class="size-6" />
+            </button>
+          </div>
+
+        </div>
+
+        <div class="wc-panel-bottom">
+          <div class="rounded-[1.4rem] border border-[#24272e]/8 bg-white/70 p-4">
+            <p class="text-sm font-bold text-[#24272e]">登入後流程</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">
+              1. 進入等待區確認隊伍
+              <br />
+              2. 主持人開賽後自動進入作答畫面
+              <br />
+              3. 兩隊同棒次都提交後，由主持人切換下一棒
+            </p>
+          </div>
+
+          <span id="error-msg" class="min-h-6 text-sm font-bold text-[#cc4c3f]"></span>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 </Layout>
 
@@ -50,16 +113,12 @@ import ChevronRightIcon from "~icons/lucide/chevron-right"
   const redLoginBtn = document.getElementById("red-login-btn") as HTMLButtonElement
   const blueLoginLabel = document.getElementById("blue-login-label") as HTMLSpanElement
   const redLoginLabel = document.getElementById("red-login-label") as HTMLSpanElement
-  const matchupLabel = document.getElementById("matchup-label") as HTMLSpanElement
-  const roomModeMsg = document.getElementById("room-mode-msg") as HTMLSpanElement
-  const roomIdInput = document.getElementById("room-id-input") as HTMLInputElement
+  const matchRoundLabel = document.getElementById("match-round-label") as HTMLParagraphElement
+  const matchupSubLabel = document.getElementById("matchup-sub-label") as HTMLParagraphElement
   const errorMsg = document.getElementById("error-msg") as HTMLSpanElement
-  const hostLogin = document.getElementById("host-login") as HTMLButtonElement
-  const obsLogin = document.getElementById("obs-login") as HTMLButtonElement
   const socket = getSocket()
+  const ROOM_ID = "sitcon-camp-2026"
   let activeMatchup = { groupA: 1, groupB: 2 }
-  let activeMode: "formal" | "test" = "formal"
-  let watchedRoomId = ""
 
   function showError(msg: string) {
     if (errorMsg) {
@@ -78,41 +137,28 @@ import ChevronRightIcon from "~icons/lucide/chevron-right"
     if (redLoginBtn) redLoginBtn.disabled = disabled
   }
 
-  function getRoomId() {
-    return roomIdInput.value !== "" ? roomIdInput.value : "sitcon-camp-2026"
-  }
-
   function applyRoomMeta(data: any) {
-    activeMode = data.matchMode === "test" ? "test" : "formal"
     activeMatchup = data.currentMatchup ?? activeMatchup
-    matchupLabel.textContent =
-      activeMode === "test" ? "請選擇本回合測試組別登入" : "請選擇目前回合組別登入"
-    roomModeMsg.textContent =
-      activeMode === "test"
-        ? "測試場：由關主逐回合指定要上場的兩組。"
-        : `正式場：依預排順序進行，現為第 ${Math.max(1, (data.matchupCursor ?? 0) + 1)} 組。`
+    matchRoundLabel.textContent = `第 ${Math.max(1, (data.matchupCursor ?? 0) + 1)} 場`
+    matchupSubLabel.textContent = `第 ${activeMatchup.groupA} 組 vs 第 ${activeMatchup.groupB} 組`
     blueLoginLabel.textContent = `第 ${activeMatchup.groupA} 組`
     redLoginLabel.textContent = `第 ${activeMatchup.groupB} 組`
   }
 
   function setDefaultRoomMeta() {
-    activeMode = "formal"
     activeMatchup = { groupA: 1, groupB: 2 }
-    matchupLabel.textContent = "請選擇目前對戰組別登入"
-    roomModeMsg.textContent = "房間尚未建立，預設顯示第 1 組與第 2 組。"
+    matchRoundLabel.textContent = "第 1 場"
+    matchupSubLabel.textContent = "第 1 組 vs 第 2 組"
     blueLoginLabel.textContent = `第 ${activeMatchup.groupA} 組`
     redLoginLabel.textContent = `第 ${activeMatchup.groupB} 組`
   }
 
   function syncRoomMeta() {
-    const roomId = getRoomId()
-    watchedRoomId = roomId
-
     if (!socket.connected) {
       socket.connect()
     }
 
-    socket.emit("room:watch", { roomId }, (res: any) => {
+    socket.emit("room:watch", { roomId: ROOM_ID }, (res: any) => {
       if (!res?.ok) {
         setDefaultRoomMeta()
       }
@@ -123,10 +169,9 @@ import ChevronRightIcon from "~icons/lucide/chevron-right"
     clearError()
 
     if (role === "host" || role === "observer") {
-      const roomId = getRoomId()
       sessionStorage.setItem("wc_role", role)
-      sessionStorage.setItem("wc_room_id", roomId)
-      window.location.href = "/room"
+      sessionStorage.setItem("wc_room_id", ROOM_ID)
+      window.location.href = "/sitcon-gm"
       return
     }
 
@@ -141,7 +186,7 @@ import ChevronRightIcon from "~icons/lucide/chevron-right"
       setPlayerButtonsDisabled(false)
     })
 
-    const roomId = getRoomId()
+    const roomId = ROOM_ID
     let payload: any = { roomId, role }
 
     if (role === "player") {
@@ -188,29 +233,18 @@ import ChevronRightIcon from "~icons/lucide/chevron-right"
   // 綁定點擊事件
   blueLoginBtn?.addEventListener("click", () => handleJoin("player", "A"))
   redLoginBtn?.addEventListener("click", () => handleJoin("player", "B"))
-  roomIdInput?.addEventListener("input", () => void syncRoomMeta())
-
-  // 主辦方登入
-  hostLogin?.addEventListener("click", () => {
-    handleJoin("host")
-  })
-
-  // 觀戰者登入
-  obsLogin?.addEventListener("click", () => {
-    handleJoin("observer")
-  })
 
   // 清除舊連線與 Session
   clearSession()
   sessionStorage.removeItem("wc_role")
   sessionStorage.removeItem("wc_room_id")
   socket.on("room:state", (state: any) => {
-    if (watchedRoomId && state.roomId === watchedRoomId) {
+    if (state.roomId === ROOM_ID) {
       applyRoomMeta(state)
     }
   })
   socket.on("connect", () => {
-    if (watchedRoomId) syncRoomMeta()
+    syncRoomMeta()
   })
   socket.on("connect_error", () => {
     setDefaultRoomMeta()
