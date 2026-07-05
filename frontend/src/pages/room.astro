@@ -1,8 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro"
 import CheckCheckIcon from "~icons/lucide/check-check"
-import SparklesIcon from "~icons/lucide/sparkles"
 import LogOutIcon from "~icons/lucide/log-out"
+import SparklesIcon from "~icons/lucide/sparkles"
 ---
 
 <Layout title="等待大廳">
@@ -45,11 +45,15 @@ import LogOutIcon from "~icons/lucide/log-out"
           </div>
           <div class="wc-list-card p-4">
             <p class="text-xs font-black tracking-[0.2em] text-[#77b55a]">ROUND FLOW</p>
-            <p class="mt-2 text-sm leading-6 text-[#5f6673]">開賽後會直接進入作答頁，無需重新整理。</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]"
+              >開賽後會直接進入作答頁，無需重新整理。</p
+            >
           </div>
           <div class="wc-list-card p-4">
             <p class="text-xs font-black tracking-[0.2em] text-[#f69977]">SEAT RULE</p>
-            <p class="mt-2 text-sm leading-6 text-[#5f6673]">同一棒兩隊都送出後，會由主持人切換下一棒。</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]"
+              >同一棒兩隊都送出後，會由主持人切換下一棒。</p
+            >
           </div>
         </div>
       </div>
@@ -60,7 +64,10 @@ import LogOutIcon from "~icons/lucide/log-out"
             <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">PLAYER VIEW</p>
             <h2 class="mt-1 text-[1.75rem] font-black tracking-[-0.04em]">隊伍準備狀態</h2>
           </div>
-          <button id="exit-btn" class="btn btn-outline btn-error btn-sm rounded-full" title="離開房間">
+          <button
+            id="exit-btn"
+            class="btn btn-outline btn-error btn-sm rounded-full"
+            title="離開房間">
             <LogOutIcon class="size-4" />
           </button>
         </div>
@@ -69,7 +76,8 @@ import LogOutIcon from "~icons/lucide/log-out"
           <div class="grid gap-2.5 md:grid-cols-2">
             <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
               <div class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#e8f0ff] text-[#2464ea]">
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#e8f0ff] text-[#2464ea]">
                   <CheckCheckIcon class="size-4.5" />
                 </div>
                 <div>
@@ -80,7 +88,8 @@ import LogOutIcon from "~icons/lucide/log-out"
             </div>
             <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
               <div class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#fff0e8] text-[#f69977]">
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#fff0e8] text-[#f69977]">
                   <SparklesIcon class="size-4.5" />
                 </div>
                 <div>
@@ -94,18 +103,17 @@ import LogOutIcon from "~icons/lucide/log-out"
           <div class="grid gap-2.5">
             <div
               id="team-a-ready-card"
-              class="rounded-[1.1rem] border border-sky-200 bg-white/72 p-3"
-            ></div>
+              class="rounded-[1.1rem] border border-sky-200 bg-white/72 p-3"></div>
             <div
               id="team-b-ready-card"
-              class="rounded-[1.1rem] border border-orange-200 bg-white/72 p-3"
-            ></div>
+              class="rounded-[1.1rem] border border-orange-200 bg-white/72 p-3"></div>
           </div>
 
           <div class="rounded-[1.05rem] border border-orange-200 bg-white/72 p-3">
             <div class="flex items-center justify-between gap-3">
               <h3 class="text-base font-black">未分隊名單</h3>
-              <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span>
+              <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span
+              >
             </div>
             <div id="waiting-players" class="mt-3 grid gap-2.5"></div>
           </div>
@@ -208,7 +216,9 @@ import LogOutIcon from "~icons/lucide/log-out"
         : player
           ? '<span class="badge border-none bg-[#cc4c3f] px-4 py-4 text-white">離線</span>'
           : '<span class="badge border-none bg-[#f5efe4] px-4 py-4 text-[#5f6673]">等待中</span>'
-    const playerName = player ? `${escapeHtml(player.name)}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
+    const playerName = player
+      ? `${escapeHtml(player.name)}${isMine ? "（你）" : ""}`
+      : "尚未有玩家加入"
     const detail = player ? (player.connected ? "已就位" : "已分隊，離線中") : "等待加入"
     const statusTitle = player ? "準備完成" : "尚未就位"
     const playerLabel = player ? playerName : "等待玩家"
