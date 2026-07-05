@@ -1,11 +1,50 @@
 ---
 import Layout from "@/layouts/Layout.astro"
+import EyeIcon from "~icons/lucide/eye"
+import ShieldIcon from "~icons/lucide/shield"
 import PlayIcon from "~icons/lucide/play"
 ---
 
 <Layout title="SITCON GM">
   <div class="wc-page">
-    <section class="wc-panel wc-panel-distribute p-8 md:p-10">
+    <section id="gm-auth-panel" class="wc-panel wc-panel-distribute hidden p-8 md:p-10">
+      <div class="wc-panel-top flex-wrap">
+        <div>
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="wc-chip">
+              <img src="/sitcon-mark.svg" alt="SITCON" class="h-5 w-5" />
+              SITCON GM ACCESS
+            </span>
+          </div>
+          <h1 class="mt-6 text-4xl font-black tracking-[-0.04em] md:text-5xl">選擇進入身份</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-7 text-[#5f6673]">
+            這裡是主持與觀戰專用入口。請先選擇身份，再進入管理與紀錄頁面。
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <button
+          id="gm-host-entry"
+          class="btn btn-outline h-auto flex-col items-start rounded-[1.6rem] border-[#2464ea]/20 bg-white/70 px-6 py-6 text-left text-[#24272e] hover:border-[#2464ea]/40 hover:bg-white">
+          <ShieldIcon class="mb-4 size-6 text-[#2464ea]" />
+          <span class="text-xs font-black tracking-[0.22em] text-[#2464ea]">HOST</span>
+          <span class="mt-2 text-2xl font-black tracking-[-0.04em]">主持模式</span>
+          <span class="mt-3 text-sm leading-6 text-[#5f6673]">可設定賽程、題庫、規則與分隊，也能直接開賽。</span>
+        </button>
+
+        <button
+          id="gm-observer-entry"
+          class="btn btn-outline h-auto flex-col items-start rounded-[1.6rem] border-[#77b55a]/20 bg-white/70 px-6 py-6 text-left text-[#24272e] hover:border-[#77b55a]/40 hover:bg-white">
+          <EyeIcon class="mb-4 size-6 text-[#77b55a]" />
+          <span class="text-xs font-black tracking-[0.22em] text-[#77b55a]">OBSERVER</span>
+          <span class="mt-2 text-2xl font-black tracking-[-0.04em]">觀戰模式</span>
+          <span class="mt-3 text-sm leading-6 text-[#5f6673]">可查看現場狀態與歷史紀錄，但不會顯示主持設定操作。</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="gm-main-panel" class="wc-panel wc-panel-distribute hidden p-8 md:p-10">
       <div class="wc-panel-top flex-wrap">
         <div>
           <div class="flex flex-wrap items-center gap-3">
@@ -44,7 +83,7 @@ import PlayIcon from "~icons/lucide/play"
       </div>
     </section>
 
-    <section class="grid gap-5 xl:grid-cols-[1.25fr_0.9fr]">
+    <section id="gm-main-grid" class="hidden grid gap-5 xl:grid-cols-[1.25fr_0.9fr]">
       <div class="grid gap-5">
         <div class="wc-panel p-6">
           <div class="flex items-center justify-between gap-3">
@@ -210,6 +249,11 @@ import PlayIcon from "~icons/lucide/play"
   import { clearSession, fetchBackend, getSession, getSocket, updateSessionAssignment } from "@/utils/socket"
 
   const ROOM_ID = "sitcon-camp-2026"
+  const gmAuthPanel = document.getElementById("gm-auth-panel") as HTMLElement
+  const gmMainPanel = document.getElementById("gm-main-panel") as HTMLElement
+  const gmMainGrid = document.getElementById("gm-main-grid") as HTMLElement
+  const gmHostEntry = document.getElementById("gm-host-entry") as HTMLButtonElement
+  const gmObserverEntry = document.getElementById("gm-observer-entry") as HTMLButtonElement
   const roomIdDisplay = document.getElementById("room-id-display") as HTMLParagraphElement
   const lobbyStatusText = document.getElementById("lobby-status-text") as HTMLParagraphElement
   const startGameBtn = document.getElementById("start-game-btn") as HTMLButtonElement
@@ -273,8 +317,14 @@ import PlayIcon from "~icons/lucide/play"
   let questionsDirty = false
   let matchupsDirty = false
 
-  if (!role) window.location.href = "/"
   if (role === "player") window.location.href = "/room"
+
+  if (!role) {
+    gmAuthPanel?.classList.remove("hidden")
+  } else {
+    gmMainPanel?.classList.remove("hidden")
+    gmMainGrid?.classList.remove("hidden")
+  }
 
   if (roomIdDisplay) roomIdDisplay.textContent = `ROOM ${roomId}`
   if (role === "host") {
@@ -283,7 +333,19 @@ import PlayIcon from "~icons/lucide/play"
   }
 
   const socket = getSocket()
-  if (!socket.connected) socket.connect()
+  if (role && !socket.connected) socket.connect()
+
+  gmHostEntry?.addEventListener("click", () => {
+    sessionStorage.setItem("wc_role", "host")
+    sessionStorage.setItem("wc_room_id", ROOM_ID)
+    window.location.reload()
+  })
+
+  gmObserverEntry?.addEventListener("click", () => {
+    sessionStorage.setItem("wc_role", "observer")
+    sessionStorage.setItem("wc_room_id", ROOM_ID)
+    window.location.reload()
+  })
 
   socket.on("connect_error", () => {
     lobbyStatusText.textContent = "目前無法連線到後端，請確認部署狀態。"
@@ -296,6 +358,7 @@ import PlayIcon from "~icons/lucide/play"
   })
 
   socket.on("connect", () => {
+    if (!role) return
     socket.emit("room:join", { roomId, role }, (res: any) => {
       if (!res.ok) {
         window.location.href = "/"
