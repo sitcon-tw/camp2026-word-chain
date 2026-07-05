@@ -15,7 +15,6 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().optional().default(''),
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   INTRO_MS: intFromEnv(30_000),
-  TURN_MS: intFromEnv(20_000),
   RESULT_MS: intFromEnv(30_000),
 });
 
@@ -38,7 +37,6 @@ export const config = {
   },
   durations: {
     introMs: env.INTRO_MS,
-    turnMs: env.TURN_MS,
     resultMs: env.RESULT_MS,
   },
 } as const;

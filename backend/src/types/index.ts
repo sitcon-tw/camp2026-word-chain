@@ -42,7 +42,6 @@ export interface RoundResult {
 /** Per-room, host-editable rules. Seeded from env defaults on room creation. */
 export interface RoomRules {
   introMs: number;
-  turnMs: number;
   resultMs: number;
   seats: number; // players per team
   winsToTakeMatch: number;
@@ -181,7 +180,6 @@ export const setTopicSchema = z
 export const setRulesSchema = z
   .object({
     introMs: z.number().int().min(3_000).max(300_000),
-    turnMs: z.number().int().min(3_000).max(300_000),
     resultMs: z.number().int().min(3_000).max(300_000),
     seats: z.number().int().min(1).max(6),
     winsToTakeMatch: z.number().int().min(1).max(10),

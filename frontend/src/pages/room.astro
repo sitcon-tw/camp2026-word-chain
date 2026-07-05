@@ -1,12 +1,14 @@
 ---
 import Layout from "@/layouts/Layout.astro"
+import CheckCheckIcon from "~icons/lucide/check-check"
+import SparklesIcon from "~icons/lucide/sparkles"
 import LogOutIcon from "~icons/lucide/log-out"
 ---
 
 <Layout title="等待大廳">
   <div class="wc-page wc-page-full">
-    <section class="wc-grid-hero">
-      <div class="wc-panel wc-panel-distribute p-8 md:p-10">
+    <section class="wc-grid-hero min-h-[min(600px,calc(100dvh-230px))]">
+      <div class="wc-panel wc-panel-distribute p-5 md:p-6">
         <div class="wc-panel-top flex-wrap">
           <div class="flex flex-wrap items-center gap-3">
             <span class="wc-chip">
@@ -17,7 +19,7 @@ import LogOutIcon from "~icons/lucide/log-out"
           </div>
         </div>
 
-        <div class="wc-panel-mid">
+        <div class="wc-panel-mid gap-3">
           <div>
             <p class="text-sm font-black tracking-[0.3em] text-[#2464ea]">WAITING ROOM</p>
             <h1 class="wc-title mt-3">參賽等待區</h1>
@@ -25,10 +27,18 @@ import LogOutIcon from "~icons/lucide/log-out"
           <p id="lobby-status-text" class="wc-subtitle">
             正在與伺服器建立同步連線，等待主持人開始比賽。
           </p>
-
+          <div class="rounded-[1.6rem] border border-[#24272e]/8 bg-white/70 p-5">
+            <div class="text-xs font-black tracking-[0.22em] text-[#2464ea]">ENTRY BRIEF</div>
+            <div class="mt-4 text-[clamp(1.8rem,2.9vw,2.6rem)] font-black tracking-[-0.05em]">
+              準備進場
+            </div>
+            <p class="mt-3 max-w-2xl text-sm leading-7 text-[#5f6673]">
+              你的隊伍與目前對戰組別會在此同步更新。主持人一旦開賽，畫面會直接切換到你的作答席位，不需要重新整理。
+            </p>
+          </div>
         </div>
 
-        <div class="wc-panel-bottom sm:grid-cols-3">
+        <div class="wc-panel-bottom gap-3 sm:grid-cols-3">
           <div class="wc-list-card p-4">
             <p class="text-xs font-black tracking-[0.2em] text-[#2464ea]">SYNC</p>
             <p class="mt-2 text-sm leading-6 text-[#5f6673]">隊伍資訊與目前對戰組別會自動同步。</p>
@@ -44,40 +54,60 @@ import LogOutIcon from "~icons/lucide/log-out"
         </div>
       </div>
 
-      <div class="wc-panel wc-panel-distribute p-6 md:p-8">
+      <div class="wc-panel wc-panel-distribute p-5 md:p-6">
         <div class="wc-panel-top">
-          <div>
-            <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">STATUS BOARD</p>
-            <h2 class="mt-2 text-3xl font-black tracking-[-0.04em]">目前報到狀態</h2>
+          <div class="pt-1 md:pt-2">
+            <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">PLAYER VIEW</p>
+            <h2 class="mt-1 text-[1.75rem] font-black tracking-[-0.04em]">隊伍準備狀態</h2>
           </div>
           <button id="exit-btn" class="btn btn-outline btn-error btn-sm rounded-full" title="離開房間">
             <LogOutIcon class="size-4" />
           </button>
         </div>
 
-        <div class="wc-panel-bottom">
-          <div class="rounded-[1.4rem] border border-sky-200 bg-white/72 p-5">
-            <div class="flex items-center justify-between gap-3">
-              <h3 class="text-lg font-black text-info">藍隊</h3>
-              <span class="badge border-none bg-sky-100 text-info">Team A</span>
+        <div class="wc-panel-mid gap-2.5">
+          <div class="grid gap-2.5 md:grid-cols-2">
+            <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#e8f0ff] text-[#2464ea]">
+                  <CheckCheckIcon class="size-4.5" />
+                </div>
+                <div>
+                  <div class="text-xs font-black tracking-[0.2em] text-[#2464ea]">READY FLOW</div>
+                  <div class="text-[13px] font-bold text-[#5f6673]">確認兩隊是否都已就位</div>
+                </div>
+              </div>
             </div>
-            <div id="team-a-players" class="mt-4"></div>
+            <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#fff0e8] text-[#f69977]">
+                  <SparklesIcon class="size-4.5" />
+                </div>
+                <div>
+                  <div class="text-xs font-black tracking-[0.2em] text-[#f69977]">MATCH FLOW</div>
+                  <div class="text-[13px] font-bold text-[#5f6673]">開賽後畫面會直接切到作答區</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="rounded-[1.4rem] border border-orange-200 bg-white/72 p-5">
-            <div class="flex items-center justify-between gap-3">
-              <h3 class="text-lg font-black text-secondary">紅隊</h3>
-              <span class="badge border-none bg-orange-100 text-secondary">Team B</span>
-            </div>
-            <div id="team-b-players" class="mt-4"></div>
+          <div class="grid gap-2.5">
+            <div
+              id="team-a-ready-card"
+              class="rounded-[1.1rem] border border-sky-200 bg-white/72 p-3"
+            ></div>
+            <div
+              id="team-b-ready-card"
+              class="rounded-[1.1rem] border border-orange-200 bg-white/72 p-3"
+            ></div>
           </div>
 
-          <div class="rounded-[1.4rem] border border-[#24272e]/8 bg-white/72 p-5">
+          <div class="rounded-[1.05rem] border border-orange-200 bg-white/72 p-3">
             <div class="flex items-center justify-between gap-3">
-              <h3 class="text-lg font-black">未選隊伍</h3>
+              <h3 class="text-base font-black">未分隊名單</h3>
               <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span>
             </div>
-            <div id="waiting-players" class="mt-4 grid gap-3"></div>
+            <div id="waiting-players" class="mt-3 grid gap-2.5"></div>
           </div>
         </div>
       </div>
@@ -91,8 +121,8 @@ import LogOutIcon from "~icons/lucide/log-out"
   const roomIdDisplay = document.getElementById("room-id-display") as HTMLParagraphElement
   const lobbyStatusText = document.getElementById("lobby-status-text") as HTMLParagraphElement
   const exitBtn = document.getElementById("exit-btn") as HTMLButtonElement
-  const teamAPlayers = document.getElementById("team-a-players") as HTMLDivElement
-  const teamBPlayers = document.getElementById("team-b-players") as HTMLDivElement
+  const teamAReadyCard = document.getElementById("team-a-ready-card") as HTMLDivElement
+  const teamBReadyCard = document.getElementById("team-b-ready-card") as HTMLDivElement
   const waitingPlayers = document.getElementById("waiting-players") as HTMLDivElement
   const waitingCount = document.getElementById("waiting-count") as HTMLSpanElement
 
@@ -150,36 +180,56 @@ import LogOutIcon from "~icons/lucide/log-out"
   })
 
   function renderPresence() {
-    renderTeamSlot("A", teamAPlayers, "text-info", "border-sky-200", "bg-sky-50/70")
-    renderTeamSlot("B", teamBPlayers, "text-secondary", "border-orange-200", "bg-orange-50/70")
+    renderReadyBoard()
     renderWaitingPlayers()
   }
 
-  function renderTeamSlot(
+  function renderReadyBoard() {
+    const currentSession = getSession()
+    renderReadyTeamCard("A", teamAReadyCard, currentSession?.playerId ?? null)
+    renderReadyTeamCard("B", teamBReadyCard, currentSession?.playerId ?? null)
+  }
+
+  function renderReadyTeamCard(
     teamId: "A" | "B",
     container: HTMLDivElement,
-    textClass: string,
-    borderClass: string,
-    backgroundClass: string
+    currentPlayerId: string | null
   ) {
     if (!container) return
+
     const player = currentPlayers.find((p) => p.team === teamId)
-    const isMine = Boolean(session && player?.playerId === session.playerId)
-    const name = player ? `${player.name}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
-    const status = player
-      ? player.connected
-        ? '<span class="badge border-none bg-[#77b55a] text-[#10210a]">在線</span>'
-        : '<span class="badge border-none bg-[#cc4c3f] text-white">離線</span>'
-      : '<span class="badge border-none bg-[#f5efe4] text-[#5f6673]">待加入</span>'
+    const isMine = Boolean(currentPlayerId && player?.playerId === currentPlayerId)
+    const teamName = teamId === "A" ? "A 隊" : "B 隊"
+    const accentText = teamId === "A" ? "text-info" : "text-secondary"
+    const accentSurface = teamId === "A" ? "bg-sky-50/70" : "bg-orange-50/70"
+    const accentBadge =
+      player && player.connected
+        ? '<span class="badge border-none bg-[#77b55a] px-4 py-4 text-[#10210a]">已就位</span>'
+        : player
+          ? '<span class="badge border-none bg-[#cc4c3f] px-4 py-4 text-white">離線</span>'
+          : '<span class="badge border-none bg-[#f5efe4] px-4 py-4 text-[#5f6673]">等待中</span>'
+    const playerName = player ? `${escapeHtml(player.name)}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
+    const detail = player ? (player.connected ? "已就位" : "已分隊，離線中") : "等待加入"
+    const statusTitle = player ? "準備完成" : "尚未就位"
+    const playerLabel = player ? playerName : "等待玩家"
+    const laneLabel = teamId === "A" ? "左側席位" : "右側席位"
 
     container.innerHTML = `
-      <div class="rounded-[1.1rem] border ${borderClass} ${backgroundClass} p-4">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <div class="${textClass} text-xs font-black tracking-[0.2em]">PLAYER</div>
-            <div class="mt-2 text-lg font-black">${escapeHtml(name)}</div>
+      <div class="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center">
+        <div class="flex h-11 w-11 items-center justify-center rounded-[0.9rem] ${accentSurface}">
+          <span class="${accentText} text-base font-black">${teamId}</span>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="${accentText} text-xs font-black tracking-[0.22em]">${teamName}</span>
+            <span class="whitespace-nowrap text-[1.05rem] font-black tracking-[-0.05em]">${statusTitle}</span>
           </div>
-          ${status}
+          <div class="mt-1 truncate text-[15px] font-black">${playerLabel}</div>
+          <div class="mt-1 text-xs font-bold tracking-[0.16em] text-[#5f6673]">${laneLabel}</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          ${accentBadge}
+          <span class="whitespace-nowrap text-xs font-bold text-[#5f6673]">${detail}</span>
         </div>
       </div>
     `
@@ -192,16 +242,18 @@ import LogOutIcon from "~icons/lucide/log-out"
 
     if (waiting.length === 0) {
       waitingPlayers.innerHTML =
-        '<div class="rounded-[1rem] border border-dashed border-[#24272e]/12 bg-[#fffaf2] p-4 text-sm text-[#5f6673]">目前沒有等待分隊的玩家。</div>'
+        '<div class="rounded-[1rem] border border-dashed border-[#24272e]/12 bg-[#fffaf2] p-3 text-sm text-[#5f6673]">目前沒有等待分隊的玩家。</div>'
       return
     }
 
     waitingPlayers.innerHTML = waiting
       .map(
         (player) => `
-          <div class="rounded-[1rem] border border-[#24272e]/8 bg-[#fffaf2] p-4">
-            <div class="text-xs font-black tracking-[0.2em] text-[#2464ea]">PENDING</div>
-            <div class="mt-2 text-base font-black">${escapeHtml(player.name)}</div>
+          <div class="rounded-[1rem] border border-[#24272e]/8 bg-[#fffaf2] p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="truncate text-base font-black">${escapeHtml(player.name)}</div>
+              <span class="badge border-none bg-[#e8f0ff] text-[#2464ea]">PENDING</span>
+            </div>
           </div>
         `
       )
