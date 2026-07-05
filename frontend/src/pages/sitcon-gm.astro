@@ -44,52 +44,21 @@ import PlayIcon from "~icons/lucide/play"
       </div>
     </section>
 
-    <section id="gm-main-panel" class="wc-panel wc-panel-distribute hidden p-8 md:p-10">
-      <div class="wc-panel-top flex-wrap">
-        <div>
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="wc-chip">
-              <img src="/sitcon-mark.svg" alt="SITCON" class="h-5 w-5" />
-              SITCON GM PANEL
-            </span>
-            <span id="room-id-display" class="wc-chip font-mono">ROOM</span>
-          </div>
-          <h1 class="mt-6 text-4xl font-black tracking-[-0.04em] md:text-5xl">主持控制台</h1>
-          <p id="lobby-status-text" class="mt-3 max-w-3xl text-sm leading-7 text-[#5f6673]">
-            正在與伺服器建立同步連線，主持人可在此管理對戰組別、題庫、規則與歷史紀錄。
-          </p>
-        </div>
-        <div class="rounded-[1.5rem] border border-[#24272e]/8 bg-white/72 p-5">
-          <p class="text-xs font-black tracking-[0.22em] text-[#2464ea]">ROUND POLICY</p>
-          <p class="mt-2 text-sm leading-6 text-[#5f6673]">
-            目前流程為雙方同棒次都送出後，由主持人按下「進入下一棒」切換，不再依每棒倒數自動推進。
-          </p>
-        </div>
-      </div>
-
-      <div class="wc-panel-bottom sm:grid-cols-3">
-        <div class="wc-list-card p-4">
-          <p class="text-xs font-black tracking-[0.2em] text-[#2464ea]">CONTROL</p>
-          <p class="mt-2 text-sm leading-6 text-[#5f6673]">主持人可在此設定賽程、題目與規則。</p>
-        </div>
-        <div class="wc-list-card p-4">
-          <p class="text-xs font-black tracking-[0.2em] text-[#77b55a]">PRESENCE</p>
-          <p class="mt-2 text-sm leading-6 text-[#5f6673]">同頁查看藍紅隊與待分配玩家狀態。</p>
-        </div>
-        <div class="wc-list-card p-4">
-          <p class="text-xs font-black tracking-[0.2em] text-[#f69977]">ARCHIVE</p>
-          <p class="mt-2 text-sm leading-6 text-[#5f6673]">對戰紀錄與管理入口集中，不在公開首頁暴露。</p>
-        </div>
-      </div>
-    </section>
-
     <section id="gm-main-grid" class="hidden grid gap-5 xl:grid-cols-[1.25fr_0.9fr]">
       <div class="grid gap-5">
         <div class="wc-panel p-6">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-black tracking-[0.24em] text-[#2464ea]">PRESENCE</p>
-              <h2 class="mt-2 text-2xl font-black tracking-[-0.03em]">現場狀態</h2>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="wc-chip">
+                  <img src="/sitcon-mark.svg" alt="SITCON" class="h-5 w-5" />
+                  SITCON GM PANEL
+                </span>
+                <span id="room-id-display" class="wc-chip font-mono">ROOM</span>
+              </div>
+              <p id="lobby-status-text" class="mt-3 text-sm leading-6 text-[#5f6673]">
+                正在與伺服器建立同步連線，主持人可在此管理對戰組別、題庫、規則與歷史紀錄。
+              </p>
             </div>
             <button id="start-game-btn" class="btn btn-success hidden rounded-full px-6">
               <PlayIcon class="size-4" />
@@ -136,10 +105,10 @@ import PlayIcon from "~icons/lucide/play"
               <p id="matchup-status-label" class="mt-3 min-h-5 text-xs leading-5 text-[#5f6673]"></p>
             </div>
 
-            <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
-              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]"
-                >正式場 5 回合順序（每行 `A組,B組`）</label
-              >
+            <div
+              id="formal-match-config"
+              class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
+              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">正式場 5 回合順序</label>
               <textarea
                 id="matchups-input"
                 class="textarea mt-3 w-full border-none"
@@ -148,12 +117,14 @@ import PlayIcon from "~icons/lucide/play"
 5,6
 7,8
 9,10"></textarea>
-              <button id="save-matchups-btn" class="btn btn-primary mt-4 w-full rounded-full">
+              <button id="save-matchups-btn" class="btn btn-accent mt-4 w-full rounded-full">
                 儲存正式場順序
               </button>
             </div>
 
-            <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
+            <div
+              id="test-match-config"
+              class="hidden rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
               <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">測試場下一回合組別</label>
               <div class="mt-3 grid grid-cols-[1fr_auto_1fr] gap-3">
                 <input id="test-group-a-input" type="number" min="1" class="input border-none" placeholder="左側組別" />
@@ -171,7 +142,7 @@ import PlayIcon from "~icons/lucide/play"
                 id="questions-input"
                 class="textarea mt-3 w-full border-none"
                 placeholder="請輸入題目（每行一題，最多 200 題）"></textarea>
-              <button id="save-questions-btn" class="btn btn-primary mt-4 w-full rounded-full">儲存題庫</button>
+              <button id="save-questions-btn" class="btn btn-success mt-4 w-full rounded-full">儲存題庫</button>
             </div>
 
             <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
@@ -185,19 +156,11 @@ import PlayIcon from "~icons/lucide/play"
             </div>
 
             <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
-              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">遊戲規則</label>
+              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">對戰參數</label>
               <div class="mt-3 grid gap-3 md:grid-cols-3">
                 <label class="grid gap-2">
                   <span class="text-xs font-bold text-[#5f6673]">開場秒數</span>
                   <input id="rule-intro" type="number" min="3" max="300" class="input border-none" />
-                </label>
-                <label class="grid gap-2">
-                  <span class="text-xs font-bold text-[#5f6673]">每棒秒數</span>
-                  <input id="rule-turn" type="number" min="3" max="300" class="input border-none" />
-                </label>
-                <label class="grid gap-2">
-                  <span class="text-xs font-bold text-[#5f6673]">結果秒數</span>
-                  <input id="rule-result" type="number" min="3" max="300" class="input border-none" />
                 </label>
                 <label class="grid gap-2">
                   <span class="text-xs font-bold text-[#5f6673]">棒次數</span>
@@ -208,7 +171,6 @@ import PlayIcon from "~icons/lucide/play"
                   <input id="rule-wins" type="number" min="1" max="10" class="input border-none" />
                 </label>
               </div>
-              <button id="save-rules-btn" class="btn btn-accent mt-4 w-full rounded-full">套用規則</button>
             </div>
 
             <div class="rounded-[1.25rem] border border-[#cc4c3f]/15 bg-white/72 p-5">
@@ -250,7 +212,6 @@ import PlayIcon from "~icons/lucide/play"
 
   const ROOM_ID = "sitcon-camp-2026"
   const gmAuthPanel = document.getElementById("gm-auth-panel") as HTMLElement
-  const gmMainPanel = document.getElementById("gm-main-panel") as HTMLElement
   const gmMainGrid = document.getElementById("gm-main-grid") as HTMLElement
   const gmHostEntry = document.getElementById("gm-host-entry") as HTMLButtonElement
   const gmObserverEntry = document.getElementById("gm-observer-entry") as HTMLButtonElement
@@ -265,6 +226,8 @@ import PlayIcon from "~icons/lucide/play"
   const hostSaveStatus = document.getElementById("host-save-status") as HTMLParagraphElement
   const setFormalModeBtn = document.getElementById("set-formal-mode-btn") as HTMLButtonElement
   const setTestModeBtn = document.getElementById("set-test-mode-btn") as HTMLButtonElement
+  const formalMatchConfig = document.getElementById("formal-match-config") as HTMLElement
+  const testMatchConfig = document.getElementById("test-match-config") as HTMLElement
   const matchupStatusLabel = document.getElementById("matchup-status-label") as HTMLParagraphElement
   const matchupsInput = document.getElementById("matchups-input") as HTMLTextAreaElement
   const saveMatchupsBtn = document.getElementById("save-matchups-btn") as HTMLButtonElement
@@ -278,11 +241,8 @@ import PlayIcon from "~icons/lucide/play"
   const randomTopicBtn = document.getElementById("random-topic-btn") as HTMLButtonElement
   const nextTopicLabel = document.getElementById("next-topic-label") as HTMLParagraphElement
   const ruleIntro = document.getElementById("rule-intro") as HTMLInputElement
-  const ruleTurn = document.getElementById("rule-turn") as HTMLInputElement
-  const ruleResult = document.getElementById("rule-result") as HTMLInputElement
   const ruleSeats = document.getElementById("rule-seats") as HTMLInputElement
   const ruleWins = document.getElementById("rule-wins") as HTMLInputElement
-  const saveRulesBtn = document.getElementById("save-rules-btn") as HTMLButtonElement
   const clearHistoryBtn = document.getElementById("clear-history-btn") as HTMLButtonElement
 
   const statusEl = document.getElementById("history-status") as HTMLParagraphElement
@@ -309,6 +269,16 @@ import PlayIcon from "~icons/lucide/play"
     rounds: RoundRecord[]
   }
 
+  type Matchup = { groupA: number; groupB: number }
+
+  const DEFAULT_FORMAL_MATCHUPS: Matchup[] = [
+    { groupA: 1, groupB: 2 },
+    { groupA: 3, groupB: 4 },
+    { groupA: 5, groupB: 6 },
+    { groupA: 7, groupB: 8 },
+    { groupA: 9, groupB: 10 },
+  ]
+
   const session = getSession()
   const role = sessionStorage.getItem("wc_role") || (session ? "player" : null)
   const roomId = session?.roomId || sessionStorage.getItem("wc_room_id") || ROOM_ID
@@ -322,7 +292,6 @@ import PlayIcon from "~icons/lucide/play"
   if (!role) {
     gmAuthPanel?.classList.remove("hidden")
   } else {
-    gmMainPanel?.classList.remove("hidden")
     gmMainGrid?.classList.remove("hidden")
   }
 
@@ -386,7 +355,7 @@ import PlayIcon from "~icons/lucide/play"
 
   questionsInput?.addEventListener("input", () => (questionsDirty = true))
   matchupsInput?.addEventListener("input", () => (matchupsDirty = true))
-  ;[ruleIntro, ruleTurn, ruleResult, ruleSeats, ruleWins].forEach((el) =>
+  ;[ruleIntro, ruleSeats, ruleWins].forEach((el) =>
     el?.addEventListener("input", () => (rulesDirty = true))
   )
 
@@ -415,11 +384,13 @@ import PlayIcon from "~icons/lucide/play"
 
   setFormalModeBtn?.addEventListener("click", () => {
     const matchups = parseMatchups(matchupsInput.value)
-    if (!matchups.length) return setHostStatus("請先輸入至少一組正式場順序", true)
-    socket.emit("host:set_match_config", { matchMode: "formal", matchups }, (res: any) => {
+    const nextMatchups = matchups.length ? matchups : DEFAULT_FORMAL_MATCHUPS
+    socket.emit("host:set_match_config", { matchMode: "formal", matchups: nextMatchups }, (res: any) => {
       if (!res.ok) setHostStatus(`正式場設定失敗：${res.error}`, true)
       else {
         matchupsDirty = false
+        matchupsInput.value = nextMatchups.map((matchup) => `${matchup.groupA},${matchup.groupB}`).join("\n")
+        updateMatchModeSections("formal")
         setHostStatus("正式場順序已套用")
       }
     })
@@ -428,7 +399,10 @@ import PlayIcon from "~icons/lucide/play"
   setTestModeBtn?.addEventListener("click", () => {
     socket.emit("host:set_match_config", { matchMode: "test" }, (res: any) => {
       if (!res.ok) setHostStatus(`切換測試場失敗：${res.error}`, true)
-      else setHostStatus("已切換成測試場")
+      else {
+        updateMatchModeSections("test")
+        setHostStatus("已切換成測試場")
+      }
     })
   })
 
@@ -487,15 +461,13 @@ import PlayIcon from "~icons/lucide/play"
     })
   })
 
-  saveRulesBtn?.addEventListener("click", () => {
+  function saveRules() {
     const payload: Record<string, number> = {}
     const addMs = (key: string, input: HTMLInputElement) => {
       const n = Number(input.value)
       if (!Number.isNaN(n)) payload[key] = Math.round(n * 1000)
     }
     addMs("introMs", ruleIntro)
-    addMs("turnMs", ruleTurn)
-    addMs("resultMs", ruleResult)
     const seats = Number(ruleSeats.value)
     const wins = Number(ruleWins.value)
     if (!Number.isNaN(seats)) payload.seats = Math.round(seats)
@@ -507,7 +479,15 @@ import PlayIcon from "~icons/lucide/play"
         setHostStatus("規則已套用")
       }
     })
-  })
+  }
+
+  ;[ruleIntro, ruleSeats, ruleWins].forEach((el) =>
+    el?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return
+      event.preventDefault()
+      saveRules()
+    })
+  )
 
   clearHistoryBtn?.addEventListener("click", () => {
     const confirmed = confirm("確認要清空目前所有舊對戰紀錄嗎？此動作不會重設房間設定。")
@@ -638,16 +618,17 @@ import PlayIcon from "~icons/lucide/play"
 
   function syncHostForm(state: any) {
     if (role !== "host") return
+    updateMatchModeSections(state.matchMode === "test" ? "test" : "formal")
     if (!matchupsDirty) {
-      matchupsInput.value = (state.matchups ?? [])
+      const sourceMatchups =
+        state.matchups && state.matchups.length > 0 ? state.matchups : DEFAULT_FORMAL_MATCHUPS
+      matchupsInput.value = sourceMatchups
         .map((matchup: any) => `${matchup.groupA},${matchup.groupB}`)
         .join("\n")
     }
     if (!questionsDirty) questionsInput.value = (state.questions ?? []).join("\n")
     if (!rulesDirty && state.rules) {
       ruleIntro.value = String(Math.round(state.rules.introMs / 1000))
-      ruleTurn.value = String(Math.round(state.rules.turnMs / 1000))
-      ruleResult.value = String(Math.round(state.rules.resultMs / 1000))
       ruleSeats.value = String(state.rules.seats ?? 6)
       ruleWins.value = String(state.rules.winsToTakeMatch ?? 3)
     }
@@ -661,7 +642,19 @@ import PlayIcon from "~icons/lucide/play"
     nextTopicLabel.textContent = state.nextTopic ? `已指定題目：${state.nextTopic}` : "尚未指定下一題"
   }
 
-  function parseMatchups(raw: string) {
+  function updateMatchModeSections(mode: "formal" | "test") {
+    formalMatchConfig?.classList.toggle("hidden", mode !== "formal")
+    testMatchConfig?.classList.toggle("hidden", mode !== "test")
+
+    setFormalModeBtn?.classList.toggle("btn-primary", mode === "formal")
+    setFormalModeBtn?.classList.toggle("text-white", mode === "formal")
+    setFormalModeBtn?.classList.toggle("btn-outline", mode !== "formal")
+
+    setTestModeBtn?.classList.toggle("btn-secondary", mode === "test")
+    setTestModeBtn?.classList.toggle("btn-outline", mode !== "test")
+  }
+
+  function parseMatchups(raw: string): Matchup[] {
     return raw
       .split("\n")
       .map((line) => line.trim())
@@ -672,7 +665,7 @@ import PlayIcon from "~icons/lucide/play"
         const groupB = Number(groupBRaw)
         return Number.isNaN(groupA) || Number.isNaN(groupB) ? null : { groupA, groupB }
       })
-      .filter(Boolean)
+      .filter((matchup): matchup is Matchup => matchup !== null)
   }
 
   function setHostStatus(message: string, isError = false) {

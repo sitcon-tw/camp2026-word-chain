@@ -9,122 +9,47 @@ import ZapIcon from "~icons/lucide/zap"
 ---
 
 <Layout>
+  <div id="player-main-shell" class="contents">
   <!-- Top Bar: Shared info across phases -->
-  <div class="card bg-base-300 w-full">
-    <div class="card-body flex-row items-center justify-between">
-      <span class="badge badge-primary font-bold" id="round-num-badge">Round -</span>
-      <h1 class="text-neutral-content text-lg font-bold" id="room-info">AI 謎題接龍</h1>
-      <!-- 兩隊分數 -->
-      <div class="flex items-center gap-x-2">
-        <span id="header-group-a" class="text-info text-sm font-black">第 1 組</span>
-        <div class="join">
-          <span id="match-score-a" class="btn btn-xs btn-info font-mono font-bold">0</span>
-          <span class="btn btn-xs btn-disabled font-mono">:</span>
-          <span id="match-score-b" class="btn btn-xs btn-secondary font-mono font-bold">0</span>
+  <div id="shared-top-bar" class="wc-panel mb-5 p-5.5 md:mb-6 md:p-6">
+    <div class="grid gap-3 xl:grid-cols-[1fr_auto_auto] xl:items-center xl:gap-5">
+      <div class="text-center xl:text-left">
+        <p class="text-xs font-black tracking-[0.24em] text-[#2464ea]" id="top-status-kicker">
+          GAME STATUS
+        </p>
+        <h1 class="mt-1 text-[clamp(1.25rem,2vw,1.9rem)] font-black tracking-[-0.04em]" id="room-info">
+          AI 謎題接龍
+        </h1>
+        <p id="top-status-note" class="mt-1 text-sm leading-6 text-[#5f6673]">
+          依照主持節奏進行目前棒次，完成後等待切換下一棒。
+        </p>
+      </div>
+
+      <div class="hidden xl:flex xl:justify-center">
+        <span class="h-10 w-px rounded-full bg-[#24272e]/14"></span>
+      </div>
+
+      <div class="justify-self-start xl:justify-self-end">
+        <div class="px-3 py-2">
+          <p class="text-[11px] font-black tracking-[0.2em] text-[#7b8190]" id="top-status-side-label">
+            LIVE SCORE
+          </p>
+          <div class="mt-2 grid grid-cols-[auto_auto_auto_auto_auto] items-center gap-x-3 whitespace-nowrap">
+            <span id="header-group-a" class="whitespace-nowrap text-info text-sm font-black">第 1 組</span>
+            <span
+              id="match-score-a"
+              class="min-w-8 whitespace-nowrap text-center font-mono text-lg font-black text-info"
+              >0</span
+            >
+            <span class="text-sm font-black text-[#5f6673]">:</span>
+            <span
+              id="match-score-b"
+              class="min-w-8 whitespace-nowrap text-center font-mono text-lg font-black text-secondary"
+              >0</span
+            >
+            <span id="header-group-b" class="whitespace-nowrap text-secondary text-sm font-black">第 2 組</span>
+          </div>
         </div>
-        <span id="header-group-b" class="text-secondary text-sm font-bold">第 2 組</span>
-      </div>
-      <!--  -->
-    </div>
-  </div>
-
-  <div id="host-live-setup-panel" class="card bg-base-300 hidden">
-    <div class="card-body gap-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="card-title text-primary text-base font-black">主持即時設定</h2>
-        <p id="host-live-status" class="text-neutral-content/50 min-h-5 text-xs"></p>
-      </div>
-
-      <div class="flex items-center gap-x-2">
-        <button id="host-pause-btn" class="btn btn-xs btn-warning">
-          <PauseIcon class="size-4" />暫停
-        </button>
-        <button id="host-resume-btn" class="btn btn-xs btn-success hidden">
-          <PlayIcon class="size-4" />恢復
-        </button>
-        <button id="host-force-judge-btn" class="btn btn-xs btn-error">
-          <ZapIcon class="size-4" />強制評審
-        </button>
-        <button id="host-force-end-game-btn" class="btn btn-xs btn-outline btn-error">
-          結束這組遊戲
-        </button>
-      </div>
-
-      <div class="grid gap-y-1">
-        <label class="text-neutral-content/70 text-xs font-bold">題庫</label>
-        <textarea id="live-questions-input" class="textarea w-full text-sm" placeholder="每行一題"
-        ></textarea>
-        <button id="live-save-questions-btn" class="btn btn-primary btn-xs w-full">儲存題庫</button>
-      </div>
-
-      <div class="grid gap-y-1">
-        <label class="text-neutral-content/70 text-xs font-bold">指定下一回合題目</label>
-        <input
-          id="live-topic-input"
-          class="input input-bordered input-sm w-full"
-          maxlength="60"
-          placeholder="請輸入題目"
-        />
-        <div class="grid grid-cols-2 gap-2">
-          <button id="live-set-topic-btn" class="btn btn-primary btn-xs">指定</button>
-          <button id="live-random-topic-btn" class="btn btn-outline btn-primary btn-xs">隨機</button
-          >
-        </div>
-        <p id="live-next-topic-label" class="text-neutral-content/60 min-h-5 text-xs"></p>
-      </div>
-
-      <div class="grid grid-cols-5 gap-x-2 gap-y-1">
-        <label class="form-control">
-          <span class="label-text text-[10px] font-bold">開場秒</span>
-          <input
-            id="live-rule-intro"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="form-control">
-          <span class="label-text text-[10px] font-bold">每棒秒</span>
-          <input
-            id="live-rule-turn"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="form-control">
-          <span class="label-text text-[10px] font-bold">結果秒</span>
-          <input
-            id="live-rule-result"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="form-control">
-          <span class="label-text text-[10px] font-bold">棒次</span>
-          <input
-            id="live-rule-seats"
-            type="number"
-            min="1"
-            max="6"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="form-control">
-          <span class="label-text text-[10px] font-bold">勝場</span>
-          <input
-            id="live-rule-wins"
-            type="number"
-            min="1"
-            max="10"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <button id="live-save-rules-btn" class="btn btn-accent btn-xs col-span-5">套用規則</button>
       </div>
     </div>
   </div>
@@ -158,24 +83,155 @@ import ZapIcon from "~icons/lucide/zap"
   </div>
 
   <!-- ================= PHASE 2: CHAINING (The main gameplay) ================= -->
-  <div id="phase-chaining" class="flex hidden flex-col gap-y-6">
-    <!-- Topic Header -->
-    <div class="card bg-base-300 border-primary/15 flex flex-col items-center border p-5 shadow-lg">
-      <span class="text-primary/70 mb-1 text-xs font-black tracking-wider uppercase"
-        >本次接龍主題</span
-      >
-      <h2
-        id="chaining-topic"
-        class="text-neutral-content text-center text-2xl font-extrabold tracking-wide">載入中...</h2
-      >
+  <div id="phase-chaining" class="flex hidden flex-col gap-y-2.5">
+    <div id="player-chaining-shell" class="contents">
+      <!-- Topic Header -->
+      <div
+        id="staff-topic-card"
+        class="card bg-base-300 border-primary/15 flex flex-col items-center border p-3.5 shadow-sm">
+        <span class="text-primary/70 mb-1 text-xs font-black tracking-wider uppercase"
+          >本次接龍主題</span
+        >
+        <h2
+          id="chaining-topic"
+          class="max-w-4xl text-center text-[1.75rem] font-extrabold tracking-wide text-[#24272e]">
+          載入中...
+        </h2>
+      </div>
+
+      <div id="host-live-setup-panel" class="card bg-base-300 border-primary/15 hidden border p-3.5 shadow-sm">
+        <div class="border-primary/12 border-b pb-3 text-center">
+          <span class="text-primary/70 mb-1 block text-xs font-black tracking-wider uppercase">
+            本次接龍主題
+          </span>
+          <h2
+            id="host-chaining-topic"
+            class="mx-auto max-w-4xl text-center text-[1.6rem] font-extrabold tracking-wide text-[#24272e]">
+            載入中...
+          </h2>
+        </div>
+        <div class="mt-3 grid w-full gap-3.5 lg:grid-cols-2">
+          <div class="flex flex-col rounded-[1.25rem] border border-[#d97706]/12 bg-white/72 p-3.5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-black tracking-[0.22em] text-[#d97706]">LIVE ACTIONS</p>
+                <h3 class="mt-1.5 text-lg font-black">回合控制</h3>
+              </div>
+              <p id="host-live-status" class="min-h-5 text-right text-xs text-[#5f6673]"></p>
+            </div>
+            <div class="mt-auto grid gap-2.5 md:grid-cols-3">
+              <button id="host-pause-btn" class="btn btn-warning w-full rounded-full whitespace-nowrap">
+                <PauseIcon class="size-4" />暫停
+              </button>
+              <button id="host-resume-btn" class="btn btn-success hidden w-full rounded-full whitespace-nowrap">
+                <PlayIcon class="size-4" />恢復
+              </button>
+              <button id="host-force-judge-btn" class="btn btn-error w-full rounded-full whitespace-nowrap">
+                <ZapIcon class="size-4" />強制評審
+              </button>
+              <button
+                id="host-force-end-game-btn"
+                class="btn btn-outline btn-error w-full rounded-full whitespace-nowrap">
+                結束這組遊戲
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col rounded-[1.25rem] border border-[#2464ea]/12 bg-white/72 p-3.5">
+            <div>
+              <p class="text-xs font-black tracking-[0.22em] text-[#2464ea]">NEXT TOPIC</p>
+              <h3 class="mt-1.5 text-lg font-black">指定下一回合題目</h3>
+            </div>
+            <div class="mt-auto">
+              <input
+                id="live-topic-input"
+                class="input input-bordered input-sm w-full border-none"
+                maxlength="60"
+                placeholder="請輸入題目"
+              />
+              <div class="mt-4 grid gap-2.5 md:grid-cols-2">
+                <button id="live-set-topic-btn" class="btn btn-primary w-full rounded-full whitespace-nowrap">
+                  指定題目
+                </button>
+                <button
+                  id="live-random-topic-btn"
+                  class="btn btn-outline btn-primary w-full rounded-full whitespace-nowrap">
+                  隨機題目
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="player-stage" class="hidden space-y-5 md:space-y-6">
+        <div
+          id="player-own-answer"
+          class="card border border-primary/16 bg-base-300 shadow-sm">
+          <div class="card-body items-center gap-y-5 p-6 text-center md:p-7">
+            <div
+              class="grid w-full max-w-[56rem] items-center gap-5 border-b border-primary/12 pb-5 text-center md:grid-cols-[minmax(0,1fr)_auto] md:text-left">
+              <div class="min-w-0">
+                <p class="text-primary/70 text-xs font-black tracking-[0.24em] uppercase">Current Topic</p>
+                <h2
+                  id="player-chaining-topic"
+                  class="mt-2 text-[1.75rem] font-extrabold tracking-[-0.04em] text-[#24272e]">
+                  載入中...
+                </h2>
+              </div>
+              <div class="flex flex-col items-center justify-center md:items-end md:text-right">
+                <p class="text-primary/70 text-xs font-black tracking-[0.28em] uppercase">Your Team</p>
+                <h3 id="player-own-title" class="text-[2rem] font-black tracking-[-0.04em]">
+                  第 1 組
+                </h3>
+              </div>
+            </div>
+            <div id="player-own-chain" class="grid w-full max-w-[56rem] gap-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="player-submit-shell" class="contents">
+        <!-- Submission Box (Only active for current player's turn) -->
+        <div
+          id="submit-panel"
+        class="card bg-base-300 border-primary/20 relative flex flex-col items-center justify-center gap-y-3 border p-5 shadow-sm">
+        <div
+          id="submit-status-banner"
+          class="flex items-center gap-x-2 text-sm font-bold text-[#24272e]">
+          <HourglassIcon class="text-primary h-4 w-4" />
+          <span id="submit-status-text">等待您的棒次作答中...</span>
+        </div>
+
+        <!-- Submit form (hidden by default, enabled dynamically) -->
+        <div id="submit-action-row" class="hidden w-full">
+          <div class="mx-auto grid w-full max-w-[56rem] items-center gap-3 md:grid-cols-[1fr_auto] md:items-center">
+            <input
+              id="answer-input"
+              type="text"
+              required
+              maxlength="5"
+              placeholder="請輸入剛好 5 個字"
+              class="input input-primary input-lg h-14 w-full rounded-[1rem] border-none text-center text-xl font-extrabold tracking-[0.24em] uppercase"
+            />
+            <button
+              id="submit-btn"
+              class="btn btn-primary btn-lg h-14 rounded-[1rem] px-7 font-black">
+              送出答案
+            </button>
+          </div>
+        </div>
+        <span
+          id="submit-error"
+          class="text-error pointer-events-none absolute right-4 bottom-3 left-4 text-center text-xs font-medium"></span>
+      </div>
     </div>
 
-    <!-- Teams Parallel Chaining Lists -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div id="staff-stage" class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
       <!-- Team A -->
       <div id="team-a-answer" class="card bg-base-300 border-info/10 border shadow-xl">
-        <div class="card-body p-5">
-          <div class="border-info/20 mb-4 flex items-center justify-between border-b pb-2">
+        <div class="card-body p-3.5">
+          <div class="border-info/20 mb-2.5 flex items-center justify-between border-b pb-2">
             <span id="team-a-title" class="text-info text-lg font-extrabold">第 1 組</span>
             <div
               id="timer-team-a"
@@ -186,16 +242,18 @@ import ZapIcon from "~icons/lucide/zap"
             <!-- Chaining slots -->
           </div>
           <!-- Host skip btn A -->
-          <button id="skip-team-a-btn" class="btn btn-xs btn-outline btn-error mt-4 hidden w-full"
-            >主辦方：跳過此棒次 (Skip Team A)</button
-          >
+          <button
+            id="skip-team-a-btn"
+            class="mt-2.5 hidden w-full rounded-[1rem] border border-[#ef4444]/18 bg-[#ef4444]/6 px-4 py-2 text-sm font-black text-[#c2410c] transition hover:bg-[#ef4444]/10">
+            主辦方跳過第 1 組本棒次
+          </button>
         </div>
       </div>
 
       <!-- Team B -->
       <div id="team-b-answer" class="card bg-base-300 border-secondary/10 border shadow-xl">
-        <div class="card-body p-5">
-          <div class="border-secondary/20 mb-4 flex items-center justify-between border-b pb-2">
+        <div class="card-body p-3.5">
+          <div class="border-secondary/20 mb-2.5 flex items-center justify-between border-b pb-2">
             <span id="team-b-title" class="text-secondary text-lg font-extrabold">第 2 組</span>
             <div
               id="timer-team-b"
@@ -206,9 +264,11 @@ import ZapIcon from "~icons/lucide/zap"
             <!-- Chaining slots -->
           </div>
           <!-- Host skip btn B -->
-          <button id="skip-team-b-btn" class="btn btn-xs btn-outline btn-error mt-4 hidden w-full"
-            >主辦方：跳過此棒次 (Skip Team B)</button
-          >
+          <button
+            id="skip-team-b-btn"
+            class="mt-2.5 hidden w-full rounded-[1rem] border border-[#ef4444]/18 bg-[#ef4444]/6 px-4 py-2 text-sm font-black text-[#c2410c] transition hover:bg-[#ef4444]/10">
+            主辦方跳過第 2 組本棒次
+          </button>
         </div>
       </div>
     </div>
@@ -218,34 +278,6 @@ import ZapIcon from "~icons/lucide/zap"
         <PlayIcon class="mr-1 h-5 w-5" />
         <span>進入下一棒</span>
       </button>
-    </div>
-
-    <!-- Submission Box (Only active for current player's turn) -->
-    <div
-      id="submit-panel"
-      class="card bg-base-300 border-primary/20 flex flex-col items-center gap-y-4 border p-6 shadow-xl">
-      <div
-        id="submit-status-banner"
-        class="text-neutral-content flex items-center gap-x-2 text-base font-bold">
-        <HourglassIcon class="text-primary h-5 w-5 animate-spin" />
-        <span id="submit-status-text">等待您的棒次作答中...</span>
-      </div>
-
-      <!-- Submit form (hidden by default, enabled dynamically) -->
-      <div id="submit-action-row" class="join hidden w-full max-w-md">
-        <input
-          id="answer-input"
-          type="text"
-          required
-          maxlength="5"
-          placeholder="請輸入剛好 5 個字"
-          class="input input-primary join-item input-lg w-full text-center text-2xl font-extrabold tracking-widest uppercase"
-        />
-        <button id="submit-btn" class="btn join-item btn-primary btn-lg px-8 font-black">
-          送出答案
-        </button>
-      </div>
-      <span id="submit-error" class="text-error min-h-[1.2rem] text-xs font-medium"></span>
     </div>
   </div>
 
@@ -362,13 +394,13 @@ import ZapIcon from "~icons/lucide/zap"
       </div>
     </div>
   </div>
+  </div>
 </Layout>
 
 <script>
   import { clearSession, getSession, getSocket, updateSessionAssignment } from "@/utils/socket"
 
   // Shared UI Element References
-  const roundNumBadge = document.getElementById("round-num-badge") as HTMLSpanElement
   const roomInfo = document.getElementById("room-info") as HTMLHeadingElement
   const matchScoreA = document.getElementById("match-score-a") as HTMLSpanElement
   const matchScoreB = document.getElementById("match-score-b") as HTMLSpanElement
@@ -388,22 +420,9 @@ import ZapIcon from "~icons/lucide/zap"
     "host-force-end-game-btn"
   ) as HTMLButtonElement
   const hostLiveStatus = document.getElementById("host-live-status") as HTMLParagraphElement
-  const liveQuestionsInput = document.getElementById("live-questions-input") as HTMLTextAreaElement
-  const liveSaveQuestionsBtn = document.getElementById(
-    "live-save-questions-btn"
-  ) as HTMLButtonElement
   const liveTopicInput = document.getElementById("live-topic-input") as HTMLInputElement
   const liveSetTopicBtn = document.getElementById("live-set-topic-btn") as HTMLButtonElement
   const liveRandomTopicBtn = document.getElementById("live-random-topic-btn") as HTMLButtonElement
-  const liveNextTopicLabel = document.getElementById(
-    "live-next-topic-label"
-  ) as HTMLParagraphElement
-  const liveRuleIntro = document.getElementById("live-rule-intro") as HTMLInputElement
-  const liveRuleTurn = document.getElementById("live-rule-turn") as HTMLInputElement
-  const liveRuleResult = document.getElementById("live-rule-result") as HTMLInputElement
-  const liveRuleSeats = document.getElementById("live-rule-seats") as HTMLInputElement
-  const liveRuleWins = document.getElementById("live-rule-wins") as HTMLInputElement
-  const liveSaveRulesBtn = document.getElementById("live-save-rules-btn") as HTMLButtonElement
 
   // Phase Blocks
   const phaseIntro = document.getElementById("phase-intro") as HTMLDivElement
@@ -419,6 +438,20 @@ import ZapIcon from "~icons/lucide/zap"
 
   if (!role) {
     window.location.href = "/"
+  }
+
+  if (role === "host" || role === "observer") {
+    const siteMain = document.querySelector<HTMLElement>(".site-main")
+    if (siteMain) {
+      Object.assign(siteMain.style, {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "12px 20px",
+      })
+    }
+    document.documentElement.style.overflow = "hidden"
+    document.body.style.overflow = "hidden"
   }
 
   // Connect to socket
@@ -462,8 +495,6 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Active timers tracking to prevent overlapping
   let countdownTimer: any = null
-  let liveRulesDirty = false
-  let liveQuestionsDirty = false
 
   let clearActiveTimer = () => {
     if (countdownTimer) {
@@ -487,7 +518,6 @@ import ZapIcon from "~icons/lucide/zap"
     syncGroupLabels(state)
 
     // 1. Update Global Header Info
-    if (roundNumBadge) roundNumBadge.textContent = `Round ${state.round}`
     if (matchScoreA) matchScoreA.textContent = String(state.score.A ?? 0)
     if (matchScoreB) matchScoreB.textContent = String(state.score.B ?? 0)
 
@@ -580,15 +610,27 @@ import ZapIcon from "~icons/lucide/zap"
 
   // ================= RENDER CHAINING =================
   const chainingTopic = document.getElementById("chaining-topic") as HTMLHeadingElement
+  const hostChainingTopic = document.getElementById("host-chaining-topic") as HTMLHeadingElement
+  const playerChainingTopic = document.getElementById("player-chaining-topic") as HTMLHeadingElement
+  const staffTopicCard = document.getElementById("staff-topic-card") as HTMLDivElement
   const chainListA = document.getElementById("chain-list-a") as HTMLDivElement
   const chainListB = document.getElementById("chain-list-b") as HTMLDivElement
+  const playerMainShell = document.getElementById("player-main-shell") as HTMLDivElement
+  const sharedTopBar = document.getElementById("shared-top-bar") as HTMLDivElement
+  const playerChainingShell = document.getElementById("player-chaining-shell") as HTMLDivElement
+  const playerSubmitShell = document.getElementById("player-submit-shell") as HTMLDivElement
+  const playerStage = document.getElementById("player-stage") as HTMLDivElement
+  const staffStage = document.getElementById("staff-stage") as HTMLDivElement
+  const playerOwnTitle = document.getElementById("player-own-title") as HTMLHeadingElement
+  const playerOwnChain = document.getElementById("player-own-chain") as HTMLDivElement
+  const topStatusKicker = document.getElementById("top-status-kicker") as HTMLParagraphElement
+  const topStatusNote = document.getElementById("top-status-note") as HTMLParagraphElement
+  const topStatusSideLabel = document.getElementById("top-status-side-label") as HTMLParagraphElement
   const timerTeamA = document.getElementById("timer-team-a") as HTMLDivElement
   const timerTeamB = document.getElementById("timer-team-b") as HTMLDivElement
   const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
   const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
   const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
-  const answerDivA = document.getElementById("team-a-answer") as HTMLDivElement
-  const answerDivB = document.getElementById("team-b-answer") as HTMLDivElement
 
   // Submit block references
   const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
@@ -602,8 +644,64 @@ import ZapIcon from "~icons/lucide/zap"
   function renderChaining(state: any) {
     phaseChaining?.classList.remove("hidden")
     if (chainingTopic) chainingTopic.textContent = state.topic
+    if (hostChainingTopic) hostChainingTopic.textContent = state.topic
+    if (playerChainingTopic) playerChainingTopic.textContent = state.topic
     timerTeamA?.classList.add("hidden")
     timerTeamB?.classList.add("hidden")
+    const liveSession = getSession()
+    const myTeam = role === "player" ? liveSession?.team ?? null : null
+
+    playerStage?.classList.toggle("hidden", role !== "player")
+    staffStage?.classList.toggle("hidden", role === "player")
+    staffTopicCard?.classList.toggle("hidden", role === "player" || role === "host")
+
+    if (role === "player") {
+      playerMainShell?.classList.remove("contents")
+      playerMainShell?.classList.add(
+        "mx-auto",
+        "grid",
+        "min-h-[100dvh]",
+        "w-full",
+        "max-w-5xl",
+        "content-center",
+        "-translate-y-8"
+      )
+      sharedTopBar?.classList.add("mb-4", "w-full")
+      sharedTopBar?.classList.remove("md:mb-6")
+      phaseChaining?.classList.add("w-full")
+      phaseChaining?.classList.remove("justify-start", "justify-center", "items-center")
+      playerChainingShell?.classList.remove("contents")
+      playerChainingShell?.classList.add(
+        "flex",
+        "w-full",
+        "flex-col",
+        "gap-4"
+      )
+      playerSubmitShell?.classList.remove("contents")
+    } else {
+      playerMainShell?.classList.add("contents")
+      playerMainShell?.classList.remove(
+        "mx-auto",
+        "grid",
+        "min-h-[100dvh]",
+        "w-full",
+        "max-w-5xl",
+        "content-center",
+        "-translate-y-8"
+      )
+      sharedTopBar?.classList.remove("mb-4", "w-full")
+      sharedTopBar?.classList.add("md:mb-6")
+      phaseChaining?.classList.remove("w-full")
+      phaseChaining?.classList.add("justify-start")
+      playerChainingShell?.classList.add("contents")
+      playerChainingShell?.classList.remove(
+        "flex",
+        "w-full",
+        "flex-col",
+        "gap-4"
+      )
+      playerSubmitShell?.classList.add("contents")
+    }
 
     if (role === "host") {
       if (!state.teams.A.done && !hasSubmittedCurrentSeat(state.teams.A)) {
@@ -628,6 +726,7 @@ import ZapIcon from "~icons/lucide/zap"
     // Render team chain blocks
     populateChainList("A", state.teams.A, chainListA, "info", state.rules?.seats ?? 6)
     populateChainList("B", state.teams.B, chainListB, "secondary", state.rules?.seats ?? 6)
+    syncPlayerPerspective(state, myTeam)
 
     if (state.paused) {
       answerInput.setAttribute("disabled", "true")
@@ -642,10 +741,8 @@ import ZapIcon from "~icons/lucide/zap"
     }
 
     // Handle submission panel activation. Players should normally have chosen a team at login.
-    const liveSession = getSession()
     if (role === "player" && liveSession) {
-      const myTeam = liveSession.team
-
+      submitPanel?.classList.remove("hidden")
       if (!myTeam) {
         submitStatusBanner?.classList.remove("hidden")
         submitActionRow?.classList.add("hidden")
@@ -654,10 +751,6 @@ import ZapIcon from "~icons/lucide/zap"
         submitStatusText.textContent = "尚未選擇隊伍，請回首頁重新登入。"
         return
       }
-
-      // 移除非自己隊伍的作答情況
-      if (myTeam === "A") answerDivB?.remove()
-      else answerDivA?.remove()
 
       const currentTeamState = state.teams[myTeam]
       const isMyTurn = !currentTeamState.done && !hasSubmittedCurrentSeat(currentTeamState)
@@ -674,6 +767,8 @@ import ZapIcon from "~icons/lucide/zap"
           answerInput.focus()
         }
         if (submitBtn && !state.paused) submitBtn.disabled = false
+        if (topStatusKicker) topStatusKicker.textContent = "YOUR TURN"
+        if (topStatusNote) topStatusNote.textContent = "目前輪到本隊作答，請直接完成這一棒的五字答案並送出。"
       } else {
         // Standby / Wait screen
         submitStatusBanner?.classList.remove("hidden")
@@ -683,20 +778,47 @@ import ZapIcon from "~icons/lucide/zap"
 
         if (currentTeamState.done) {
           submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成！等待評審階段開始中 🏁"
+          if (topStatusKicker) topStatusKicker.textContent = "TEAM COMPLETE"
+          if (topStatusNote) topStatusNote.textContent = "本隊所有棒次已完成，等待另一隊完成後進入評審。"
         } else if (hasSubmittedCurrentSeat(currentTeamState)) {
           submitStatusText.textContent = "本棒次已送出，等待另一隊完成並由主持人切換下一棒。"
+          if (topStatusKicker) topStatusKicker.textContent = "WAITING"
+          if (topStatusNote) {
+            topStatusNote.textContent =
+              "本隊這一棒已提交，現在等待另一隊完成，之後由主持人手動切換下一棒。"
+          }
         } else {
           submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
+          if (topStatusKicker) topStatusKicker.textContent = "STANDBY"
+          if (topStatusNote) {
+            topStatusNote.textContent = "請留意本隊棒次順序，主持人切到你的棒次後即可直接作答。"
+          }
         }
       }
     } else {
       // Host / Observer
-      submitStatusBanner?.classList.remove("hidden")
-      submitActionRow?.classList.add("hidden")
-      submitStatusText.textContent = canHostAdvanceSeat(state)
-        ? "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
-        : "目前雙方正在進行接龍，可由主持人補空棒或等待雙方送出。"
+      submitPanel?.classList.add("hidden")
+      if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
+      if (topStatusNote) {
+        topStatusNote.textContent = canHostAdvanceSeat(state)
+          ? "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
+          : "等待雙方完成目前棒次。"
+      }
     }
+  }
+
+  function syncPlayerPerspective(state: any, myTeam: "A" | "B" | null) {
+    if (role !== "player") return
+
+    const ownTeam = myTeam === "B" ? "B" : "A"
+    const ownState = state.teams[ownTeam]
+    const ownColor = ownTeam === "A" ? "info" : "secondary"
+
+    if (playerOwnTitle) {
+      playerOwnTitle.textContent = ownTeam === "A" ? headerGroupA.textContent ?? "第 1 組" : headerGroupB.textContent ?? "第 2 組"
+    }
+
+    populateChainList(ownTeam, ownState, playerOwnChain, ownColor, state.rules?.seats ?? 6)
   }
 
   function populateChainList(
@@ -714,9 +836,9 @@ import ZapIcon from "~icons/lucide/zap"
       const isCurrentActive = !teamState.done && teamState.currentSeat === i
 
       const card = document.createElement("div")
-      card.className = `flex justify-between items-center p-3 rounded-xl bg-base-200 border ${
+      card.className = `flex justify-between items-center p-2.5 rounded-xl bg-base-200 border ${
         isCurrentActive
-          ? `border-${badgeColor} bg-${badgeColor}/10 animate-pulse`
+          ? `border-${badgeColor} bg-${badgeColor}/8`
           : "border-neutral/20"
       }`
 
@@ -730,13 +852,13 @@ import ZapIcon from "~icons/lucide/zap"
           // If opponent text is empty string (hidden by backend), show block placeholder
           const letters = [...val]
           if (letters.length === 0) {
-            textSpan = `<span class="text-neutral-content/40 tracking-[0.3em] font-mono text-base font-black">▇ ▇ ▇ ▇ ▇</span>`
+            textSpan = `<span class="text-neutral-content/40 tracking-[0.24em] font-mono text-sm font-black">▇ ▇ ▇ ▇ ▇</span>`
           } else {
-            textSpan = `<span class="text-success tracking-[0.25em] text-lg font-black">${val}</span>`
+            textSpan = `<span class="text-success tracking-[0.2em] text-base font-black">${val}</span>`
           }
         }
       } else if (isCurrentActive) {
-        textSpan = `<span class="text-${badgeColor} font-extrabold animate-pulse text-sm">正在輸入中...</span>`
+        textSpan = `<span class="text-${badgeColor} font-extrabold text-sm">正在輸入中...</span>`
       }
 
       card.innerHTML = `
@@ -928,6 +1050,14 @@ import ZapIcon from "~icons/lucide/zap"
     teamBTitle.textContent = `第 ${groupB} 組`
     resultGroupATitle.textContent = `第 ${groupA} 組`
     resultGroupBTitle.textContent = `第 ${groupB} 組`
+    if (playerOwnTitle && role === "player") {
+      const liveSession = getSession()
+      const myTeam = liveSession?.team ?? "A"
+      playerOwnTitle.textContent = myTeam === "A" ? `第 ${groupA} 組` : `第 ${groupB} 組`
+    }
+    if (topStatusSideLabel) {
+      topStatusSideLabel.textContent = role === "player" ? "MATCH SCORE" : "LIVE SCORE"
+    }
     roomInfo.textContent =
       state.matchMode === "test"
         ? `測試場對戰：第 ${groupA} 組 vs 第 ${groupB} 組`
@@ -938,26 +1068,6 @@ import ZapIcon from "~icons/lucide/zap"
     socket.emit("host:end_game", {}, (res: any) => {
       if (!res.ok) {
         alert(`無法結束本場對戰：${res.error}`)
-      }
-    })
-  })
-
-  liveQuestionsInput?.addEventListener("input", () => (liveQuestionsDirty = true))
-  ;[liveRuleIntro, liveRuleTurn, liveRuleResult, liveRuleSeats, liveRuleWins].forEach((el) =>
-    el?.addEventListener("input", () => (liveRulesDirty = true))
-  )
-
-  liveSaveQuestionsBtn?.addEventListener("click", () => {
-    const questions = liveQuestionsInput.value
-      .split("\n")
-      .map((q) => q.trim())
-      .filter(Boolean)
-      .slice(0, 200)
-    socket.emit("host:set_questions", { questions }, (res: any) => {
-      if (!res.ok) setLiveHostStatus(`題庫儲存失敗：${res.error}`, true)
-      else {
-        liveQuestionsDirty = false
-        setLiveHostStatus(`題庫已儲存（${questions.length} 題）`)
       }
     })
   })
@@ -987,43 +1097,10 @@ import ZapIcon from "~icons/lucide/zap"
     })
   })
 
-  liveSaveRulesBtn?.addEventListener("click", () => {
-    const payload: Record<string, number> = {}
-    const addMs = (key: string, input: HTMLInputElement) => {
-      const n = Number(input.value)
-      if (!Number.isNaN(n)) payload[key] = Math.round(n * 1000)
-    }
-    addMs("introMs", liveRuleIntro)
-    addMs("turnMs", liveRuleTurn)
-    addMs("resultMs", liveRuleResult)
-    const seats = Number(liveRuleSeats.value)
-    const wins = Number(liveRuleWins.value)
-    if (!Number.isNaN(seats)) payload.seats = Math.round(seats)
-    if (!Number.isNaN(wins)) payload.winsToTakeMatch = Math.round(wins)
-    socket.emit("host:set_rules", payload, (res: any) => {
-      if (!res.ok) setLiveHostStatus(`規則套用失敗：${res.error}`, true)
-      else {
-        liveRulesDirty = false
-        setLiveHostStatus("規則已套用")
-      }
-    })
-  })
-
   function syncLiveHostForm(state: any) {
     if (role !== "host") return
-    if (!liveQuestionsDirty && liveQuestionsInput)
-      liveQuestionsInput.value = (state.questions ?? []).join("\n")
-    if (!liveRulesDirty && state.rules) {
-      liveRuleIntro.value = String(Math.round(state.rules.introMs / 1000))
-      liveRuleTurn.value = String(Math.round(state.rules.turnMs / 1000))
-      liveRuleResult.value = String(Math.round(state.rules.resultMs / 1000))
-      liveRuleSeats.value = String(state.rules.seats)
-      liveRuleWins.value = String(state.rules.winsToTakeMatch)
-    }
-    if (liveNextTopicLabel) {
-      liveNextTopicLabel.textContent = state.nextTopic
-        ? `下一題：${state.nextTopic}`
-        : "未指定下一題"
+    if (liveTopicInput && document.activeElement !== liveTopicInput) {
+      liveTopicInput.value = state.nextTopic ?? ""
     }
   }
 
