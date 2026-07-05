@@ -427,597 +427,596 @@ import ZapIcon from "~icons/lucide/zap"
       </div>
     </div>
   </div>
+</Layout>
 
-  <script>
-    import { clearSession, getSession, getSocket, updateSessionAssignment } from "@/utils/socket"
+<script>
+  import { clearSession, getSession, getSocket, updateSessionAssignment } from "@/utils/socket"
 
-    // Shared UI Element References
-    const roomInfo = document.getElementById("room-info") as HTMLHeadingElement
-    const matchScoreA = document.getElementById("match-score-a") as HTMLSpanElement
-    const matchScoreB = document.getElementById("match-score-b") as HTMLSpanElement
-    const headerGroupA = document.getElementById("header-group-a") as HTMLSpanElement
-    const headerGroupB = document.getElementById("header-group-b") as HTMLSpanElement
-    const teamATitle = document.getElementById("team-a-title") as HTMLSpanElement
-    const teamBTitle = document.getElementById("team-b-title") as HTMLSpanElement
-    const resultGroupATitle = document.getElementById("result-group-a-title") as HTMLSpanElement
-    const resultGroupBTitle = document.getElementById("result-group-b-title") as HTMLSpanElement
+  // Shared UI Element References
+  const roomInfo = document.getElementById("room-info") as HTMLHeadingElement
+  const matchScoreA = document.getElementById("match-score-a") as HTMLSpanElement
+  const matchScoreB = document.getElementById("match-score-b") as HTMLSpanElement
+  const headerGroupA = document.getElementById("header-group-a") as HTMLSpanElement
+  const headerGroupB = document.getElementById("header-group-b") as HTMLSpanElement
+  const teamATitle = document.getElementById("team-a-title") as HTMLSpanElement
+  const teamBTitle = document.getElementById("team-b-title") as HTMLSpanElement
+  const resultGroupATitle = document.getElementById("result-group-a-title") as HTMLSpanElement
+  const resultGroupBTitle = document.getElementById("result-group-b-title") as HTMLSpanElement
 
-    // Host live setup
-    const hostLiveSetupPanel = document.getElementById("host-live-setup-panel") as HTMLElement
-    const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
-    const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
-    const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
-    const hostForceEndGameBtn = document.getElementById(
-      "host-force-end-game-btn"
-    ) as HTMLButtonElement
-    const hostLiveStatus = document.getElementById("host-live-status") as HTMLParagraphElement
-    const liveTopicInput = document.getElementById("live-topic-input") as HTMLInputElement
-    const liveSetTopicBtn = document.getElementById("live-set-topic-btn") as HTMLButtonElement
-    const liveRandomTopicBtn = document.getElementById("live-random-topic-btn") as HTMLButtonElement
+  // Host live setup
+  const hostLiveSetupPanel = document.getElementById("host-live-setup-panel") as HTMLElement
+  const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
+  const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
+  const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
+  const hostForceEndGameBtn = document.getElementById(
+    "host-force-end-game-btn"
+  ) as HTMLButtonElement
+  const hostLiveStatus = document.getElementById("host-live-status") as HTMLParagraphElement
+  const liveTopicInput = document.getElementById("live-topic-input") as HTMLInputElement
+  const liveSetTopicBtn = document.getElementById("live-set-topic-btn") as HTMLButtonElement
+  const liveRandomTopicBtn = document.getElementById("live-random-topic-btn") as HTMLButtonElement
 
-    // Phase Blocks
-    const phaseIntro = document.getElementById("phase-intro") as HTMLDivElement
-    const phaseChaining = document.getElementById("phase-chaining") as HTMLDivElement
-    const phaseJudging = document.getElementById("phase-judging") as HTMLDivElement
-    const phaseResult = document.getElementById("phase-result") as HTMLDivElement
-    const phaseMatchover = document.getElementById("phase-matchover") as HTMLDivElement
+  // Phase Blocks
+  const phaseIntro = document.getElementById("phase-intro") as HTMLDivElement
+  const phaseChaining = document.getElementById("phase-chaining") as HTMLDivElement
+  const phaseJudging = document.getElementById("phase-judging") as HTMLDivElement
+  const phaseResult = document.getElementById("phase-result") as HTMLDivElement
+  const phaseMatchover = document.getElementById("phase-matchover") as HTMLDivElement
 
-    // Session
-    const session = getSession()
-    const role = sessionStorage.getItem("wc_role") || (session ? "player" : null)
-    const roomId = session?.roomId || sessionStorage.getItem("wc_room_id") || "sitcon-camp-2026"
+  // Session
+  const session = getSession()
+  const role = sessionStorage.getItem("wc_role") || (session ? "player" : null)
+  const roomId = session?.roomId || sessionStorage.getItem("wc_room_id") || "sitcon-camp-2026"
 
-    if (!role) {
-      window.location.href = "/"
+  if (!role) {
+    window.location.href = "/"
+  }
+
+  if (role === "host" || role === "observer") {
+    const siteMain = document.querySelector<HTMLElement>(".site-main")
+    if (siteMain) {
+      Object.assign(siteMain.style, {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "12px 20px",
+      })
     }
+    document.documentElement.style.overflow = "hidden"
+    document.body.style.overflow = "hidden"
+  }
 
-    if (role === "host" || role === "observer") {
-      const siteMain = document.querySelector<HTMLElement>(".site-main")
-      if (siteMain) {
-        Object.assign(siteMain.style, {
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "12px 20px",
-        })
-      }
-      document.documentElement.style.overflow = "hidden"
-      document.body.style.overflow = "hidden"
+  // Connect to socket
+  const socket = getSocket()
+  if (!socket.connected) {
+    socket.connect()
+  }
+
+  // Re-establish session or join
+  socket.on("room:kicked", () => {
+    clearSession()
+    sessionStorage.clear()
+    window.location.href = "/"
+  })
+
+  socket.on("connect", () => {
+    if (role === "player" && session) {
+      socket.emit("room:rejoin", { roomId, playerId: session.playerId }, (res: any) => {
+        if (!res.ok) {
+          clearSession()
+          window.location.href = "/"
+        } else {
+          updateSessionAssignment(res.team ?? null, session.groupNumber ?? null)
+        }
+      })
+    } else {
+      socket.emit("room:join", { roomId, role }, (res: any) => {
+        if (!res.ok) {
+          window.location.href = "/"
+          return
+        }
+        if (role === "observer") socket.emit("observer:subscribe", {}, () => {})
+      })
     }
+  })
 
-    // Connect to socket
-    const socket = getSocket()
-    if (!socket.connected) {
-      socket.connect()
+  // Host Action Panel Initialization
+  if (role === "host" && hostLiveSetupPanel) {
+    hostLiveSetupPanel?.classList.remove("hidden")
+  }
+
+  // Active timers tracking to prevent overlapping
+  let countdownTimer: any = null
+
+  let clearActiveTimer = () => {
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
     }
+  }
 
-    // Re-establish session or join
-    socket.on("room:kicked", () => {
-      clearSession()
-      sessionStorage.clear()
-      window.location.href = "/"
-    })
+  socket.on("presence:update", ({ players }: { players: any[] }) => {
+    const currentSession = getSession()
+    const me = currentSession ? players.find((p) => p.playerId === currentSession.playerId) : null
+    if (me) updateSessionAssignment(me.team ?? null, me.groupNumber ?? null)
+  })
 
-    socket.on("connect", () => {
-      if (role === "player" && session) {
-        socket.emit("room:rejoin", { roomId, playerId: session.playerId }, (res: any) => {
-          if (!res.ok) {
-            clearSession()
-            window.location.href = "/"
-          } else {
-            updateSessionAssignment(res.team ?? null, session.groupNumber ?? null)
-          }
-        })
+  // Core Room State Listener
+  socket.on("room:state", (state: any) => {
+    console.log("Active Game Room State:", state)
+    clearActiveTimer()
+
+    syncLiveHostForm(state)
+    syncGroupLabels(state)
+
+    // 1. Update Global Header Info
+    if (matchScoreA) matchScoreA.textContent = String(state.score.A ?? 0)
+    if (matchScoreB) matchScoreB.textContent = String(state.score.B ?? 0)
+
+    // Host Pause status sync
+    if (role === "host") {
+      if (state.paused) {
+        hostPauseBtn?.classList.add("hidden")
+        hostResumeBtn?.classList.remove("hidden")
       } else {
-        socket.emit("room:join", { roomId, role }, (res: any) => {
-          if (!res.ok) {
-            window.location.href = "/"
-            return
-          }
-          if (role === "observer") socket.emit("observer:subscribe", {}, () => {})
-        })
-      }
-    })
-
-    // Host Action Panel Initialization
-    if (role === "host" && hostLiveSetupPanel) {
-      hostLiveSetupPanel?.classList.remove("hidden")
-    }
-
-    // Active timers tracking to prevent overlapping
-    let countdownTimer: any = null
-
-    let clearActiveTimer = () => {
-      if (countdownTimer) {
-        clearInterval(countdownTimer)
-        countdownTimer = null
+        hostPauseBtn?.classList.remove("hidden")
+        hostResumeBtn?.classList.add("hidden")
       }
     }
 
-    socket.on("presence:update", ({ players }: { players: any[] }) => {
-      const currentSession = getSession()
-      const me = currentSession ? players.find((p) => p.playerId === currentSession.playerId) : null
-      if (me) updateSessionAssignment(me.team ?? null, me.groupNumber ?? null)
-    })
+    // Hide all phase containers, we'll reveal the active one
+    phaseIntro?.classList.add("hidden")
+    phaseChaining?.classList.add("hidden")
+    phaseJudging?.classList.add("hidden")
+    phaseResult?.classList.add("hidden")
+    phaseMatchover?.classList.add("hidden")
 
-    // Core Room State Listener
-    socket.on("room:state", (state: any) => {
-      console.log("Active Game Room State:", state)
-      clearActiveTimer()
-
-      syncLiveHostForm(state)
-      syncGroupLabels(state)
-
-      // 1. Update Global Header Info
-      if (matchScoreA) matchScoreA.textContent = String(state.score.A ?? 0)
-      if (matchScoreB) matchScoreB.textContent = String(state.score.B ?? 0)
-
-      // Host Pause status sync
-      if (role === "host") {
-        if (state.paused) {
-          hostPauseBtn?.classList.add("hidden")
-          hostResumeBtn?.classList.remove("hidden")
+    // 2. Render State Phase
+    switch (state.phase) {
+      case "LOBBY":
+        if (role === "player") {
+          clearSession()
+          window.location.href = "/"
         } else {
-          hostPauseBtn?.classList.remove("hidden")
-          hostResumeBtn?.classList.add("hidden")
+          window.location.href = "/sitcon-gm"
+        }
+        break
+
+      case "ROUND_INTRO":
+        renderRoundIntro(state)
+        break
+
+      case "CHAINING":
+        renderChaining(state)
+        break
+
+      case "JUDGING":
+        phaseJudging?.classList.remove("hidden")
+        break
+
+      case "ROUND_RESULT":
+        renderRoundResult(state)
+        break
+
+      case "MATCH_OVER":
+        renderMatchOver(state)
+        break
+    }
+  })
+
+  // ================= RENDER ROUND_INTRO =================
+  const introRoundNum = document.getElementById("intro-round-num") as HTMLSpanElement
+  const introTopic = document.getElementById("intro-topic") as HTMLHeadingElement
+  const introRadial = document.getElementById("intro-radial") as HTMLDivElement
+
+  function renderRoundIntro(state: any) {
+    phaseIntro?.classList.remove("hidden")
+    if (introRoundNum) introRoundNum.textContent = state.round
+    if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
+
+    if (state.phaseEndsAt && introRadial) {
+      const endsAt = state.phaseEndsAt
+
+      const updateTimer = () => {
+        const remaining = Math.max(0, endsAt - Date.now())
+        const seconds = Math.ceil(remaining / 1000)
+
+        introRadial.textContent = `${seconds}s`
+
+        const introMs = state.rules?.introMs ?? 30000
+        const pct = Math.min(100, Math.max(0, (remaining / introMs) * 100))
+        introRadial.style.setProperty("--value", String(pct))
+
+        if (remaining <= 0) {
+          clearActiveTimer()
         }
       }
 
-      // Hide all phase containers, we'll reveal the active one
-      phaseIntro?.classList.add("hidden")
-      phaseChaining?.classList.add("hidden")
-      phaseJudging?.classList.add("hidden")
-      phaseResult?.classList.add("hidden")
-      phaseMatchover?.classList.add("hidden")
-
-      // 2. Render State Phase
-      switch (state.phase) {
-        case "LOBBY":
-          if (role === "player") {
-            clearSession()
-            window.location.href = "/"
-          } else {
-            window.location.href = "/sitcon-gm"
-          }
-          break
-
-        case "ROUND_INTRO":
-          renderRoundIntro(state)
-          break
-
-        case "CHAINING":
-          renderChaining(state)
-          break
-
-        case "JUDGING":
-          phaseJudging?.classList.remove("hidden")
-          break
-
-        case "ROUND_RESULT":
-          renderRoundResult(state)
-          break
-
-        case "MATCH_OVER":
-          renderMatchOver(state)
-          break
-      }
-    })
-
-    // ================= RENDER ROUND_INTRO =================
-    const introRoundNum = document.getElementById("intro-round-num") as HTMLSpanElement
-    const introTopic = document.getElementById("intro-topic") as HTMLHeadingElement
-    const introRadial = document.getElementById("intro-radial") as HTMLDivElement
-
-    function renderRoundIntro(state: any) {
-      phaseIntro?.classList.remove("hidden")
-      if (introRoundNum) introRoundNum.textContent = state.round
-      if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
-
-      if (state.phaseEndsAt && introRadial) {
-        const endsAt = state.phaseEndsAt
-
-        const updateTimer = () => {
-          const remaining = Math.max(0, endsAt - Date.now())
-          const seconds = Math.ceil(remaining / 1000)
-
-          introRadial.textContent = `${seconds}s`
-
-          const introMs = state.rules?.introMs ?? 30000
-          const pct = Math.min(100, Math.max(0, (remaining / introMs) * 100))
-          introRadial.style.setProperty("--value", String(pct))
-
-          if (remaining <= 0) {
-            clearActiveTimer()
-          }
-        }
-
-        // While paused the server has frozen the deadline — render once, don't tick.
-        updateTimer()
-        if (!state.paused) {
-          countdownTimer = setInterval(updateTimer, 200)
-        }
+      // While paused the server has frozen the deadline — render once, don't tick.
+      updateTimer()
+      if (!state.paused) {
+        countdownTimer = setInterval(updateTimer, 200)
       }
     }
+  }
 
-    // ================= RENDER CHAINING =================
-    const chainingTopic = document.getElementById("chaining-topic") as HTMLHeadingElement
-    const hostChainingTopic = document.getElementById("host-chaining-topic") as HTMLHeadingElement
-    const playerChainingTopic = document.getElementById(
-      "player-chaining-topic"
-    ) as HTMLHeadingElement
-    const staffTopicCard = document.getElementById("staff-topic-card") as HTMLDivElement
-    const chainListA = document.getElementById("chain-list-a") as HTMLDivElement
-    const chainListB = document.getElementById("chain-list-b") as HTMLDivElement
-    const playerMainShell = document.getElementById("player-main-shell") as HTMLDivElement
-    const sharedTopBar = document.getElementById("shared-top-bar") as HTMLDivElement
-    const playerChainingShell = document.getElementById("player-chaining-shell") as HTMLDivElement
-    const playerSubmitShell = document.getElementById("player-submit-shell") as HTMLDivElement
-    const playerStage = document.getElementById("player-stage") as HTMLDivElement
-    const staffStage = document.getElementById("staff-stage") as HTMLDivElement
-    const playerOwnTitle = document.getElementById("player-own-title") as HTMLHeadingElement
-    const playerOwnChain = document.getElementById("player-own-chain") as HTMLDivElement
-    const topStatusKicker = document.getElementById("top-status-kicker") as HTMLParagraphElement
-    const topStatusNote = document.getElementById("top-status-note") as HTMLParagraphElement
-    const topStatusSideLabel = document.getElementById(
-      "top-status-side-label"
-    ) as HTMLParagraphElement
-    const timerTeamA = document.getElementById("timer-team-a") as HTMLDivElement
-    const timerTeamB = document.getElementById("timer-team-b") as HTMLDivElement
-    const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
-    const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
-    const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
+  // ================= RENDER CHAINING =================
+  const chainingTopic = document.getElementById("chaining-topic") as HTMLHeadingElement
+  const hostChainingTopic = document.getElementById("host-chaining-topic") as HTMLHeadingElement
+  const playerChainingTopic = document.getElementById("player-chaining-topic") as HTMLHeadingElement
+  const staffTopicCard = document.getElementById("staff-topic-card") as HTMLDivElement
+  const chainListA = document.getElementById("chain-list-a") as HTMLDivElement
+  const chainListB = document.getElementById("chain-list-b") as HTMLDivElement
+  const playerMainShell = document.getElementById("player-main-shell") as HTMLDivElement
+  const sharedTopBar = document.getElementById("shared-top-bar") as HTMLDivElement
+  const playerChainingShell = document.getElementById("player-chaining-shell") as HTMLDivElement
+  const playerSubmitShell = document.getElementById("player-submit-shell") as HTMLDivElement
+  const playerStage = document.getElementById("player-stage") as HTMLDivElement
+  const staffStage = document.getElementById("staff-stage") as HTMLDivElement
+  const playerOwnTitle = document.getElementById("player-own-title") as HTMLHeadingElement
+  const playerOwnChain = document.getElementById("player-own-chain") as HTMLDivElement
+  const topStatusKicker = document.getElementById("top-status-kicker") as HTMLParagraphElement
+  const topStatusNote = document.getElementById("top-status-note") as HTMLParagraphElement
+  const topStatusSideLabel = document.getElementById(
+    "top-status-side-label"
+  ) as HTMLParagraphElement
+  const timerTeamA = document.getElementById("timer-team-a") as HTMLDivElement
+  const timerTeamB = document.getElementById("timer-team-b") as HTMLDivElement
+  const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
+  const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
+  const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
 
-    // Submit block references
-    const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
-    const submitStatusBanner = document.getElementById("submit-status-banner") as HTMLDivElement
-    const submitStatusText = document.getElementById("submit-status-text") as HTMLSpanElement
-    const submitActionRow = document.getElementById("submit-action-row") as HTMLDivElement
-    const answerInput = document.getElementById("answer-input") as HTMLInputElement
-    const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement
-    const submitError = document.getElementById("submit-error") as HTMLSpanElement
+  // Submit block references
+  const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
+  const submitStatusBanner = document.getElementById("submit-status-banner") as HTMLDivElement
+  const submitStatusText = document.getElementById("submit-status-text") as HTMLSpanElement
+  const submitActionRow = document.getElementById("submit-action-row") as HTMLDivElement
+  const answerInput = document.getElementById("answer-input") as HTMLInputElement
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement
+  const submitError = document.getElementById("submit-error") as HTMLSpanElement
 
-    function renderChaining(state: any) {
-      phaseChaining?.classList.remove("hidden")
-      if (chainingTopic) chainingTopic.textContent = state.topic
-      if (hostChainingTopic) hostChainingTopic.textContent = state.topic
-      if (playerChainingTopic) playerChainingTopic.textContent = state.topic
-      timerTeamA?.classList.add("hidden")
-      timerTeamB?.classList.add("hidden")
-      const liveSession = getSession()
-      const myTeam = role === "player" ? (liveSession?.team ?? null) : null
+  function renderChaining(state: any) {
+    phaseChaining?.classList.remove("hidden")
+    if (chainingTopic) chainingTopic.textContent = state.topic
+    if (hostChainingTopic) hostChainingTopic.textContent = state.topic
+    if (playerChainingTopic) playerChainingTopic.textContent = state.topic
+    timerTeamA?.classList.add("hidden")
+    timerTeamB?.classList.add("hidden")
+    const liveSession = getSession()
+    const myTeam = role === "player" ? (liveSession?.team ?? null) : null
 
-      playerStage?.classList.toggle("hidden", role !== "player")
-      staffStage?.classList.toggle("hidden", role === "player")
-      staffTopicCard?.classList.toggle("hidden", role === "player" || role === "host")
+    playerStage?.classList.toggle("hidden", role !== "player")
+    staffStage?.classList.toggle("hidden", role === "player")
+    staffTopicCard?.classList.toggle("hidden", role === "player" || role === "host")
 
-      if (role === "player") {
-        playerMainShell?.classList.remove("contents")
-        playerMainShell?.classList.add(
-          "mx-auto",
-          "grid",
-          "min-h-[100dvh]",
-          "w-full",
-          "max-w-5xl",
-          "content-center",
-          "-translate-y-8"
-        )
-        sharedTopBar?.classList.add("mb-4", "w-full")
-        sharedTopBar?.classList.remove("md:mb-6")
-        phaseChaining?.classList.add("w-full")
-        phaseChaining?.classList.remove("justify-start", "justify-center", "items-center")
-        playerChainingShell?.classList.remove("contents")
-        playerChainingShell?.classList.add("flex", "w-full", "flex-col", "gap-4")
-        playerSubmitShell?.classList.remove("contents")
+    if (role === "player") {
+      playerMainShell?.classList.remove("contents")
+      playerMainShell?.classList.add(
+        "mx-auto",
+        "grid",
+        "min-h-[100dvh]",
+        "w-full",
+        "max-w-5xl",
+        "content-center",
+        "-translate-y-8"
+      )
+      sharedTopBar?.classList.add("mb-4", "w-full")
+      sharedTopBar?.classList.remove("md:mb-6")
+      phaseChaining?.classList.add("w-full")
+      phaseChaining?.classList.remove("justify-start", "justify-center", "items-center")
+      playerChainingShell?.classList.remove("contents")
+      playerChainingShell?.classList.add("flex", "w-full", "flex-col", "gap-4")
+      playerSubmitShell?.classList.remove("contents")
+    } else {
+      playerMainShell?.classList.add("contents")
+      playerMainShell?.classList.remove(
+        "mx-auto",
+        "grid",
+        "min-h-[100dvh]",
+        "w-full",
+        "max-w-5xl",
+        "content-center",
+        "-translate-y-8"
+      )
+      sharedTopBar?.classList.remove("mb-4", "w-full")
+      sharedTopBar?.classList.add("md:mb-6")
+      phaseChaining?.classList.remove("w-full")
+      phaseChaining?.classList.add("justify-start")
+      playerChainingShell?.classList.add("contents")
+      playerChainingShell?.classList.remove("flex", "w-full", "flex-col", "gap-4")
+      playerSubmitShell?.classList.add("contents")
+    }
+
+    if (role === "host") {
+      if (!state.teams.A.done && !hasSubmittedCurrentSeat(state.teams.A)) {
+        skipTeamABtn?.classList.remove("hidden")
       } else {
-        playerMainShell?.classList.add("contents")
-        playerMainShell?.classList.remove(
-          "mx-auto",
-          "grid",
-          "min-h-[100dvh]",
-          "w-full",
-          "max-w-5xl",
-          "content-center",
-          "-translate-y-8"
-        )
-        sharedTopBar?.classList.remove("mb-4", "w-full")
-        sharedTopBar?.classList.add("md:mb-6")
-        phaseChaining?.classList.remove("w-full")
-        phaseChaining?.classList.add("justify-start")
-        playerChainingShell?.classList.add("contents")
-        playerChainingShell?.classList.remove("flex", "w-full", "flex-col", "gap-4")
-        playerSubmitShell?.classList.add("contents")
+        skipTeamABtn?.classList.add("hidden")
       }
-
-      if (role === "host") {
-        if (!state.teams.A.done && !hasSubmittedCurrentSeat(state.teams.A)) {
-          skipTeamABtn?.classList.remove("hidden")
-        } else {
-          skipTeamABtn?.classList.add("hidden")
-        }
-        if (!state.teams.B.done && !hasSubmittedCurrentSeat(state.teams.B)) {
-          skipTeamBBtn?.classList.remove("hidden")
-        } else {
-          skipTeamBBtn?.classList.add("hidden")
-        }
-        if (canHostAdvanceSeat(state)) {
-          hostNextSeatBtn?.classList.remove("hidden")
-        } else {
-          hostNextSeatBtn?.classList.add("hidden")
-        }
+      if (!state.teams.B.done && !hasSubmittedCurrentSeat(state.teams.B)) {
+        skipTeamBBtn?.classList.remove("hidden")
+      } else {
+        skipTeamBBtn?.classList.add("hidden")
+      }
+      if (canHostAdvanceSeat(state)) {
+        hostNextSeatBtn?.classList.remove("hidden")
       } else {
         hostNextSeatBtn?.classList.add("hidden")
       }
+    } else {
+      hostNextSeatBtn?.classList.add("hidden")
+    }
 
-      // Render team chain blocks
-      populateChainList("A", state.teams.A, chainListA, "info", state.rules?.seats ?? 6)
-      populateChainList("B", state.teams.B, chainListB, "secondary", state.rules?.seats ?? 6)
-      syncPlayerPerspective(state, myTeam)
+    // Render team chain blocks
+    populateChainList("A", state.teams.A, chainListA, "info", state.rules?.seats ?? 6)
+    populateChainList("B", state.teams.B, chainListB, "secondary", state.rules?.seats ?? 6)
+    syncPlayerPerspective(state, myTeam)
 
-      if (state.paused) {
-        answerInput.setAttribute("disabled", "true")
-        submitBtn.disabled = true
-        submitBtn.classList.remove("btn-primary")
-        submitBtn.classList.add("btn-disabled")
-      } else {
-        answerInput.removeAttribute("disabled")
-        submitBtn.disabled = false
-        submitBtn.classList.add("btn-primary")
-        submitBtn.classList.remove("btn-disabled")
+    if (state.paused) {
+      answerInput.setAttribute("disabled", "true")
+      submitBtn.disabled = true
+      submitBtn.classList.remove("btn-primary")
+      submitBtn.classList.add("btn-disabled")
+    } else {
+      answerInput.removeAttribute("disabled")
+      submitBtn.disabled = false
+      submitBtn.classList.add("btn-primary")
+      submitBtn.classList.remove("btn-disabled")
+    }
+
+    // Handle submission panel activation. Players should normally have chosen a team at login.
+    if (role === "player" && liveSession) {
+      submitPanel?.classList.remove("hidden")
+      if (!myTeam) {
+        submitStatusBanner?.classList.remove("hidden")
+        submitActionRow?.classList.add("hidden")
+        submitPanel?.classList.remove("border-success/40", "bg-success/5")
+        submitPanel?.classList.add("border-primary/20")
+        submitStatusText.textContent = "尚未選擇隊伍，請回首頁重新登入。"
+        return
       }
 
-      // Handle submission panel activation. Players should normally have chosen a team at login.
-      if (role === "player" && liveSession) {
-        submitPanel?.classList.remove("hidden")
-        if (!myTeam) {
-          submitStatusBanner?.classList.remove("hidden")
-          submitActionRow?.classList.add("hidden")
-          submitPanel?.classList.remove("border-success/40", "bg-success/5")
-          submitPanel?.classList.add("border-primary/20")
-          submitStatusText.textContent = "尚未選擇隊伍，請回首頁重新登入。"
-          return
+      const currentTeamState = state.teams[myTeam]
+      const isMyTurn = !currentTeamState.done && !hasSubmittedCurrentSeat(currentTeamState)
+
+      if (isMyTurn) {
+        // Activate Submission Row
+        submitStatusBanner?.classList.add("hidden")
+        submitActionRow?.classList.remove("hidden")
+        submitPanel?.classList.add("border-success/40", "bg-success/5")
+        submitPanel?.classList.remove("border-primary/20")
+
+        if (answerInput && !state.paused) {
+          answerInput.disabled = false
+          answerInput.focus()
         }
+        if (submitBtn && !state.paused) submitBtn.disabled = false
+        if (topStatusKicker) topStatusKicker.textContent = "YOUR TURN"
+        if (topStatusNote)
+          topStatusNote.textContent = "目前輪到本隊作答，請直接完成這一棒的五字答案並送出。"
+      } else {
+        // Standby / Wait screen
+        submitStatusBanner?.classList.remove("hidden")
+        submitActionRow?.classList.add("hidden")
+        submitPanel?.classList.remove("border-success/40", "bg-success/5")
+        submitPanel?.classList.add("border-primary/20")
 
-        const currentTeamState = state.teams[myTeam]
-        const isMyTurn = !currentTeamState.done && !hasSubmittedCurrentSeat(currentTeamState)
-
-        if (isMyTurn) {
-          // Activate Submission Row
-          submitStatusBanner?.classList.add("hidden")
-          submitActionRow?.classList.remove("hidden")
-          submitPanel?.classList.add("border-success/40", "bg-success/5")
-          submitPanel?.classList.remove("border-primary/20")
-
-          if (answerInput && !state.paused) {
-            answerInput.disabled = false
-            answerInput.focus()
-          }
-          if (submitBtn && !state.paused) submitBtn.disabled = false
-          if (topStatusKicker) topStatusKicker.textContent = "YOUR TURN"
+        if (currentTeamState.done) {
+          submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成！等待評審階段開始中 🏁"
+          if (topStatusKicker) topStatusKicker.textContent = "TEAM COMPLETE"
           if (topStatusNote)
-            topStatusNote.textContent = "目前輪到本隊作答，請直接完成這一棒的五字答案並送出。"
+            topStatusNote.textContent = "本隊所有棒次已完成，等待另一隊完成後進入評審。"
+        } else if (hasSubmittedCurrentSeat(currentTeamState)) {
+          submitStatusText.textContent = "本棒次已送出，等待另一隊完成並由主持人切換下一棒。"
+          if (topStatusKicker) topStatusKicker.textContent = "WAITING"
+          if (topStatusNote) {
+            topStatusNote.textContent =
+              "本隊這一棒已提交，現在等待另一隊完成，之後由主持人手動切換下一棒。"
+          }
         } else {
-          // Standby / Wait screen
-          submitStatusBanner?.classList.remove("hidden")
-          submitActionRow?.classList.add("hidden")
-          submitPanel?.classList.remove("border-success/40", "bg-success/5")
-          submitPanel?.classList.add("border-primary/20")
-
-          if (currentTeamState.done) {
-            submitStatusText.textContent = "恭喜！您小隊的謎語接龍已全數完成！等待評審階段開始中 🏁"
-            if (topStatusKicker) topStatusKicker.textContent = "TEAM COMPLETE"
-            if (topStatusNote)
-              topStatusNote.textContent = "本隊所有棒次已完成，等待另一隊完成後進入評審。"
-          } else if (hasSubmittedCurrentSeat(currentTeamState)) {
-            submitStatusText.textContent = "本棒次已送出，等待另一隊完成並由主持人切換下一棒。"
-            if (topStatusKicker) topStatusKicker.textContent = "WAITING"
-            if (topStatusNote) {
-              topStatusNote.textContent =
-                "本隊這一棒已提交，現在等待另一隊完成，之後由主持人手動切換下一棒。"
-            }
-          } else {
-            submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
-            if (topStatusKicker) topStatusKicker.textContent = "STANDBY"
-            if (topStatusNote) {
-              topStatusNote.textContent = "請留意本隊棒次順序，主持人切到你的棒次後即可直接作答。"
-            }
+          submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
+          if (topStatusKicker) topStatusKicker.textContent = "STANDBY"
+          if (topStatusNote) {
+            topStatusNote.textContent = "請留意本隊棒次順序，主持人切到你的棒次後即可直接作答。"
           }
         }
-      } else {
-        // Host / Observer
-        submitPanel?.classList.add("hidden")
-        if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
-        if (topStatusNote) {
-          topStatusNote.textContent = canHostAdvanceSeat(state)
-            ? "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
-            : "等待雙方完成目前棒次。"
-        }
+      }
+    } else {
+      // Host / Observer
+      submitPanel?.classList.add("hidden")
+      if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
+      if (topStatusNote) {
+        topStatusNote.textContent = canHostAdvanceSeat(state)
+          ? "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
+          : "等待雙方完成目前棒次。"
       }
     }
+  }
 
-    function syncPlayerPerspective(state: any, myTeam: "A" | "B" | null) {
-      if (role !== "player") return
+  function syncPlayerPerspective(state: any, myTeam: "A" | "B" | null) {
+    if (role !== "player") return
 
-      const ownTeam = myTeam === "B" ? "B" : "A"
-      const ownState = state.teams[ownTeam]
-      const ownColor = ownTeam === "A" ? "info" : "secondary"
+    const ownTeam = myTeam === "B" ? "B" : "A"
+    const ownState = state.teams[ownTeam]
+    const ownColor = ownTeam === "A" ? "info" : "secondary"
 
-      if (playerOwnTitle) {
-        playerOwnTitle.textContent =
-          ownTeam === "A"
-            ? (headerGroupA.textContent ?? "第 1 組")
-            : (headerGroupB.textContent ?? "第 2 組")
-      }
-
-      populateChainList(ownTeam, ownState, playerOwnChain, ownColor, state.rules?.seats ?? 6)
+    if (playerOwnTitle) {
+      playerOwnTitle.textContent =
+        ownTeam === "A"
+          ? (headerGroupA.textContent ?? "第 1 組")
+          : (headerGroupB.textContent ?? "第 2 組")
     }
 
-    function populateChainList(
-      _teamId: "A" | "B",
-      teamState: any,
-      container: HTMLDivElement,
-      badgeColor: string,
-      seats: number
-    ) {
-      if (!container) return
-      container.innerHTML = ""
+    populateChainList(ownTeam, ownState, playerOwnChain, ownColor, state.rules?.seats ?? 6)
+  }
 
-      for (let i = 1; i <= seats; i++) {
-        const val = teamState.segments[i - 1] // segment is index i-1
-        const isCurrentActive = !teamState.done && teamState.currentSeat === i
+  function populateChainList(
+    _teamId: "A" | "B",
+    teamState: any,
+    container: HTMLDivElement,
+    badgeColor: string,
+    seats: number
+  ) {
+    if (!container) return
+    container.innerHTML = ""
 
-        const card = document.createElement("div")
-        card.className = `flex justify-between items-center p-2.5 rounded-xl bg-base-200 border ${
-          isCurrentActive ? `border-${badgeColor} bg-${badgeColor}/8` : "border-neutral/20"
-        }`
+    for (let i = 1; i <= seats; i++) {
+      const val = teamState.segments[i - 1] // segment is index i-1
+      const isCurrentActive = !teamState.done && teamState.currentSeat === i
 
-        const seatBadge = `<span class="badge badge-sm badge-${badgeColor} font-black">棒次 ${i}</span>`
-        let textSpan = `<span class="text-neutral-content/30 italic text-sm">等待作答...</span>`
+      const card = document.createElement("div")
+      card.className = `flex justify-between items-center p-2.5 rounded-xl bg-base-200 border ${
+        isCurrentActive ? `border-${badgeColor} bg-${badgeColor}/8` : "border-neutral/20"
+      }`
 
-        if (val !== undefined) {
-          if (val === "") {
-            textSpan = `<span class="text-error font-extrabold tracking-widest text-base">［超時未答］</span>`
+      const seatBadge = `<span class="badge badge-sm badge-${badgeColor} font-black">棒次 ${i}</span>`
+      let textSpan = `<span class="text-neutral-content/30 italic text-sm">等待作答...</span>`
+
+      if (val !== undefined) {
+        if (val === "") {
+          textSpan = `<span class="text-error font-extrabold tracking-widest text-base">［超時未答］</span>`
+        } else {
+          // If opponent text is empty string (hidden by backend), show block placeholder
+          const letters = [...val]
+          if (letters.length === 0) {
+            textSpan = `<span class="text-neutral-content/40 tracking-[0.24em] font-mono text-sm font-black">▇ ▇ ▇ ▇ ▇</span>`
           } else {
-            // If opponent text is empty string (hidden by backend), show block placeholder
-            const letters = [...val]
-            if (letters.length === 0) {
-              textSpan = `<span class="text-neutral-content/40 tracking-[0.24em] font-mono text-sm font-black">▇ ▇ ▇ ▇ ▇</span>`
-            } else {
-              textSpan = `<span class="text-success tracking-[0.2em] text-base font-black">${val}</span>`
-            }
+            textSpan = `<span class="text-success tracking-[0.2em] text-base font-black">${val}</span>`
           }
-        } else if (isCurrentActive) {
-          textSpan = `<span class="text-${badgeColor} font-extrabold text-sm">正在輸入中...</span>`
         }
+      } else if (isCurrentActive) {
+        textSpan = `<span class="text-${badgeColor} font-extrabold text-sm">正在輸入中...</span>`
+      }
 
-        card.innerHTML = `
+      card.innerHTML = `
         <div class="flex items-center gap-x-4">
           ${seatBadge}
           ${textSpan}
         </div>
       `
 
-        container.appendChild(card)
-      }
+      container.appendChild(card)
+    }
+  }
+
+  function hasSubmittedCurrentSeat(teamState: any) {
+    return (teamState?.segments?.length ?? 0) >= (teamState?.currentSeat ?? 0)
+  }
+
+  function canHostAdvanceSeat(state: any) {
+    return (
+      state?.phase === "CHAINING" &&
+      hasSubmittedCurrentSeat(state.teams.A) &&
+      hasSubmittedCurrentSeat(state.teams.B)
+    )
+  }
+
+  // Answer Submission Event
+  submitBtn?.addEventListener("click", performSubmit)
+  answerInput?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      performSubmit()
+    }
+  })
+
+  function performSubmit() {
+    if (submitError) submitError.textContent = ""
+    const text = answerInput.value.trim()
+
+    if ([...text].length !== 5) {
+      if (submitError) submitError.textContent = "答案必須剛好是 5 個字！"
+      return
     }
 
-    function hasSubmittedCurrentSeat(teamState: any) {
-      return (teamState?.segments?.length ?? 0) >= (teamState?.currentSeat ?? 0)
-    }
+    if (answerInput) answerInput.disabled = true
+    if (submitBtn) submitBtn.disabled = true
 
-    function canHostAdvanceSeat(state: any) {
-      return (
-        state?.phase === "CHAINING" &&
-        hasSubmittedCurrentSeat(state.teams.A) &&
-        hasSubmittedCurrentSeat(state.teams.B)
-      )
-    }
-
-    // Answer Submission Event
-    submitBtn?.addEventListener("click", performSubmit)
-    answerInput?.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        performSubmit()
+    socket.emit("segment:submit", { text }, (res: any) => {
+      if (res.ok) {
+        answerInput.value = ""
+      } else {
+        if (submitError) submitError.textContent = `提交失敗：${res.error}`
+        if (answerInput) answerInput.disabled = false
+        if (submitBtn) submitBtn.disabled = false
       }
     })
+  }
 
-    function performSubmit() {
-      if (submitError) submitError.textContent = ""
-      const text = answerInput.value.trim()
+  // ================= RENDER ROUND_RESULT =================
+  const resultWinnerLine = document.getElementById("result-winner-text") as HTMLHeadingElement
+  const resultScoreA = document.getElementById("result-score-a") as HTMLSpanElement
+  const resultScoreB = document.getElementById("result-score-b") as HTMLSpanElement
+  const criteriaBreakdownA = document.getElementById("criteria-breakdown-a") as HTMLDivElement
+  const criteriaBreakdownB = document.getElementById("criteria-breakdown-b") as HTMLDivElement
+  const resultReason = document.getElementById("result-reason") as HTMLQuoteElement
+  const hostNextRoundBtn = document.getElementById("host-next-round-btn") as HTMLButtonElement
+  const playerWaitingBanner = document.getElementById("player-waiting-banner") as HTMLDivElement
+  const degradedBadge = document.getElementById("degraded-badge") as HTMLSpanElement
 
-      if ([...text].length !== 5) {
-        if (submitError) submitError.textContent = "答案必須剛好是 5 個字！"
-        return
-      }
+  function renderRoundResult(state: any) {
+    phaseResult?.classList.remove("hidden")
 
-      if (answerInput) answerInput.disabled = true
-      if (submitBtn) submitBtn.disabled = true
+    // Extract the last round result
+    const lastResult = state.rounds[state.rounds.length - 1]
+    if (!lastResult) return
 
-      socket.emit("segment:submit", { text }, (res: any) => {
-        if (res.ok) {
-          answerInput.value = ""
-        } else {
-          if (submitError) submitError.textContent = `提交失敗：${res.error}`
-          if (answerInput) answerInput.disabled = false
-          if (submitBtn) submitBtn.disabled = false
-        }
-      })
-    }
-
-    // ================= RENDER ROUND_RESULT =================
-    const resultWinnerLine = document.getElementById("result-winner-text") as HTMLHeadingElement
-    const resultScoreA = document.getElementById("result-score-a") as HTMLSpanElement
-    const resultScoreB = document.getElementById("result-score-b") as HTMLSpanElement
-    const criteriaBreakdownA = document.getElementById("criteria-breakdown-a") as HTMLDivElement
-    const criteriaBreakdownB = document.getElementById("criteria-breakdown-b") as HTMLDivElement
-    const resultReason = document.getElementById("result-reason") as HTMLQuoteElement
-    const hostNextRoundBtn = document.getElementById("host-next-round-btn") as HTMLButtonElement
-    const playerWaitingBanner = document.getElementById("player-waiting-banner") as HTMLDivElement
-    const degradedBadge = document.getElementById("degraded-badge") as HTMLSpanElement
-
-    function renderRoundResult(state: any) {
-      phaseResult?.classList.remove("hidden")
-
-      // Extract the last round result
-      const lastResult = state.rounds[state.rounds.length - 1]
-      if (!lastResult) return
-
-      if (resultWinnerLine) {
-        if (lastResult.winner === "tie") {
-          resultWinnerLine.className = "text-4xl font-extrabold tracking-wide text-warning"
-          resultWinnerLine.textContent = "本局平手！"
-        } else {
-          const teamName =
-            lastResult.winner === "A"
-              ? `第 ${lastResult.matchup.groupA} 組`
-              : `第 ${lastResult.matchup.groupB} 組`
-          resultWinnerLine.className = `text-4xl font-extrabold tracking-wide text-${lastResult.winner === "A" ? "info" : "secondary"}`
-          resultWinnerLine.textContent = `🎉 恭喜 ${teamName} 拿下此局！`
-        }
-      }
-
-      if (resultScoreA) resultScoreA.textContent = `${lastResult.scoreA} 分`
-      if (resultScoreB) resultScoreB.textContent = `${lastResult.scoreB} 分`
-
-      // Populate Sliders criteria A & B
-      populateCriteria(lastResult.breakdown.A, criteriaBreakdownA, "info")
-      populateCriteria(lastResult.breakdown.B, criteriaBreakdownB, "secondary")
-
-      // Populate speech reason
-      if (resultReason) resultReason.textContent = lastResult.reason || "評審未留下任何評語。"
-
-      // Degradation Mode badge show
-      if (lastResult.degraded && degradedBadge) {
-        degradedBadge.classList.remove("hidden")
-      } else if (degradedBadge) {
-        degradedBadge.classList.add("hidden")
-      }
-
-      // Role actions
-      if (role === "host") {
-        hostNextRoundBtn?.classList.remove("hidden")
-        playerWaitingBanner?.classList.add("hidden")
+    if (resultWinnerLine) {
+      if (lastResult.winner === "tie") {
+        resultWinnerLine.className = "text-4xl font-extrabold tracking-wide text-warning"
+        resultWinnerLine.textContent = "本局平手！"
       } else {
-        hostNextRoundBtn?.classList.add("hidden")
-        playerWaitingBanner?.classList.remove("hidden")
+        const teamName =
+          lastResult.winner === "A"
+            ? `第 ${lastResult.matchup.groupA} 組`
+            : `第 ${lastResult.matchup.groupB} 組`
+        resultWinnerLine.className = `text-4xl font-extrabold tracking-wide text-${lastResult.winner === "A" ? "info" : "secondary"}`
+        resultWinnerLine.textContent = `🎉 恭喜 ${teamName} 拿下此局！`
       }
     }
 
-    function populateCriteria(breakdown: any, container: HTMLDivElement, colorClass: string) {
-      if (!container) return
-      container.innerHTML = ""
+    if (resultScoreA) resultScoreA.textContent = `${lastResult.scoreA} 分`
+    if (resultScoreB) resultScoreB.textContent = `${lastResult.scoreB} 分`
 
-      const items = [
-        { key: "邏輯性 (25%)", val: breakdown.logic },
-        { key: "符合度 (30%)", val: breakdown.relevance },
-        { key: "完整性 (25%)", val: breakdown.completeness },
-        { key: "創意性 (20%)", val: breakdown.creativity },
-      ]
+    // Populate Sliders criteria A & B
+    populateCriteria(lastResult.breakdown.A, criteriaBreakdownA, "info")
+    populateCriteria(lastResult.breakdown.B, criteriaBreakdownB, "secondary")
 
-      for (const item of items) {
-        const row = document.createElement("div")
-        row.className = "space-y-1"
+    // Populate speech reason
+    if (resultReason) resultReason.textContent = lastResult.reason || "評審未留下任何評語。"
 
-        row.innerHTML = `
+    // Degradation Mode badge show
+    if (lastResult.degraded && degradedBadge) {
+      degradedBadge.classList.remove("hidden")
+    } else if (degradedBadge) {
+      degradedBadge.classList.add("hidden")
+    }
+
+    // Role actions
+    if (role === "host") {
+      hostNextRoundBtn?.classList.remove("hidden")
+      playerWaitingBanner?.classList.add("hidden")
+    } else {
+      hostNextRoundBtn?.classList.add("hidden")
+      playerWaitingBanner?.classList.remove("hidden")
+    }
+  }
+
+  function populateCriteria(breakdown: any, container: HTMLDivElement, colorClass: string) {
+    if (!container) return
+    container.innerHTML = ""
+
+    const items = [
+      { key: "邏輯性 (25%)", val: breakdown.logic },
+      { key: "符合度 (30%)", val: breakdown.relevance },
+      { key: "完整性 (25%)", val: breakdown.completeness },
+      { key: "創意性 (20%)", val: breakdown.creativity },
+    ]
+
+    for (const item of items) {
+      const row = document.createElement("div")
+      row.className = "space-y-1"
+
+      row.innerHTML = `
         <div class="flex justify-between items-center text-xs font-bold">
           <span class="text-neutral">${item.key}</span>
           <span class="text-${colorClass}">${item.val} / 100</span>
@@ -1025,164 +1024,161 @@ import ZapIcon from "~icons/lucide/zap"
         <progress class="progress progress-${colorClass} w-full h-2" value="${item.val}" max="100"></progress>
       `
 
-        container.appendChild(row)
-      }
+      container.appendChild(row)
     }
+  }
 
-    // Next round click trigger
-    hostNextRoundBtn?.addEventListener("click", () => {
-      socket.emit("match:start", {}, (res: any) => {
-        if (!res.ok) {
-          alert(`無法開啟新一回合：${res.error}`)
-        }
-      })
+  // Next round click trigger
+  hostNextRoundBtn?.addEventListener("click", () => {
+    socket.emit("match:start", {}, (res: any) => {
+      if (!res.ok) {
+        alert(`無法開啟新一回合：${res.error}`)
+      }
     })
+  })
 
-    // ================= RENDER MATCH_OVER =================
-    const matchoverWinnerText = document.getElementById(
-      "matchover-winner-text"
-    ) as HTMLHeadingElement
-    const endGameBtn = document.getElementById("end-game-btn") as HTMLButtonElement
-    const matchoverWaitingBanner = document.getElementById(
-      "matchover-waiting-banner"
-    ) as HTMLDivElement
+  // ================= RENDER MATCH_OVER =================
+  const matchoverWinnerText = document.getElementById("matchover-winner-text") as HTMLHeadingElement
+  const endGameBtn = document.getElementById("end-game-btn") as HTMLButtonElement
+  const matchoverWaitingBanner = document.getElementById(
+    "matchover-waiting-banner"
+  ) as HTMLDivElement
 
-    function renderMatchOver(state: any) {
-      phaseMatchover?.classList.remove("hidden")
-      const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
-      const groupA = matchup?.groupA ?? 1
-      const groupB = matchup?.groupB ?? 2
-      const winner =
-        state.score.A === state.score.B
-          ? "平手"
-          : state.score.A > state.score.B
-            ? `第 ${groupA} 組獲勝`
-            : `第 ${groupB} 組獲勝`
-      if (matchoverWinnerText) {
-        matchoverWinnerText.textContent = `${winner}，本場對戰結束`
-      }
-      if (role === "host") {
-        endGameBtn?.classList.remove("hidden")
-        matchoverWaitingBanner?.classList.add("hidden")
-      } else {
-        endGameBtn?.classList.add("hidden")
-        matchoverWaitingBanner?.classList.remove("hidden")
-      }
+  function renderMatchOver(state: any) {
+    phaseMatchover?.classList.remove("hidden")
+    const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
+    const groupA = matchup?.groupA ?? 1
+    const groupB = matchup?.groupB ?? 2
+    const winner =
+      state.score.A === state.score.B
+        ? "平手"
+        : state.score.A > state.score.B
+          ? `第 ${groupA} 組獲勝`
+          : `第 ${groupB} 組獲勝`
+    if (matchoverWinnerText) {
+      matchoverWinnerText.textContent = `${winner}，本場對戰結束`
     }
-
-    function syncGroupLabels(state: any) {
-      const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
-      const groupA = matchup?.groupA ?? 1
-      const groupB = matchup?.groupB ?? 2
-      headerGroupA.textContent = `第 ${groupA} 組`
-      headerGroupB.textContent = `第 ${groupB} 組`
-      teamATitle.textContent = `第 ${groupA} 組`
-      teamBTitle.textContent = `第 ${groupB} 組`
-      resultGroupATitle.textContent = `第 ${groupA} 組`
-      resultGroupBTitle.textContent = `第 ${groupB} 組`
-      if (playerOwnTitle && role === "player") {
-        const liveSession = getSession()
-        const myTeam = liveSession?.team ?? "A"
-        playerOwnTitle.textContent = myTeam === "A" ? `第 ${groupA} 組` : `第 ${groupB} 組`
-      }
-      if (topStatusSideLabel) {
-        topStatusSideLabel.textContent = role === "player" ? "MATCH SCORE" : "LIVE SCORE"
-      }
-      roomInfo.textContent =
-        state.matchMode === "test"
-          ? `測試場對戰：第 ${groupA} 組 vs 第 ${groupB} 組`
-          : `正式場對戰：第 ${groupA} 組 vs 第 ${groupB} 組`
+    if (role === "host") {
+      endGameBtn?.classList.remove("hidden")
+      matchoverWaitingBanner?.classList.add("hidden")
+    } else {
+      endGameBtn?.classList.add("hidden")
+      matchoverWaitingBanner?.classList.remove("hidden")
     }
+  }
 
-    endGameBtn?.addEventListener("click", () => {
-      socket.emit("host:end_game", {}, (res: any) => {
-        if (!res.ok) {
-          alert(`無法結束本場對戰：${res.error}`)
-        }
-      })
-    })
-
-    liveSetTopicBtn?.addEventListener("click", () => {
-      const topic = liveTopicInput.value.trim()
-      if (!topic) return setLiveHostStatus("請先輸入下一題", true)
-      socket.emit("host:set_topic", { topic }, (res: any) => {
-        if (!res.ok) setLiveHostStatus(`指定題目失敗：${res.error}`, true)
-        else setLiveHostStatus("下一題已指定")
-      })
-    })
-
-    hostForceEndGameBtn?.addEventListener("click", () => {
-      const confirmed = confirm("確認要直接結束這一組遊戲嗎？目前進度將不再繼續。")
-      if (!confirmed) return
-      socket.emit("host:force_end_game", {}, (res: any) => {
-        if (!res.ok) setLiveHostStatus(`無法強制結束本組：${res.error}`, true)
-        else setLiveHostStatus("已強制結束這一組遊戲")
-      })
-    })
-
-    liveRandomTopicBtn?.addEventListener("click", () => {
-      socket.emit("host:set_topic", { random: true }, (res: any) => {
-        if (!res.ok) setLiveHostStatus(`隨機題目失敗：${res.error}`, true)
-        else setLiveHostStatus("已從題庫隨機選題")
-      })
-    })
-
-    function syncLiveHostForm(state: any) {
-      if (role !== "host") return
-      if (liveTopicInput && document.activeElement !== liveTopicInput) {
-        liveTopicInput.value = state.nextTopic ?? ""
-      }
+  function syncGroupLabels(state: any) {
+    const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
+    const groupA = matchup?.groupA ?? 1
+    const groupB = matchup?.groupB ?? 2
+    headerGroupA.textContent = `第 ${groupA} 組`
+    headerGroupB.textContent = `第 ${groupB} 組`
+    teamATitle.textContent = `第 ${groupA} 組`
+    teamBTitle.textContent = `第 ${groupB} 組`
+    resultGroupATitle.textContent = `第 ${groupA} 組`
+    resultGroupBTitle.textContent = `第 ${groupB} 組`
+    if (playerOwnTitle && role === "player") {
+      const liveSession = getSession()
+      const myTeam = liveSession?.team ?? "A"
+      playerOwnTitle.textContent = myTeam === "A" ? `第 ${groupA} 組` : `第 ${groupB} 組`
     }
-
-    function setLiveHostStatus(message: string, isError = false) {
-      if (!hostLiveStatus) return
-      hostLiveStatus.textContent = message
-      hostLiveStatus.className = isError
-        ? "text-error min-h-[1.25rem] text-xs font-bold"
-        : "text-success min-h-[1.25rem] text-xs font-bold"
+    if (topStatusSideLabel) {
+      topStatusSideLabel.textContent = role === "player" ? "MATCH SCORE" : "LIVE SCORE"
     }
+    roomInfo.textContent =
+      state.matchMode === "test"
+        ? `測試場對戰：第 ${groupA} 組 vs 第 ${groupB} 組`
+        : `正式場對戰：第 ${groupA} 組 vs 第 ${groupB} 組`
+  }
 
-    // ================= HOST CONTROL ACTIONS EVENT LISTENERS =================
-    hostPauseBtn?.addEventListener("click", () => {
-      socket.emit("host:pause", {}, (res: any) => {
-        if (!res.ok) alert(`暫停失敗：${res.error}`)
-      })
-    })
-
-    hostResumeBtn?.addEventListener("click", () => {
-      socket.emit("host:resume", {}, (res: any) => {
-        if (!res.ok) alert(`恢復失敗：${res.error}`)
-      })
-    })
-
-    hostForceJudgeBtn?.addEventListener("click", () => {
-      if (confirm("確認強制提早結束本回合，直接進入 AI 評審打分階段嗎？")) {
-        socket.emit("host:force_judge", {}, (res: any) => {
-          if (!res.ok) alert(`操作失敗：${res.error}`)
-        })
+  endGameBtn?.addEventListener("click", () => {
+    socket.emit("host:end_game", {}, (res: any) => {
+      if (!res.ok) {
+        alert(`無法結束本場對戰：${res.error}`)
       }
     })
+  })
 
-    hostNextSeatBtn?.addEventListener("click", () => {
-      socket.emit("host:advance_seat", {}, (res: any) => {
-        if (!res.ok) alert(`無法進入下一棒：${res.error}`)
+  liveSetTopicBtn?.addEventListener("click", () => {
+    const topic = liveTopicInput.value.trim()
+    if (!topic) return setLiveHostStatus("請先輸入下一題", true)
+    socket.emit("host:set_topic", { topic }, (res: any) => {
+      if (!res.ok) setLiveHostStatus(`指定題目失敗：${res.error}`, true)
+      else setLiveHostStatus("下一題已指定")
+    })
+  })
+
+  hostForceEndGameBtn?.addEventListener("click", () => {
+    const confirmed = confirm("確認要直接結束這一組遊戲嗎？目前進度將不再繼續。")
+    if (!confirmed) return
+    socket.emit("host:force_end_game", {}, (res: any) => {
+      if (!res.ok) setLiveHostStatus(`無法強制結束本組：${res.error}`, true)
+      else setLiveHostStatus("已強制結束這一組遊戲")
+    })
+  })
+
+  liveRandomTopicBtn?.addEventListener("click", () => {
+    socket.emit("host:set_topic", { random: true }, (res: any) => {
+      if (!res.ok) setLiveHostStatus(`隨機題目失敗：${res.error}`, true)
+      else setLiveHostStatus("已從題庫隨機選題")
+    })
+  })
+
+  function syncLiveHostForm(state: any) {
+    if (role !== "host") return
+    if (liveTopicInput && document.activeElement !== liveTopicInput) {
+      liveTopicInput.value = state.nextTopic ?? ""
+    }
+  }
+
+  function setLiveHostStatus(message: string, isError = false) {
+    if (!hostLiveStatus) return
+    hostLiveStatus.textContent = message
+    hostLiveStatus.className = isError
+      ? "text-error min-h-[1.25rem] text-xs font-bold"
+      : "text-success min-h-[1.25rem] text-xs font-bold"
+  }
+
+  // ================= HOST CONTROL ACTIONS EVENT LISTENERS =================
+  hostPauseBtn?.addEventListener("click", () => {
+    socket.emit("host:pause", {}, (res: any) => {
+      if (!res.ok) alert(`暫停失敗：${res.error}`)
+    })
+  })
+
+  hostResumeBtn?.addEventListener("click", () => {
+    socket.emit("host:resume", {}, (res: any) => {
+      if (!res.ok) alert(`恢復失敗：${res.error}`)
+    })
+  })
+
+  hostForceJudgeBtn?.addEventListener("click", () => {
+    if (confirm("確認強制提早結束本回合，直接進入 AI 評審打分階段嗎？")) {
+      socket.emit("host:force_judge", {}, (res: any) => {
+        if (!res.ok) alert(`操作失敗：${res.error}`)
       })
-    })
+    }
+  })
 
-    skipTeamABtn?.addEventListener("click", () => {
-      if (confirm("確認強制超時並跳過 A 小隊當前棒次嗎？")) {
-        socket.emit("host:skip_turn", { team: "A" }, (res: any) => {
-          if (!res.ok) alert(`操作失敗：${res.error}`)
-        })
-      }
+  hostNextSeatBtn?.addEventListener("click", () => {
+    socket.emit("host:advance_seat", {}, (res: any) => {
+      if (!res.ok) alert(`無法進入下一棒：${res.error}`)
     })
+  })
 
-    skipTeamBBtn?.addEventListener("click", () => {
-      if (confirm("確認強制超時並跳過 B 小隊當前棒次嗎？")) {
-        socket.emit("host:skip_turn", { team: "B" }, (res: any) => {
-          if (!res.ok) alert(`操作失敗：${res.error}`)
-        })
-      }
-    })
-  </script>
-</Layout>
+  skipTeamABtn?.addEventListener("click", () => {
+    if (confirm("確認強制超時並跳過 A 小隊當前棒次嗎？")) {
+      socket.emit("host:skip_turn", { team: "A" }, (res: any) => {
+        if (!res.ok) alert(`操作失敗：${res.error}`)
+      })
+    }
+  })
+
+  skipTeamBBtn?.addEventListener("click", () => {
+    if (confirm("確認強制超時並跳過 B 小隊當前棒次嗎？")) {
+      socket.emit("host:skip_turn", { team: "B" }, (res: any) => {
+        if (!res.ok) alert(`操作失敗：${res.error}`)
+      })
+    }
+  })
+</script>
