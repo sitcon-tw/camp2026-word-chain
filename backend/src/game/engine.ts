@@ -371,6 +371,11 @@ export class GameEngine {
       text,
     });
 
+    if (bothTeamsDone(this.state)) {
+      await this.toJudging();
+      return { ok: true };
+    }
+
     await this.save();
     this.emitTurnChanged(p.team);
     this.broadcastState();
@@ -424,6 +429,12 @@ export class GameEngine {
       team,
       detail: kind,
     });
+
+    if (bothTeamsDone(this.state)) {
+      await this.toJudging();
+      return;
+    }
+
     await this.save();
     this.emitTurnChanged(team);
     this.broadcastState();
