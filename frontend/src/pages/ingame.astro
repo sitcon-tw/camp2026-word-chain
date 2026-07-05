@@ -307,131 +307,122 @@ import ZapIcon from "~icons/lucide/zap"
           </button>
         </div>
       </div>
+    </div>
+    <!-- ================= PHASE 3: JUDGING ================= -->
+    <div
+      id="phase-judging"
+      class="card bg-base-300 border-primary/20 flex hidden flex-col items-center gap-y-6 border p-12 text-center shadow-2xl">
+      <RefreshCwIcon class="text-primary h-16 w-16 animate-spin" />
+      <h2 class="text-primary text-3xl font-black tracking-widest">⚖️ 公正 AI 評審分析中</h2>
+      <p class="text-neutral-content/70 max-w-lg leading-relaxed">
+        評審團正依據 <span class="text-secondary font-bold">邏輯性 (25%)</span>、<span
+          class="text-secondary font-bold">符合度 (30%)</span
+        >、<span class="text-secondary font-bold">完整性 (25%)</span> 及 <span
+          class="text-secondary font-bold">創意性 (20%)</span
+        > 進行精準打分，並生成繁體中文評語。請耐心等候...
+      </p>
+    </div>
 
-      <!-- ================= PHASE 3: JUDGING ================= -->
+    <!-- ================= PHASE 4: ROUND_RESULT ================= -->
+    <div id="phase-result" class="flex hidden flex-col gap-y-6">
+      <!-- Winner Banner -->
       <div
-        id="phase-judging"
-        class="card bg-base-300 border-primary/20 flex hidden flex-col items-center gap-y-6 border p-12 text-center shadow-2xl">
-        <RefreshCwIcon class="text-primary h-16 w-16 animate-spin" />
-        <h2 class="text-primary text-3xl font-black tracking-widest">⚖️ 公正 AI 評審分析中</h2>
-        <p class="text-neutral-content/70 max-w-lg leading-relaxed">
-          評審團正依據 <span class="text-secondary font-bold">邏輯性 (25%)</span>、<span
-            class="text-secondary font-bold">符合度 (30%)</span
-          >、<span class="text-secondary font-bold">完整性 (25%)</span> 及 <span
-            class="text-secondary font-bold">創意性 (20%)</span
-          > 進行精準打分，並生成繁體中文評語。請耐心等候...
-        </p>
+        class="card bg-base-300 border-success/20 flex flex-col items-center gap-y-2 border p-6 text-center shadow-xl">
+        <AwardIcon class="text-warning h-12 w-12 animate-bounce" />
+        <span class="text-warning text-xs font-black tracking-widest uppercase">單回合評審結果</span
+        >
+        <h2 class="text-4xl font-extrabold tracking-wide" id="result-winner-text">第 1 組獲勝！</h2>
       </div>
 
-      <!-- ================= PHASE 4: ROUND_RESULT ================= -->
-      <div id="phase-result" class="flex hidden flex-col gap-y-6">
-        <!-- Winner Banner -->
+      <!-- Scores and Criteria Details -->
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <!-- Team A Breakdown -->
+        <div class="card bg-base-300 border-info/20 border shadow-xl">
+          <div class="card-body p-5">
+            <div class="border-info/10 mb-4 flex items-center justify-between border-b pb-2">
+              <span id="result-group-a-title" class="text-info text-lg font-black">第 1 組</span>
+              <span id="result-score-a" class="text-info font-mono text-3xl font-black">0 分</span>
+            </div>
+
+            <!-- Progress sliders for criteria -->
+            <div class="space-y-3" id="criteria-breakdown-a">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Team B Breakdown -->
+        <div class="card bg-base-300 border-secondary/20 border shadow-xl">
+          <div class="card-body p-5">
+            <div class="border-secondary/10 mb-4 flex items-center justify-between border-b pb-2">
+              <span id="result-group-b-title" class="text-secondary text-lg font-black"
+                >第 2 組</span
+              >
+              <span id="result-score-b" class="text-secondary font-mono text-3xl font-black"
+                >0 分</span
+              >
+            </div>
+
+            <!-- Progress sliders for criteria -->
+            <div class="space-y-3" id="criteria-breakdown-b">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Judge Reason bubble -->
+      <div class="card bg-base-300 border-primary/10 border p-6 shadow-xl">
+        <h3 class="text-primary mb-2 text-sm font-bold tracking-wider uppercase"
+          >AI 評審講評與評估緣由</h3
+        >
+        <blockquote
+          id="result-reason"
+          class="bg-base-100 border-primary/5 text-neutral rounded-2xl border p-5 text-lg leading-relaxed font-medium italic">
+          「載入講評中...」
+        </blockquote>
+        <span
+          id="degraded-badge"
+          class="badge badge-warning mt-2 hidden self-start text-[10px] font-bold"
+          >⚡ 偵測到 Gemini 連線異常：已啟用本地 AI 演算法完成容錯打分</span
+        >
+      </div>
+
+      <!-- Next Actions -->
+      <div class="flex justify-center gap-x-4">
+        <button
+          id="host-next-round-btn"
+          class="btn btn-success btn-lg shadow-success/15 hidden px-12 shadow-lg">
+          <PlayIcon class="mr-1 h-6 w-6" />
+          <span>進入下一回合</span>
+        </button>
+        <div id="player-waiting-banner" class="alert alert-info max-w-md justify-center font-bold">
+          <HourglassIcon class="h-5 w-5 animate-spin" />
+          <span>等待主持人開啟下一回合...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PHASE 5: MATCH_OVER ================= -->
+    <div
+      id="phase-matchover"
+      class="card bg-base-300 border-warning/30 flex hidden flex-col items-center gap-y-6 border p-10 text-center shadow-2xl">
+      <AwardIcon class="text-warning h-20 w-20 animate-pulse" />
+      <h2
+        class="text-warning text-5xl font-black tracking-widest drop-shadow-lg"
+        id="matchover-winner-text">正式場已完成</h2
+      >
+      <p class="text-neutral text-lg">經過多回合的智慧謎語接龍激烈交鋒，恭喜獲勝組別！</p>
+
+      <div class="divider my-0"></div>
+
+      <div class="flex gap-x-4">
+        <button id="end-game-btn" class="btn btn-primary btn-lg hidden px-10">結束遊戲</button>
         <div
-          class="card bg-base-300 border-success/20 flex flex-col items-center gap-y-2 border p-6 text-center shadow-xl">
-          <AwardIcon class="text-warning h-12 w-12 animate-bounce" />
-          <span class="text-warning text-xs font-black tracking-widest uppercase"
-            >單回合評審結果</span
-          >
-          <h2 class="text-4xl font-extrabold tracking-wide" id="result-winner-text"
-            >第 1 組獲勝！</h2
-          >
-        </div>
-
-        <!-- Scores and Criteria Details -->
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <!-- Team A Breakdown -->
-          <div class="card bg-base-300 border-info/20 border shadow-xl">
-            <div class="card-body p-5">
-              <div class="border-info/10 mb-4 flex items-center justify-between border-b pb-2">
-                <span id="result-group-a-title" class="text-info text-lg font-black">第 1 組</span>
-                <span id="result-score-a" class="text-info font-mono text-3xl font-black">0 分</span
-                >
-              </div>
-
-              <!-- Progress sliders for criteria -->
-              <div class="space-y-3" id="criteria-breakdown-a">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Team B Breakdown -->
-          <div class="card bg-base-300 border-secondary/20 border shadow-xl">
-            <div class="card-body p-5">
-              <div class="border-secondary/10 mb-4 flex items-center justify-between border-b pb-2">
-                <span id="result-group-b-title" class="text-secondary text-lg font-black"
-                  >第 2 組</span
-                >
-                <span id="result-score-b" class="text-secondary font-mono text-3xl font-black"
-                  >0 分</span
-                >
-              </div>
-
-              <!-- Progress sliders for criteria -->
-              <div class="space-y-3" id="criteria-breakdown-b">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- AI Judge Reason bubble -->
-        <div class="card bg-base-300 border-primary/10 border p-6 shadow-xl">
-          <h3 class="text-primary mb-2 text-sm font-bold tracking-wider uppercase"
-            >AI 評審講評與評估緣由</h3
-          >
-          <blockquote
-            id="result-reason"
-            class="bg-base-100 border-primary/5 text-neutral-content/90 rounded-2xl border p-5 text-lg leading-relaxed font-medium italic">
-            「載入講評中...」
-          </blockquote>
-          <span
-            id="degraded-badge"
-            class="badge badge-warning mt-2 hidden self-start text-[10px] font-bold"
-            >⚡ 偵測到 Gemini 連線異常：已啟用本地 AI 演算法完成容錯打分</span
-          >
-        </div>
-
-        <!-- Next Actions -->
-        <div class="flex justify-center gap-x-4">
-          <button
-            id="host-next-round-btn"
-            class="btn btn-success btn-lg shadow-success/15 hidden px-12 shadow-lg">
-            <PlayIcon class="mr-1 h-6 w-6" />
-            <span>進入下一回合</span>
-          </button>
-          <div
-            id="player-waiting-banner"
-            class="alert alert-info max-w-md justify-center font-bold">
-            <HourglassIcon class="h-5 w-5 animate-spin" />
-            <span>等待主持人開啟下一回合...</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= PHASE 5: MATCH_OVER ================= -->
-      <div
-        id="phase-matchover"
-        class="card bg-base-300 border-warning/30 flex hidden flex-col items-center gap-y-6 border p-10 text-center shadow-2xl">
-        <AwardIcon class="text-warning h-20 w-20 animate-pulse" />
-        <h2
-          class="text-warning text-5xl font-black tracking-widest drop-shadow-lg"
-          id="matchover-winner-text">正式場已完成</h2
-        >
-        <p class="text-neutral-content/70 text-lg"
-          >經過多回合的智慧謎語接龍激烈交鋒，恭喜獲勝組別！</p
-        >
-
-        <div class="divider my-0 max-w-sm"></div>
-
-        <div class="flex gap-x-4">
-          <button id="end-game-btn" class="btn btn-primary btn-lg hidden px-10">結束遊戲</button>
-          <div
-            id="matchover-waiting-banner"
-            class="alert alert-info max-w-md justify-center font-bold">
-            <HourglassIcon class="h-5 w-5 animate-spin" />
-            <span>等待主持人結束本場對戰...</span>
-          </div>
+          id="matchover-waiting-banner"
+          class="alert alert-info max-w-md justify-center font-bold">
+          <HourglassIcon class="h-5 w-5 animate-spin" />
+          <span>等待主持人結束本場對戰...</span>
         </div>
       </div>
     </div>
@@ -1028,7 +1019,7 @@ import ZapIcon from "~icons/lucide/zap"
 
         row.innerHTML = `
         <div class="flex justify-between items-center text-xs font-bold">
-          <span class="text-neutral-content/70">${item.key}</span>
+          <span class="text-neutral">${item.key}</span>
           <span class="text-${colorClass}">${item.val} / 100</span>
         </div>
         <progress class="progress progress-${colorClass} w-full h-2" value="${item.val}" max="100"></progress>
