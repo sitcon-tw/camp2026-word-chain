@@ -1,178 +1,117 @@
 ---
 import Layout from "@/layouts/Layout.astro"
+import CheckCheckIcon from "~icons/lucide/check-check"
+import SparklesIcon from "~icons/lucide/sparkles"
 import LogOutIcon from "~icons/lucide/log-out"
-import PlayIcon from "~icons/lucide/play"
 ---
 
-<Layout>
-  <div class="card bg-base-300 w-full">
-    <div class="card-body gap-y-2">
-      <div class="flex">
-        <div class="grid flex-1 gap-y-1">
-          <h1 class="text-primary text-2xl font-black tracking-wide">AI 謎題接龍 - 遊戲大廳</h1>
-          <p id="room-id-display" class="text-neutral-content/60 font-mono text-xs">載入中...</p>
-          <p id="lobby-status-text" class="text-neutral-content/70">正在與伺服器建立同步連線...</p>
+<Layout title="等待大廳">
+  <div class="wc-page wc-page-full">
+    <section class="wc-grid-hero min-h-[min(600px,calc(100dvh-230px))]">
+      <div class="wc-panel wc-panel-distribute p-5 md:p-6">
+        <div class="wc-panel-top flex-wrap">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="wc-chip">
+              <img src="/sitcon-mark.svg" alt="SITCON" class="h-5 w-5" />
+              PLAYER LOBBY
+            </span>
+            <span id="room-id-display" class="wc-chip font-mono">載入中...</span>
+          </div>
         </div>
 
-        <button id="exit-btn" class="btn btn-ghost btn-circle btn-error" title="離開房間">
-          <LogOutIcon class="size-5" />
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card bg-base-300 w-full">
-    <div class="card-body grid grid-cols-2 gap-x-2">
-      <div class="grid gap-y-2">
-        <h2 class="card-title text-info text-xl font-black">藍隊</h2>
-        <div id="team-a-players"></div>
-      </div>
-
-      <div class="grid gap-y-2">
-        <h2 class="card-title text-secondary text-xl font-black">紅隊</h2>
-        <div id="team-b-players"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card bg-base-300 w-full">
-    <div class="card-body">
-      <div class="flex items-center justify-between">
-        <h2 class="text-warning text-lg font-bold">未選隊伍</h2>
-        <span id="waiting-count" class="badge badge-warning font-bold">0</span>
-      </div>
-      <div id="waiting-players" class="grid grid-cols-2 gap-2"></div>
-    </div>
-  </div>
-
-  <div id="host-setup-panel" class="card bg-base-300 border-primary/10 hidden border shadow-xl">
-    <div class="card-body gap-y-2">
-      <h2 class="card-title text-primary text-lg font-black">主持設定</h2>
-      <p id="host-save-status" class="text-neutral-content/50 text-xs"></p>
-
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">場次模式</label>
-        <div class="grid grid-cols-2 gap-2">
-          <button id="set-formal-mode-btn" class="btn btn-outline btn-sm">正式場</button>
-          <button id="set-test-mode-btn" class="btn btn-outline btn-sm">測試場</button>
+        <div class="wc-panel-mid gap-3">
+          <div>
+            <p class="text-sm font-black tracking-[0.3em] text-[#2464ea]">WAITING ROOM</p>
+            <h1 class="wc-title mt-3">參賽等待區</h1>
+          </div>
+          <p id="lobby-status-text" class="wc-subtitle">
+            正在與伺服器建立同步連線，等待主持人開始比賽。
+          </p>
+          <div class="rounded-[1.6rem] border border-[#24272e]/8 bg-white/70 p-5">
+            <div class="text-xs font-black tracking-[0.22em] text-[#2464ea]">ENTRY BRIEF</div>
+            <div class="mt-4 text-[clamp(1.8rem,2.9vw,2.6rem)] font-black tracking-[-0.05em]">
+              準備進場
+            </div>
+            <p class="mt-3 max-w-2xl text-sm leading-7 text-[#5f6673]">
+              你的隊伍與目前對戰組別會在此同步更新。主持人一旦開賽，畫面會直接切換到你的作答席位，不需要重新整理。
+            </p>
+          </div>
         </div>
-        <p id="matchup-status-label" class="text-neutral-content/60 min-h-5 text-xs"></p>
-      </div>
 
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">正式場 5 回合順序（每行 `A組,B組`）</label>
-        <textarea
-          id="matchups-input"
-          class="textarea w-full font-medium"
-          placeholder="1,2&#10;3,4&#10;5,6&#10;7,8&#10;9,10"></textarea>
-        <button id="save-matchups-btn" class="btn btn-primary btn-sm w-full">儲存正式場順序</button>
-      </div>
-
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">測試場下一回合組別</label>
-        <div class="grid grid-cols-[1fr_auto_1fr] gap-2">
-          <input id="test-group-a-input" type="number" min="1" class="input input-sm" placeholder="左側組別" />
-          <div class="flex items-center justify-center text-sm font-black">vs</div>
-          <input id="test-group-b-input" type="number" min="1" class="input input-sm" placeholder="右側組別" />
+        <div class="wc-panel-bottom gap-3 sm:grid-cols-3">
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#2464ea]">SYNC</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">隊伍資訊與目前對戰組別會自動同步。</p>
+          </div>
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#77b55a]">ROUND FLOW</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">開賽後會直接進入作答頁，無需重新整理。</p>
+          </div>
+          <div class="wc-list-card p-4">
+            <p class="text-xs font-black tracking-[0.2em] text-[#f69977]">SEAT RULE</p>
+            <p class="mt-2 text-sm leading-6 text-[#5f6673]">同一棒兩隊都送出後，會由主持人切換下一棒。</p>
+          </div>
         </div>
-        <button id="save-test-matchup-btn" class="btn btn-secondary btn-sm w-full">設定測試回合組別</button>
       </div>
 
-      <div class="divider my-0"></div>
-
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">自訂題庫</label>
-        <textarea
-          id="questions-input"
-          class="textarea w-full font-medium"
-          placeholder="請輸入題目（每行一題，最多 200 題）"></textarea>
-        <button id="save-questions-btn" class="btn btn-primary btn-sm w-full">儲存題庫</button>
-      </div>
-
-      <div class="divider my-0"></div>
-
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">下一回合題目</label>
-        <input id="topic-input" class="input input-sm w-full" placeholder="指定下一題" />
-        <div class="grid grid-cols-2 gap-x-2">
-          <button id="set-topic-btn" class="btn btn-secondary btn-sm">指定題目</button>
-          <button id="random-topic-btn" class="btn btn-outline btn-secondary btn-sm"
-            >題庫隨機</button
-          >
+      <div class="wc-panel wc-panel-distribute p-5 md:p-6">
+        <div class="wc-panel-top">
+          <div class="pt-1 md:pt-2">
+            <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">PLAYER VIEW</p>
+            <h2 class="mt-1 text-[1.75rem] font-black tracking-[-0.04em]">隊伍準備狀態</h2>
+          </div>
+          <button id="exit-btn" class="btn btn-outline btn-error btn-sm rounded-full" title="離開房間">
+            <LogOutIcon class="size-4" />
+          </button>
         </div>
-        <p id="next-topic-label" class="text-neutral-content/60 min-h-5 text-xs"></p>
+
+        <div class="wc-panel-mid gap-2.5">
+          <div class="grid gap-2.5 md:grid-cols-2">
+            <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#e8f0ff] text-[#2464ea]">
+                  <CheckCheckIcon class="size-4.5" />
+                </div>
+                <div>
+                  <div class="text-xs font-black tracking-[0.2em] text-[#2464ea]">READY FLOW</div>
+                  <div class="text-[13px] font-bold text-[#5f6673]">確認兩隊是否都已就位</div>
+                </div>
+              </div>
+            </div>
+            <div class="rounded-[0.95rem] border border-[#24272e]/8 bg-[#fffaf2] px-3.5 py-2.5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-[0.75rem] bg-[#fff0e8] text-[#f69977]">
+                  <SparklesIcon class="size-4.5" />
+                </div>
+                <div>
+                  <div class="text-xs font-black tracking-[0.2em] text-[#f69977]">MATCH FLOW</div>
+                  <div class="text-[13px] font-bold text-[#5f6673]">開賽後畫面會直接切到作答區</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-2.5">
+            <div
+              id="team-a-ready-card"
+              class="rounded-[1.1rem] border border-sky-200 bg-white/72 p-3"
+            ></div>
+            <div
+              id="team-b-ready-card"
+              class="rounded-[1.1rem] border border-orange-200 bg-white/72 p-3"
+            ></div>
+          </div>
+
+          <div class="rounded-[1.05rem] border border-orange-200 bg-white/72 p-3">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-black">未分隊名單</h3>
+              <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span>
+            </div>
+            <div id="waiting-players" class="mt-3 grid gap-2.5"></div>
+          </div>
+        </div>
       </div>
-
-      <div class="divider my-0"></div>
-
-      <div class="grid grid-cols-2 gap-x-2 gap-y-1">
-        <label class="">
-          <span class="label-text text-xs font-bold">開場秒數</span>
-          <input
-            id="rule-intro"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="">
-          <span class="label-text text-xs font-bold">每棒秒數</span>
-          <input
-            id="rule-turn"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="">
-          <span class="label-text text-xs font-bold">結果秒數</span>
-          <input
-            id="rule-result"
-            type="number"
-            min="3"
-            max="300"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="">
-          <span class="label-text text-xs font-bold">棒次數</span>
-          <input
-            id="rule-seats"
-            type="number"
-            min="1"
-            max="6"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <label class="">
-          <span class="label-text text-xs font-bold">勝場所需局數</span>
-          <input
-            id="rule-wins"
-            type="number"
-            min="1"
-            max="10"
-            class="input input-bordered input-sm"
-          />
-        </label>
-        <button id="save-rules-btn" class="btn btn-accent btn-sm mt-auto w-full">套用規則</button>
-      </div>
-      <div class="divider my-0"></div>
-
-      <div class="grid gap-y-1">
-        <label class="text-xs font-bold">紀錄維護</label>
-        <button id="clear-history-btn" class="btn btn-outline btn-error btn-sm w-full">
-          清空舊對戰紀錄
-        </button>
-        <p class="text-neutral-content/60 text-xs">只清除歷史紀錄，不會重設目前房間或賽程設定。</p>
-      </div>
-
-      <div class="divider my-0"></div>
-      <button id="start-game-btn" class="btn btn-success btn-md hidden">
-        <PlayIcon class="size-5" />開始比賽
-      </button>
-    </div>
+    </section>
   </div>
 </Layout>
 
@@ -181,59 +120,29 @@ import PlayIcon from "~icons/lucide/play"
 
   const roomIdDisplay = document.getElementById("room-id-display") as HTMLParagraphElement
   const lobbyStatusText = document.getElementById("lobby-status-text") as HTMLParagraphElement
-  const startGameBtn = document.getElementById("start-game-btn") as HTMLButtonElement
   const exitBtn = document.getElementById("exit-btn") as HTMLButtonElement
-  const scoreA = document.getElementById("score-a") as HTMLSpanElement
-  const scoreB = document.getElementById("score-b") as HTMLSpanElement
-  const teamAPlayers = document.getElementById("team-a-players") as HTMLDivElement
-  const teamBPlayers = document.getElementById("team-b-players") as HTMLDivElement
+  const teamAReadyCard = document.getElementById("team-a-ready-card") as HTMLDivElement
+  const teamBReadyCard = document.getElementById("team-b-ready-card") as HTMLDivElement
   const waitingPlayers = document.getElementById("waiting-players") as HTMLDivElement
   const waitingCount = document.getElementById("waiting-count") as HTMLSpanElement
-  const hostSetupPanel = document.getElementById("host-setup-panel") as HTMLElement
-  const hostSaveStatus = document.getElementById("host-save-status") as HTMLParagraphElement
-  const setFormalModeBtn = document.getElementById("set-formal-mode-btn") as HTMLButtonElement
-  const setTestModeBtn = document.getElementById("set-test-mode-btn") as HTMLButtonElement
-  const matchupStatusLabel = document.getElementById("matchup-status-label") as HTMLParagraphElement
-  const matchupsInput = document.getElementById("matchups-input") as HTMLTextAreaElement
-  const saveMatchupsBtn = document.getElementById("save-matchups-btn") as HTMLButtonElement
-  const testGroupAInput = document.getElementById("test-group-a-input") as HTMLInputElement
-  const testGroupBInput = document.getElementById("test-group-b-input") as HTMLInputElement
-  const saveTestMatchupBtn = document.getElementById("save-test-matchup-btn") as HTMLButtonElement
-  const questionsInput = document.getElementById("questions-input") as HTMLTextAreaElement
-  const saveQuestionsBtn = document.getElementById("save-questions-btn") as HTMLButtonElement
-  const topicInput = document.getElementById("topic-input") as HTMLInputElement
-  const setTopicBtn = document.getElementById("set-topic-btn") as HTMLButtonElement
-  const randomTopicBtn = document.getElementById("random-topic-btn") as HTMLButtonElement
-  const nextTopicLabel = document.getElementById("next-topic-label") as HTMLParagraphElement
-  const ruleIntro = document.getElementById("rule-intro") as HTMLInputElement
-  const ruleTurn = document.getElementById("rule-turn") as HTMLInputElement
-  const ruleResult = document.getElementById("rule-result") as HTMLInputElement
-  const ruleSeats = document.getElementById("rule-seats") as HTMLInputElement
-  const ruleWins = document.getElementById("rule-wins") as HTMLInputElement
-  const saveRulesBtn = document.getElementById("save-rules-btn") as HTMLButtonElement
-  const clearHistoryBtn = document.getElementById("clear-history-btn") as HTMLButtonElement
 
   const session = getSession()
   const role = sessionStorage.getItem("wc_role") || (session ? "player" : null)
   const roomId = session?.roomId || sessionStorage.getItem("wc_room_id") || "sitcon-camp-2026"
   let currentPlayers: any[] = []
-  let rulesDirty = false
-  let questionsDirty = false
-  let matchupsDirty = false
 
   if (!role) window.location.href = "/"
-  if (roomIdDisplay)
-    roomIdDisplay.textContent = `ID: ${roomId} Role: ${role ? role.toUpperCase() : ""}`
-  if (role === "host") {
-    startGameBtn?.classList.remove("hidden")
-    hostSetupPanel?.classList.remove("hidden")
+  if (role === "host" || role === "observer") window.location.href = "/sitcon-gm"
+
+  if (roomIdDisplay) {
+    roomIdDisplay.textContent = `ROOM ${roomId}`
   }
 
   const socket = getSocket()
   if (!socket.connected) socket.connect()
 
   socket.on("connect_error", () => {
-    lobbyStatusText.textContent = "無法連線到後端服務，請確認後端是否已啟動。"
+    lobbyStatusText.textContent = "目前無法連線到後端，請稍後再試。"
   })
 
   socket.on("room:kicked", () => {
@@ -243,37 +152,23 @@ import PlayIcon from "~icons/lucide/play"
   })
 
   socket.on("connect", () => {
-    if (role === "player" && session) {
+    if (session) {
       socket.emit("room:rejoin", { roomId, playerId: session.playerId }, (res: any) => {
         if (!res.ok) {
           clearSession()
           window.location.href = "/"
           return
         }
+
         updateSessionAssignment(res.team ?? null, session.groupNumber ?? null)
         lobbyStatusText.textContent = res.team
-          ? `已加入${res.team === "A" ? "藍隊" : "紅隊"}，等待主持人開始比賽...`
-          : "尚未選擇隊伍，請回首頁重新登入。"
-      })
-    } else {
-      socket.emit("room:join", { roomId, role }, (res: any) => {
-        if (!res.ok) {
-          window.location.href = "/"
-          return
-        }
-        if (role === "observer") socket.emit("observer:subscribe", {}, () => {})
-        lobbyStatusText.textContent =
-          role === "host"
-            ? "您是主持人，請完成題目設定並開始比賽。"
-            : "觀戰中，等待主持人開始比賽..."
+          ? `已加入 ${res.team === "A" ? "藍隊" : "紅隊"}，等待主持人開始比賽。`
+          : "尚未分配隊伍，請等待主持人處理。"
       })
     }
   })
 
   socket.on("room:state", (state: any) => {
-    if (scoreA) scoreA.textContent = `大分: ${state.score.A}`
-    if (scoreB) scoreB.textContent = `大分: ${state.score.B}`
-    syncHostForm(state)
     if (state.phase !== "LOBBY") window.location.href = "/ingame"
   })
 
@@ -285,201 +180,85 @@ import PlayIcon from "~icons/lucide/play"
   })
 
   function renderPresence() {
-    renderTeamDevice("A", teamAPlayers, "info")
-    renderTeamDevice("B", teamBPlayers, "secondary")
+    renderReadyBoard()
     renderWaitingPlayers()
   }
 
-  function renderTeamDevice(teamId: "A" | "B", container: HTMLDivElement, color: string) {
+  function renderReadyBoard() {
+    const currentSession = getSession()
+    renderReadyTeamCard("A", teamAReadyCard, currentSession?.playerId ?? null)
+    renderReadyTeamCard("B", teamBReadyCard, currentSession?.playerId ?? null)
+  }
+
+  function renderReadyTeamCard(
+    teamId: "A" | "B",
+    container: HTMLDivElement,
+    currentPlayerId: string | null
+  ) {
     if (!container) return
+
     const player = currentPlayers.find((p) => p.team === teamId)
-    const isMine = Boolean(session && player?.playerId === session.playerId)
-    container.innerHTML = ""
-    const row = document.createElement("div")
-    const colorClasses =
-      color === "info"
-        ? { border: "border-info/20", text: "text-info" }
-        : { border: "border-secondary/20", text: "text-secondary" }
-    row.className = `flex items-center justify-between rounded-xl border ${colorClasses.border} bg-base-200 p-3`
-    const name = player ? `${player.name}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
-    const status = player
-      ? player.connected
-        ? '<span class="badge badge-success badge-xs font-bold">ON</span>'
-        : '<span class="badge badge-error badge-xs font-bold">OFF</span>'
-      : ""
-    const hostControls =
-      role === "host" && player
-        ? `<div class="flex items-center gap-1"><button class="btn btn-ghost btn-xs btn-warning" data-assign="" data-player-id="${player.playerId}">移出隊伍</button><button class="btn btn-ghost btn-xs btn-error" data-remove-player="true" data-player-id="${player.playerId}">移除使用者</button></div>`
-        : ""
-    row.innerHTML = `
-      <div class="">
-        <div class="${colorClasses.text} text-xs font-black">Team ${teamId}</div>
-        <div class="truncate text-base font-extrabold">${escapeHtml(name)}</div>
+    const isMine = Boolean(currentPlayerId && player?.playerId === currentPlayerId)
+    const teamName = teamId === "A" ? "A 隊" : "B 隊"
+    const accentText = teamId === "A" ? "text-info" : "text-secondary"
+    const accentSurface = teamId === "A" ? "bg-sky-50/70" : "bg-orange-50/70"
+    const accentBadge =
+      player && player.connected
+        ? '<span class="badge border-none bg-[#77b55a] px-4 py-4 text-[#10210a]">已就位</span>'
+        : player
+          ? '<span class="badge border-none bg-[#cc4c3f] px-4 py-4 text-white">離線</span>'
+          : '<span class="badge border-none bg-[#f5efe4] px-4 py-4 text-[#5f6673]">等待中</span>'
+    const playerName = player ? `${escapeHtml(player.name)}${isMine ? "（你）" : ""}` : "尚未有玩家加入"
+    const detail = player ? (player.connected ? "已就位" : "已分隊，離線中") : "等待加入"
+    const statusTitle = player ? "準備完成" : "尚未就位"
+    const playerLabel = player ? playerName : "等待玩家"
+    const laneLabel = teamId === "A" ? "左側席位" : "右側席位"
+
+    container.innerHTML = `
+      <div class="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center">
+        <div class="flex h-11 w-11 items-center justify-center rounded-[0.9rem] ${accentSurface}">
+          <span class="${accentText} text-base font-black">${teamId}</span>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="${accentText} text-xs font-black tracking-[0.22em]">${teamName}</span>
+            <span class="whitespace-nowrap text-[1.05rem] font-black tracking-[-0.05em]">${statusTitle}</span>
+          </div>
+          <div class="mt-1 truncate text-[15px] font-black">${playerLabel}</div>
+          <div class="mt-1 text-xs font-bold tracking-[0.16em] text-[#5f6673]">${laneLabel}</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          ${accentBadge}
+          <span class="whitespace-nowrap text-xs font-bold text-[#5f6673]">${detail}</span>
+        </div>
       </div>
-      <div class="flex items-center gap-2">${status}${hostControls}</div>
     `
-    container.appendChild(row)
   }
 
   function renderWaitingPlayers() {
     if (!waitingPlayers) return
     const waiting = currentPlayers.filter((p) => !p.team)
     waitingCount.textContent = String(waiting.length)
-    waitingPlayers.innerHTML = ""
+
     if (waiting.length === 0) {
       waitingPlayers.innerHTML =
-        '<div class="text-neutral-content/40 rounded-xl border border-dashed border-neutral/20 p-3 text-sm">目前沒有未選隊伍的玩家</div>'
+        '<div class="rounded-[1rem] border border-dashed border-[#24272e]/12 bg-[#fffaf2] p-3 text-sm text-[#5f6673]">目前沒有等待分隊的玩家。</div>'
       return
     }
-    for (const player of waiting) {
-      const row = document.createElement("div")
-      row.className =
-        "flex items-center justify-between rounded-xl border border-warning/15 bg-base-200 p-3"
-      const controls =
-        role === "host"
-          ? `<div class="flex items-center gap-1"><div class="join"><button class="btn btn-info btn-xs join-item" data-assign="A" data-player-id="${player.playerId}">A</button><button class="btn btn-secondary btn-xs join-item" data-assign="B" data-player-id="${player.playerId}">B</button></div><button class="btn btn-ghost btn-xs btn-error" data-remove-player="true" data-player-id="${player.playerId}">移除</button></div>`
-          : ""
-      row.innerHTML = `<span class="font-bold">${escapeHtml(player.name)}</span>${controls}`
-      waitingPlayers.appendChild(row)
-    }
+
+    waitingPlayers.innerHTML = waiting
+      .map(
+        (player) => `
+          <div class="rounded-[1rem] border border-[#24272e]/8 bg-[#fffaf2] p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="truncate text-base font-black">${escapeHtml(player.name)}</div>
+              <span class="badge border-none bg-[#e8f0ff] text-[#2464ea]">PENDING</span>
+            </div>
+          </div>
+        `
+      )
+      .join("")
   }
-
-  document.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement
-    const button = target.closest("button[data-player-id]") as HTMLButtonElement | null
-    if (!button) return
-    const playerId = button.dataset.playerId
-    if (button.dataset.removePlayer === "true") {
-      socket.emit("host:remove_player", { playerId }, (res: any) => {
-        if (!res.ok) setHostStatus(`移除使用者失敗：${res.error}`, true)
-        else setHostStatus("已移除使用者")
-      })
-      return
-    }
-    const rawTeam = button.dataset.assign
-    const team = rawTeam === "A" || rawTeam === "B" ? rawTeam : null
-    socket.emit("host:assign_team", { playerId, team }, (res: any) => {
-      if (!res.ok) setHostStatus(`隊伍更新失敗：${res.error}`, true)
-      else setHostStatus("隊伍已更新")
-    })
-  })
-
-  questionsInput?.addEventListener("input", () => (questionsDirty = true))
-  matchupsInput?.addEventListener("input", () => (matchupsDirty = true))
-  ;[ruleIntro, ruleTurn, ruleResult, ruleSeats, ruleWins].forEach((el) =>
-    el?.addEventListener("input", () => (rulesDirty = true))
-  )
-
-  setFormalModeBtn?.addEventListener("click", () => {
-    const matchups = parseMatchups(matchupsInput.value)
-    if (!matchups.length) return setHostStatus("請先輸入至少一組正式場順序", true)
-    socket.emit("host:set_match_config", { matchMode: "formal", matchups }, (res: any) => {
-      if (!res.ok) setHostStatus(`正式場設定失敗：${res.error}`, true)
-      else {
-        matchupsDirty = false
-        setHostStatus("正式場順序已套用")
-      }
-    })
-  })
-
-  setTestModeBtn?.addEventListener("click", () => {
-    socket.emit("host:set_match_config", { matchMode: "test" }, (res: any) => {
-      if (!res.ok) setHostStatus(`切換測試場失敗：${res.error}`, true)
-      else setHostStatus("已切換成測試場")
-    })
-  })
-
-  saveMatchupsBtn?.addEventListener("click", () => {
-    const matchups = parseMatchups(matchupsInput.value)
-    if (!matchups.length) return setHostStatus("正式場順序格式錯誤", true)
-    socket.emit("host:set_match_config", { matchMode: "formal", matchups }, (res: any) => {
-      if (!res.ok) setHostStatus(`正式場順序儲存失敗：${res.error}`, true)
-      else {
-        matchupsDirty = false
-        setHostStatus(`正式場順序已儲存（${matchups.length} 回合）`)
-      }
-    })
-  })
-
-  saveTestMatchupBtn?.addEventListener("click", () => {
-    const groupA = Number(testGroupAInput.value)
-    const groupB = Number(testGroupBInput.value)
-    if (Number.isNaN(groupA) || Number.isNaN(groupB)) {
-      return setHostStatus("請輸入測試場兩個組別編號", true)
-    }
-    socket.emit("host:set_next_matchup", { groupA, groupB }, (res: any) => {
-      if (!res.ok) setHostStatus(`測試場組別設定失敗：${res.error}`, true)
-      else setHostStatus(`測試場下一回合已設為第 ${groupA} 組 vs 第 ${groupB} 組`)
-    })
-  })
-
-  saveQuestionsBtn?.addEventListener("click", () => {
-    const questions = questionsInput.value
-      .split("\n")
-      .map((q) => q.trim())
-      .filter(Boolean)
-      .slice(0, 200)
-    socket.emit("host:set_questions", { questions }, (res: any) => {
-      if (!res.ok) setHostStatus(`題庫儲存失敗：${res.error}`, true)
-      else {
-        questionsDirty = false
-        setHostStatus(`題庫已儲存（${questions.length} 題）`)
-      }
-    })
-  })
-
-  setTopicBtn?.addEventListener("click", () => {
-    const topic = topicInput.value.trim()
-    if (!topic) return setHostStatus("請先輸入下一題", true)
-    socket.emit("host:set_topic", { topic }, (res: any) => {
-      if (!res.ok) setHostStatus(`指定題目失敗：${res.error}`, true)
-      else setHostStatus("下一題已指定")
-    })
-  })
-
-  randomTopicBtn?.addEventListener("click", () => {
-    socket.emit("host:set_topic", { random: true }, (res: any) => {
-      if (!res.ok) setHostStatus(`隨機題目失敗：${res.error}`, true)
-      else setHostStatus("已從題庫隨機選題")
-    })
-  })
-
-  saveRulesBtn?.addEventListener("click", () => {
-    const payload: Record<string, number> = {}
-    const addMs = (key: string, input: HTMLInputElement) => {
-      const n = Number(input.value)
-      if (!Number.isNaN(n)) payload[key] = Math.round(n * 1000)
-    }
-    addMs("introMs", ruleIntro)
-    addMs("turnMs", ruleTurn)
-    addMs("resultMs", ruleResult)
-    const seats = Number(ruleSeats.value)
-    const wins = Number(ruleWins.value)
-    if (!Number.isNaN(seats)) payload.seats = Math.round(seats)
-    if (!Number.isNaN(wins)) payload.winsToTakeMatch = Math.round(wins)
-    socket.emit("host:set_rules", payload, (res: any) => {
-      if (!res.ok) setHostStatus(`規則套用失敗：${res.error}`, true)
-      else {
-        rulesDirty = false
-        setHostStatus("規則已套用")
-      }
-    })
-  })
-
-  clearHistoryBtn?.addEventListener("click", () => {
-    const confirmed = confirm("確認要清空目前所有舊對戰紀錄嗎？此動作不會重設房間設定。")
-    if (!confirmed) return
-    socket.emit("host:clear_history", {}, (res: any) => {
-      if (!res.ok) setHostStatus(`清空對戰紀錄失敗：${res.error}`, true)
-      else setHostStatus("舊對戰紀錄已清空")
-    })
-  })
-
-  startGameBtn?.addEventListener("click", () => {
-    socket.emit("match:start", {}, (res: any) => {
-      if (!res.ok) alert(`開始失敗：${res.error}`)
-    })
-  })
 
   exitBtn?.addEventListener("click", () => {
     if (confirm("確認離開房間嗎？")) {
@@ -489,68 +268,11 @@ import PlayIcon from "~icons/lucide/play"
     }
   })
 
-  function syncHostForm(state: any) {
-    if (role !== "host") return
-    if (!matchupsDirty) {
-      matchupsInput.value = (state.matchups ?? [])
-        .map((matchup: any) => `${matchup.groupA},${matchup.groupB}`)
-        .join("\n")
-    }
-    if (!questionsDirty) questionsInput.value = (state.questions ?? []).join("\n")
-    if (!rulesDirty && state.rules) {
-      ruleIntro.value = String(Math.round(state.rules.introMs / 1000))
-      ruleTurn.value = String(Math.round(state.rules.turnMs / 1000))
-      ruleResult.value = String(Math.round(state.rules.resultMs / 1000))
-      ruleSeats.value = String(state.rules.seats)
-      ruleWins.value = String(state.rules.winsToTakeMatch)
-    }
-    nextTopicLabel.textContent = state.nextTopic
-      ? `下一題：${state.nextTopic}`
-      : "尚未指定下一題，開始時會從題庫或 AI 產生。"
-    matchupStatusLabel.textContent = describeMatchupState(state)
-    if (state.nextMatchup) {
-      testGroupAInput.value = String(state.nextMatchup.groupA)
-      testGroupBInput.value = String(state.nextMatchup.groupB)
-    }
-  }
-
-  function setHostStatus(message: string, isError = false) {
-    if (!hostSaveStatus) return
-    hostSaveStatus.textContent = message
-    hostSaveStatus.className = isError
-      ? "text-error min-h-[1.25rem] text-xs font-bold"
-      : "text-success min-h-[1.25rem] text-xs font-bold"
-  }
-
   function escapeHtml(value: string) {
     return value.replace(
       /[&<>'"]/g,
       (char) =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char] ?? char
     )
-  }
-
-  function parseMatchups(raw: string) {
-    return raw
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [groupA, groupB] = line.split(",").map((value) => Number(value.trim()))
-        return { groupA, groupB }
-      })
-      .filter((matchup) => !Number.isNaN(matchup.groupA) && !Number.isNaN(matchup.groupB))
-  }
-
-  function describeMatchupState(state: any) {
-    const current = state.currentMatchup
-    const next = state.nextMatchup
-    if (state.matchMode === "test") {
-      if (next) return `測試場：下一回合待上場為第 ${next.groupA} 組 vs 第 ${next.groupB} 組`
-      if (current) return `測試場：目前顯示第 ${current.groupA} 組 vs 第 ${current.groupB} 組`
-      return "測試場：請先指定本回合組別"
-    }
-    if (current) return `正式場：目前 / 下一回合為第 ${current.groupA} 組 vs 第 ${current.groupB} 組`
-    return "正式場：請先設定回合順序"
   }
 </script>

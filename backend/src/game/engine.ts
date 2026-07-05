@@ -50,7 +50,6 @@ export class GameEngine {
     // Backfill rules for rooms persisted before per-room rules existed.
     state.rules ??= {
       introMs: config.durations.introMs,
-      turnMs: config.durations.turnMs,
       resultMs: config.durations.resultMs,
       seats: SEATS,
       winsToTakeMatch: WINS_TO_TAKE_MATCH,
@@ -151,10 +150,16 @@ export class GameEngine {
   }
 
   async setMatchConfig(matchMode: MatchMode, matchups?: GroupMatchup[]): Promise<void> {
+    const preservedFormalMatchups =
+      this.state.matchups.length > 0 ? this.state.matchups : normalizeMatchups('formal');
+
     this.state.matchMode = matchMode;
     this.state.currentGameNumber = 0;
     this.state.matchupCursor = 0;
-    this.state.matchups = normalizeMatchups(matchMode, matchups);
+    this.state.matchups =
+      matchMode === 'formal'
+        ? normalizeMatchups('formal', matchups)
+        : preservedFormalMatchups;
     if (matchMode !== 'test') this.state.nextMatchup = null;
     this.state.activeMatchup = null;
     this.state.round = 0;

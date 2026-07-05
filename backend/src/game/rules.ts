@@ -49,7 +49,6 @@ export function createRoom(roomId: string, hostId: string | null): RoomState {
     nextMatchup: null,
     rules: {
       introMs: config.durations.introMs,
-      turnMs: config.durations.turnMs,
       resultMs: config.durations.resultMs,
       seats: SEATS,
       winsToTakeMatch: WINS_TO_TAKE_MATCH,
