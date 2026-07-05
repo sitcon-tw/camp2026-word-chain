@@ -1,6 +1,45 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: dark --default;
+  themes: light --default;
+}
+
+:root {
+  --wc-bg: #f9f5ef;
+  --wc-bg-soft: #fffdf8;
+  --wc-panel: rgba(255, 252, 245, 0.82);
+  --wc-panel-strong: rgba(255, 252, 245, 0.96);
+  --wc-text: #24272e;
+  --wc-muted: #5f6673;
+  --wc-line: rgba(36, 39, 46, 0.1);
+  --wc-primary: #2464ea;
+  --wc-secondary: #f69977;
+  --wc-accent: #b0d34b;
+  --wc-brand: #77b55a;
+  --wc-brand-deep: #2d4219;
+
+  --color-base-100: #fffdf8;
+  --color-base-200: #f5efe4;
+  --color-base-300: #ebe2d3;
+  --color-base-content: #24272e;
+  --color-primary: #2464ea;
+  --color-primary-content: #ffffff;
+  --color-secondary: #f69977;
+  --color-secondary-content: #24272e;
+  --color-accent: #b0d34b;
+  --color-accent-content: #2d4219;
+  --color-neutral: #2d4219;
+  --color-neutral-content: #ffffff;
+  --color-info: #0080c1;
+  --color-info-content: #ffffff;
+  --color-success: #77b55a;
+  --color-success-content: #10210a;
+  --color-warning: #f69977;
+  --color-warning-content: #3a1e12;
+  --color-error: #cc4c3f;
+  --color-error-content: #ffffff;
+  --radius-box: 1.5rem;
+  --radius-field: 1rem;
+  --radius-selector: 1rem;
 }
 
 html,
@@ -8,6 +47,247 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(176, 211, 75, 0.25), transparent 28%),
+    radial-gradient(circle at top right, rgba(36, 100, 234, 0.12), transparent 30%),
+    linear-gradient(180deg, #fcfaf4 0%, #f9f5ef 100%);
+  color: var(--wc-text);
+  font-family:
+    "LINE Seed TW",
+    "Noto Sans TC",
+    "PingFang TC",
+    "Microsoft JhengHei",
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+.site-shell {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.site-glow {
+  position: fixed;
+  z-index: 0;
+  aspect-ratio: 1;
+  width: min(42vw, 28rem);
+  border-radius: 9999px;
+  filter: blur(12px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.site-glow-left {
+  top: -8rem;
+  left: -6rem;
+  background: rgba(176, 211, 75, 0.26);
+}
+
+.site-glow-right {
+  right: -8rem;
+  bottom: 4rem;
+  background: rgba(36, 100, 234, 0.16);
+}
+
+.site-ribbon {
+  position: fixed;
+  z-index: 0;
+  right: -18rem;
+  bottom: 2rem;
+  width: min(88vw, 72rem);
+  height: min(24vw, 20rem);
+  background: url("/sitcon-ribbon.svg") no-repeat center / contain;
+  opacity: 0.42;
+  pointer-events: none;
+  transform: rotate(-11deg);
+  transform-origin: center;
+}
+
+.site-ribbon::after {
+  content: "";
+  position: absolute;
+  right: 9rem;
+  bottom: 1.2rem;
+  width: min(18vw, 12rem);
+  aspect-ratio: 193.6 / 261.6;
+  background: url("/sitcon-mark.svg") no-repeat center / contain;
+  opacity: 0.13;
+  transform: rotate(8deg);
+}
+
+.site-main {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 24px 20px 56px;
+}
+
+.wc-page {
+  display: grid;
+  gap: 20px;
+  min-height: calc(100dvh - 80px);
+}
+
+.wc-page-full {
+  align-content: center;
+}
+
+.wc-page-full .wc-grid-hero,
+.wc-page-full > .wc-panel:first-child,
+.wc-page-full > section:first-child {
+  min-height: min(860px, calc(100dvh - 110px));
+}
+
+.wc-grid-hero > .wc-panel {
+  height: 100%;
+}
+
+.wc-panel-fill {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.wc-panel-distribute {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.wc-panel-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wc-panel-mid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.wc-panel-bottom {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.wc-shell-card {
+  border: 1px solid var(--wc-line);
+  background: var(--wc-panel);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 80px rgba(36, 39, 46, 0.08);
+}
+
+.wc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(36, 100, 234, 0.14);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.45rem 0.8rem;
+  color: var(--wc-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.wc-title {
+  font-size: clamp(2.4rem, 4vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+
+.wc-subtitle {
+  color: var(--wc-muted);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.wc-grid-hero {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(360px, 0.95fr);
+}
+
+.wc-panel {
+  border-radius: 32px;
+  border: 1px solid var(--wc-line);
+  background: var(--wc-panel-strong);
+  box-shadow: 0 24px 80px rgba(36, 39, 46, 0.08);
+}
+
+.wc-section-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.wc-muted {
+  color: var(--wc-muted);
+}
+
+.wc-list-card {
+  border-radius: 22px;
+  border: 1px solid var(--wc-line);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.card,
+.alert,
+.btn,
+.input,
+.textarea,
+.badge {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.card {
+  border-radius: 28px;
+  border: 1px solid var(--wc-line);
+  background: var(--wc-panel);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 80px rgba(36, 39, 46, 0.08);
+}
+
+.btn {
+  border-width: 1px;
+  text-transform: none;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.input,
+.textarea {
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.divider::before,
+.divider::after {
+  background-color: rgba(36, 39, 46, 0.1);
 }
 
 /* 移除上下箭頭 */
@@ -20,4 +300,48 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+@media (max-width: 900px) {
+  .site-ribbon {
+    right: -10rem;
+    bottom: 3rem;
+    width: min(120vw, 44rem);
+    height: min(38vw, 13rem);
+    opacity: 0.3;
+    transform: rotate(-16deg);
+  }
+
+  .site-ribbon::after {
+    right: 5.5rem;
+    bottom: 0.8rem;
+    width: min(24vw, 6.5rem);
+  }
+
+  .wc-grid-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .site-main {
+    min-height: auto;
+    padding: 16px 14px 40px;
+  }
+
+  .wc-page {
+    min-height: auto;
+  }
+
+  .wc-page-full {
+    align-content: start;
+  }
+
+  .wc-page-full .wc-grid-hero,
+  .wc-page-full > .wc-panel:first-child,
+  .wc-page-full > section:first-child {
+    min-height: auto;
+  }
+
+  .wc-panel-distribute {
+    gap: 1.25rem;
+  }
 }
