@@ -10,13 +10,15 @@ const client = config.gemini.enabled
   ? new GoogleGenerativeAI(config.gemini.apiKey)
   : null;
 
-const FALLBACK_TOPICS = [
-  '如何降低校園能源消耗？',
-  '設計一個未來城市',
-  'AI 對教育的影響',
-  '如何改善交通壅塞問題',
-  '如何讓校園更友善包容？',
-  '科技如何幫助環境永續？',
+const TOPICS = [
+  '冒煙測試',
+  '蜜罐',
+  '小鴨測試',
+  '金絲雀部署',
+  '九頭蛇漏洞',
+  '義大利麵條程式碼',
+  '守門狗測試器',
+  '上帝物件'
 ];
 
 const criteriaSchema = {
@@ -38,31 +40,8 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 }
 
 /** Generate a round topic. Falls back to a static pool on any failure. */
-export async function generateTopic(): Promise<string> {
-  if (!client) return pick(FALLBACK_TOPICS);
-  try {
-    const model = client.getGenerativeModel({
-      model: config.gemini.model,
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: { topic: { type: SchemaType.STRING } },
-          required: ['topic'],
-        },
-        temperature: 1.1,
-      },
-    });
-    const prompt =
-      '你是遊戲出題官。產生一個適合中學生團隊在 30 字內回答的繁體中文題目，' +
-      '主題涵蓋科技、教育、城市、環境等。題目需開放、可發揮，不含敏感內容。只回傳 JSON。';
-    const res = await withTimeout(model.generateContent(prompt), 8000);
-    const parsed = topicOutputSchema.parse(JSON.parse(res.response.text()));
-    return parsed.topic;
-  } catch (err) {
-    console.warn('[gemini] topic generation failed, using fallback:', String(err));
-    return pick(FALLBACK_TOPICS);
-  }
+export async function pickTopic(): Promise<string> {
+  return pick(TOPICS);
 }
 
 export interface JudgeArgs {

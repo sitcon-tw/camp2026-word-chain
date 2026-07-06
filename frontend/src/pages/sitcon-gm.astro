@@ -1,8 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro"
 import EyeIcon from "~icons/lucide/eye"
-import ShieldIcon from "~icons/lucide/shield"
 import PlayIcon from "~icons/lucide/play"
+import ShieldIcon from "~icons/lucide/shield"
 ---
 
 <Layout title="SITCON GM">
@@ -30,7 +30,9 @@ import PlayIcon from "~icons/lucide/play"
           <ShieldIcon class="mb-4 size-6 text-[#2464ea]" />
           <span class="text-xs font-black tracking-[0.22em] text-[#2464ea]">HOST</span>
           <span class="mt-2 text-2xl font-black tracking-[-0.04em]">主持模式</span>
-          <span class="mt-3 text-sm leading-6 text-[#5f6673]">可設定賽程、題庫、規則與分隊，也能直接開賽。</span>
+          <span class="mt-3 text-sm leading-6 text-[#5f6673]"
+            >可設定賽程、題庫、規則與分隊，也能直接開賽。</span
+          >
         </button>
 
         <button
@@ -39,12 +41,14 @@ import PlayIcon from "~icons/lucide/play"
           <EyeIcon class="mb-4 size-6 text-[#77b55a]" />
           <span class="text-xs font-black tracking-[0.22em] text-[#77b55a]">OBSERVER</span>
           <span class="mt-2 text-2xl font-black tracking-[-0.04em]">觀戰模式</span>
-          <span class="mt-3 text-sm leading-6 text-[#5f6673]">可查看現場狀態與歷史紀錄，但不會顯示主持設定操作。</span>
+          <span class="mt-3 text-sm leading-6 text-[#5f6673]"
+            >可查看現場狀態與歷史紀錄，但不會顯示主持設定操作。</span
+          >
         </button>
       </div>
     </section>
 
-    <section id="gm-main-grid" class="hidden grid gap-5 xl:grid-cols-[1.25fr_0.9fr]">
+    <section id="gm-main-grid" class="grid hidden gap-5 xl:grid-cols-[1.25fr_0.9fr]">
       <div class="grid gap-5">
         <div class="wc-panel p-6">
           <div class="flex items-center justify-between gap-3">
@@ -68,11 +72,11 @@ import PlayIcon from "~icons/lucide/play"
 
           <div class="mt-5 grid gap-4 lg:grid-cols-2">
             <div class="rounded-[1.3rem] border border-sky-200 bg-white/72 p-5">
-              <h3 class="text-lg font-black text-info">藍隊</h3>
+              <h3 class="text-info text-lg font-black">藍隊</h3>
               <div id="team-a-players" class="mt-4"></div>
             </div>
             <div class="rounded-[1.3rem] border border-orange-200 bg-white/72 p-5">
-              <h3 class="text-lg font-black text-secondary">紅隊</h3>
+              <h3 class="text-secondary text-lg font-black">紅隊</h3>
               <div id="team-b-players" class="mt-4"></div>
             </div>
           </div>
@@ -80,7 +84,8 @@ import PlayIcon from "~icons/lucide/play"
           <div class="mt-4 rounded-[1.3rem] border border-[#24272e]/8 bg-white/72 p-5">
             <div class="flex items-center justify-between gap-3">
               <h3 class="text-lg font-black">未選隊伍</h3>
-              <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span>
+              <span id="waiting-count" class="badge border-none bg-[#f5efe4] text-[#24272e]">0</span
+              >
             </div>
             <div id="waiting-players" class="mt-4 grid gap-3 md:grid-cols-2"></div>
           </div>
@@ -99,16 +104,20 @@ import PlayIcon from "~icons/lucide/play"
             <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
               <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">場次模式</label>
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                <button id="set-formal-mode-btn" class="btn btn-outline rounded-full">正式場</button>
+                <button id="set-formal-mode-btn" class="btn btn-outline rounded-full">正式場</button
+                >
                 <button id="set-test-mode-btn" class="btn btn-outline rounded-full">測試場</button>
               </div>
-              <p id="matchup-status-label" class="mt-3 min-h-5 text-xs leading-5 text-[#5f6673]"></p>
+              <p id="matchup-status-label" class="mt-3 min-h-5 text-xs leading-5 text-[#5f6673]"
+              ></p>
             </div>
 
             <div
               id="formal-match-config"
               class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
-              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">正式場 5 回合順序</label>
+              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]"
+                >正式場 5 回合順序</label
+              >
               <textarea
                 id="matchups-input"
                 class="textarea mt-3 w-full border-none"
@@ -125,11 +134,25 @@ import PlayIcon from "~icons/lucide/play"
             <div
               id="test-match-config"
               class="hidden rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
-              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">測試場下一回合組別</label>
+              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]"
+                >測試場下一回合組別</label
+              >
               <div class="mt-3 grid grid-cols-[1fr_auto_1fr] gap-3">
-                <input id="test-group-a-input" type="number" min="1" class="input border-none" placeholder="左側組別" />
+                <input
+                  id="test-group-a-input"
+                  type="number"
+                  min="1"
+                  class="input border-none"
+                  placeholder="左側組別"
+                />
                 <div class="flex items-center justify-center text-sm font-black">vs</div>
-                <input id="test-group-b-input" type="number" min="1" class="input border-none" placeholder="右側組別" />
+                <input
+                  id="test-group-b-input"
+                  type="number"
+                  min="1"
+                  class="input border-none"
+                  placeholder="右側組別"
+                />
               </div>
               <button id="save-test-matchup-btn" class="btn btn-secondary mt-4 w-full rounded-full">
                 設定測試回合組別
@@ -142,15 +165,24 @@ import PlayIcon from "~icons/lucide/play"
                 id="questions-input"
                 class="textarea mt-3 w-full border-none"
                 placeholder="請輸入題目（每行一題，最多 200 題）"></textarea>
-              <button id="save-questions-btn" class="btn btn-success mt-4 w-full rounded-full">儲存題庫</button>
+              <button id="save-questions-btn" class="btn btn-success mt-4 w-full rounded-full"
+                >儲存題庫</button
+              >
             </div>
 
             <div class="rounded-[1.25rem] border border-[#24272e]/8 bg-white/72 p-5">
-              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">下一回合題目</label>
-              <input id="topic-input" class="input mt-3 w-full border-none" placeholder="指定下一題" />
+              <label class="text-xs font-black tracking-[0.18em] text-[#2464ea]">下一回合題目</label
+              >
+              <input
+                id="topic-input"
+                class="input mt-3 w-full border-none"
+                placeholder="指定下一題"
+              />
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 <button id="set-topic-btn" class="btn btn-secondary rounded-full">指定題目</button>
-                <button id="random-topic-btn" class="btn btn-outline btn-secondary rounded-full">題庫隨機</button>
+                <button id="random-topic-btn" class="btn btn-outline btn-secondary rounded-full"
+                  >題庫隨機</button
+                >
               </div>
               <p id="next-topic-label" class="mt-3 min-h-5 text-xs leading-5 text-[#5f6673]"></p>
             </div>
@@ -160,7 +192,13 @@ import PlayIcon from "~icons/lucide/play"
               <div class="mt-3 grid gap-3 md:grid-cols-3">
                 <label class="grid gap-2">
                   <span class="text-xs font-bold text-[#5f6673]">開場秒數</span>
-                  <input id="rule-intro" type="number" min="3" max="300" class="input border-none" />
+                  <input
+                    id="rule-intro"
+                    type="number"
+                    min="3"
+                    max="300"
+                    class="input border-none"
+                  />
                 </label>
                 <label class="grid gap-2">
                   <span class="text-xs font-bold text-[#5f6673]">棒次數</span>
@@ -175,10 +213,14 @@ import PlayIcon from "~icons/lucide/play"
 
             <div class="rounded-[1.25rem] border border-[#cc4c3f]/15 bg-white/72 p-5">
               <label class="text-xs font-black tracking-[0.18em] text-[#cc4c3f]">紀錄維護</label>
-              <button id="clear-history-btn" class="btn btn-outline btn-error mt-4 w-full rounded-full">
+              <button
+                id="clear-history-btn"
+                class="btn btn-outline btn-error mt-4 w-full rounded-full">
                 清空舊對戰紀錄
               </button>
-              <p class="mt-3 text-xs leading-5 text-[#5f6673]">只清除歷史紀錄，不會重設目前房間或賽程設定。</p>
+              <p class="mt-3 text-xs leading-5 text-[#5f6673]"
+                >只清除歷史紀錄，不會重設目前房間或賽程設定。</p
+              >
             </div>
           </div>
         </div>
@@ -190,8 +232,9 @@ import PlayIcon from "~icons/lucide/play"
             <p class="text-sm font-black tracking-[0.24em] text-[#2464ea]">ARCHIVE</p>
             <h2 class="mt-2 text-2xl font-black tracking-[-0.03em]">對戰紀錄</h2>
           </div>
-          <span id="history-mode" class="badge badge-outline border-[#24272e]/10 bg-white/70 px-4 py-4"
-            >讀取中</span
+          <span
+            id="history-mode"
+            class="badge badge-outline border-[#24272e]/10 bg-white/70 px-4 py-4">讀取中</span
           >
         </div>
         <p id="history-status" class="mt-3 text-sm leading-6 text-[#5f6673]">載入對戰資料中...</p>
@@ -208,7 +251,13 @@ import PlayIcon from "~icons/lucide/play"
 </Layout>
 
 <script>
-  import { clearSession, fetchBackend, getSession, getSocket, updateSessionAssignment } from "@/utils/socket"
+  import {
+    clearSession,
+    fetchBackend,
+    getSession,
+    getSocket,
+    updateSessionAssignment,
+  } from "@/utils/socket"
 
   const ROOM_ID = "sitcon-camp-2026"
   const gmAuthPanel = document.getElementById("gm-auth-panel") as HTMLElement
@@ -335,9 +384,7 @@ import PlayIcon from "~icons/lucide/play"
       }
       if (role === "observer") socket.emit("observer:subscribe", {}, () => {})
       lobbyStatusText.textContent =
-        role === "host"
-          ? "主持控制已連線，可在此設定賽程與題庫。"
-          : "觀戰與管理面板已連線。"
+        role === "host" ? "主持控制已連線，可在此設定賽程與題庫。" : "觀戰與管理面板已連線。"
     })
   })
 
@@ -385,15 +432,21 @@ import PlayIcon from "~icons/lucide/play"
   setFormalModeBtn?.addEventListener("click", () => {
     const matchups = parseMatchups(matchupsInput.value)
     const nextMatchups = matchups.length ? matchups : DEFAULT_FORMAL_MATCHUPS
-    socket.emit("host:set_match_config", { matchMode: "formal", matchups: nextMatchups }, (res: any) => {
-      if (!res.ok) setHostStatus(`正式場設定失敗：${res.error}`, true)
-      else {
-        matchupsDirty = false
-        matchupsInput.value = nextMatchups.map((matchup) => `${matchup.groupA},${matchup.groupB}`).join("\n")
-        updateMatchModeSections("formal")
-        setHostStatus("正式場順序已套用")
+    socket.emit(
+      "host:set_match_config",
+      { matchMode: "formal", matchups: nextMatchups },
+      (res: any) => {
+        if (!res.ok) setHostStatus(`正式場設定失敗：${res.error}`, true)
+        else {
+          matchupsDirty = false
+          matchupsInput.value = nextMatchups
+            .map((matchup) => `${matchup.groupA},${matchup.groupB}`)
+            .join("\n")
+          updateMatchModeSections("formal")
+          setHostStatus("正式場順序已套用")
+        }
       }
-    })
+    )
   })
 
   setTestModeBtn?.addEventListener("click", () => {
@@ -639,7 +692,9 @@ import PlayIcon from "~icons/lucide/play"
       const currentIndex = Math.max(0, state.matchupCursor ?? 0)
       matchupStatusLabel.textContent = `目前為正式場，第 ${currentIndex + 1} 組對戰：第 ${state.currentMatchup?.groupA ?? "-"} 組 vs 第 ${state.currentMatchup?.groupB ?? "-"} 組`
     }
-    nextTopicLabel.textContent = state.nextTopic ? `已指定題目：${state.nextTopic}` : "尚未指定下一題"
+    nextTopicLabel.textContent = state.nextTopic
+      ? `已指定題目：${state.nextTopic}`
+      : "尚未指定下一題"
   }
 
   function updateMatchModeSections(mode: "formal" | "test") {
@@ -711,10 +766,7 @@ import PlayIcon from "~icons/lucide/play"
       const lastMatch = groupedMatches[groupedMatches.length - 1]
       const lastRound = lastMatch?.rounds[lastMatch.rounds.length - 1]
       const shouldStartNewMatch =
-        !lastMatch ||
-        lastMatch.key !== matchupKey ||
-        !lastRound ||
-        round.round <= lastRound.round
+        !lastMatch || lastMatch.key !== matchupKey || !lastRound || round.round <= lastRound.round
 
       if (shouldStartNewMatch) {
         groupedMatches.push({

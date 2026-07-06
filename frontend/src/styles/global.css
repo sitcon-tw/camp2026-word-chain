@@ -53,12 +53,7 @@ body {
     radial-gradient(circle at top right, rgba(36, 100, 234, 0.12), transparent 30%),
     linear-gradient(180deg, #fcfaf4 0%, #f9f5ef 100%);
   color: var(--wc-text);
-  font-family:
-    "LINE Seed TW",
-    "Noto Sans TC",
-    "PingFang TC",
-    "Microsoft JhengHei",
-    sans-serif;
+  font-family: "LINE Seed TW", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
 }
 
 *,

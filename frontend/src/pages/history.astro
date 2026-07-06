@@ -10,8 +10,9 @@ import Layout from "@/layouts/Layout.astro"
           <p class="text-sm font-black tracking-[0.28em] text-[#2464ea]">MATCH HISTORY</p>
           <h1 class="mt-2 text-4xl font-black tracking-[-0.04em]">對戰紀錄</h1>
         </div>
-        <span id="history-mode" class="badge badge-outline border-[#24272e]/10 bg-white/70 px-4 py-4"
-          >讀取中</span
+        <span
+          id="history-mode"
+          class="badge badge-outline border-[#24272e]/10 bg-white/70 px-4 py-4">讀取中</span
         >
       </div>
       <p id="history-status" class="mt-3 text-sm leading-6 text-[#5f6673]">載入對戰資料中...</p>
@@ -129,10 +130,7 @@ import Layout from "@/layouts/Layout.astro"
       const lastMatch = groupedMatches[groupedMatches.length - 1]
       const lastRound = lastMatch?.rounds[lastMatch.rounds.length - 1]
       const shouldStartNewMatch =
-        !lastMatch ||
-        lastMatch.key !== matchupKey ||
-        !lastRound ||
-        round.round <= lastRound.round
+        !lastMatch || lastMatch.key !== matchupKey || !lastRound || round.round <= lastRound.round
 
       if (shouldStartNewMatch) {
         groupedMatches.push({

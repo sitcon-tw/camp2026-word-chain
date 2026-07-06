@@ -1,7 +1,7 @@
 import type { Server } from 'socket.io';
 import { config, SEATS, WINS_TO_TAKE_MATCH } from '../config.js';
 import * as repo from '../state/roomRepo.js';
-import { generateTopic, judge } from '../ai/gemini.js';
+import { pickTopic, judge } from '../ai/gemini.js';
 import {
   advanceSeatWhenReady,
   appendSegment,
@@ -385,7 +385,7 @@ export class GameEngine {
   // ---------- phase transitions ----------
   private async toRoundIntro(): Promise<void> {
     // Topic priority: host's explicit/random pick → random from bank → AI/fallback generator.
-    const topic = this.state.nextTopic ?? this.randomQuestion() ?? (await generateTopic());
+    const topic = this.state.nextTopic ?? this.randomQuestion() ?? (await pickTopic());
     const matchup = this.resolveUpcomingMatchup();
     if (!matchup) return;
     if (this.state.phase === 'LOBBY') {
