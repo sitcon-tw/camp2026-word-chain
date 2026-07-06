@@ -12,7 +12,7 @@ import ZapIcon from "~icons/lucide/zap"
   <div id="player-main-shell" class="contents">
     <!-- Top Bar: Shared info across phases -->
     <div id="shared-top-bar" class="wc-panel mb-5 p-5.5 md:mb-6 md:p-6">
-      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-center xl:gap-5">
+      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-center xl:gap-6">
         <div class="min-w-0 text-center xl:text-left">
           <p class="text-xs font-black tracking-[0.24em] text-[#2464ea]" id="top-status-kicker">
             GAME STATUS
@@ -28,40 +28,38 @@ import ZapIcon from "~icons/lucide/zap"
         </div>
 
         <div class="hidden xl:flex xl:justify-center">
-          <span class="h-10 w-px rounded-full bg-[#24272e]/14"></span>
+          <span class="h-14 w-px rounded-full bg-[#24272e]/16"></span>
         </div>
 
         <div class="justify-self-center xl:justify-self-end">
-          <div class="min-w-[280px] rounded-[1.2rem] border border-[#24272e]/8 bg-white/72 px-4 py-3">
-            <p
-              class="text-center text-[11px] font-black tracking-[0.2em] text-[#7b8190] xl:text-right"
-              id="top-status-side-label">
-              LIVE SCORE
-            </p>
-            <div
-              class="mt-2 grid grid-cols-[minmax(5.5rem,1fr)_auto_auto_auto_minmax(5.5rem,1fr)] items-center gap-x-3 whitespace-nowrap">
-              <span
-                id="header-group-a"
-                class="text-info truncate text-right text-[0.9rem] font-black whitespace-nowrap"
-                >第 1 組</span
-              >
-              <span
-                id="match-score-a"
-                class="text-info min-w-7 text-center font-mono text-[1.15rem] font-black whitespace-nowrap"
-                >0</span
-              >
-              <span class="text-center text-[0.9rem] font-black text-[#5f6673]">:</span>
-              <span
-                id="match-score-b"
-                class="text-secondary min-w-7 text-center font-mono text-[1.15rem] font-black whitespace-nowrap"
-                >0</span
-              >
-              <span
-                id="header-group-b"
-                class="text-secondary truncate text-left text-[0.9rem] font-black whitespace-nowrap"
-                >第 2 組</span
-              >
-            </div>
+          <p
+            class="text-center text-[11px] font-black tracking-[0.2em] text-[#7b8190] xl:text-right"
+            id="top-status-side-label">
+            LIVE SCORE
+          </p>
+          <div
+            class="mt-2 grid min-w-[280px] grid-cols-[minmax(5.5rem,1fr)_auto_auto_auto_minmax(5.5rem,1fr)] items-center gap-x-3 whitespace-nowrap">
+            <span
+              id="header-group-a"
+              class="text-info truncate text-right text-[0.9rem] font-black whitespace-nowrap"
+              >第 1 組</span
+            >
+            <span
+              id="match-score-a"
+              class="text-info min-w-7 text-center font-mono text-[1.15rem] font-black whitespace-nowrap"
+              >0</span
+            >
+            <span class="text-center text-[0.9rem] font-black text-[#5f6673]">:</span>
+            <span
+              id="match-score-b"
+              class="text-secondary min-w-7 text-center font-mono text-[1.15rem] font-black whitespace-nowrap"
+              >0</span
+            >
+            <span
+              id="header-group-b"
+              class="text-secondary truncate text-left text-[0.9rem] font-black whitespace-nowrap"
+              >第 2 組</span
+            >
           </div>
         </div>
       </div>
