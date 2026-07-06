@@ -347,12 +347,6 @@ import ZapIcon from "~icons/lucide/zap"
           </div>
         </div>
 
-        <div class="flex justify-center">
-          <button id="host-next-seat-btn" class="btn btn-primary hidden px-10">
-            <PlayIcon class="mr-1 h-5 w-5" />
-            <span id="host-next-seat-label">進入下一棒</span>
-          </button>
-        </div>
       </div>
     </div>
     <!-- ================= PHASE 3: JUDGING ================= -->
@@ -394,6 +388,15 @@ import ZapIcon from "~icons/lucide/zap"
               <span id="result-score-a" class="text-info font-mono text-3xl font-black">0 分</span>
             </div>
 
+            <div class="bg-base-100 border-info/10 mb-4 rounded-2xl border px-4 py-3">
+              <p class="text-info text-[11px] font-black tracking-[0.22em]">FULL ANSWER</p>
+              <p
+                id="result-answer-a"
+                class="mt-2 break-all text-base leading-7 font-bold text-[#24272e]">
+                載入答案中...
+              </p>
+            </div>
+
             <!-- Progress sliders for criteria -->
             <div class="space-y-3" id="criteria-breakdown-a">
               <!-- Dynamically populated -->
@@ -411,6 +414,15 @@ import ZapIcon from "~icons/lucide/zap"
               <span id="result-score-b" class="text-secondary font-mono text-3xl font-black"
                 >0 分</span
               >
+            </div>
+
+            <div class="bg-base-100 border-secondary/10 mb-4 rounded-2xl border px-4 py-3">
+              <p class="text-secondary text-[11px] font-black tracking-[0.22em]">FULL ANSWER</p>
+              <p
+                id="result-answer-b"
+                class="mt-2 break-all text-base leading-7 font-bold text-[#24272e]">
+                載入答案中...
+              </p>
             </div>
 
             <!-- Progress sliders for criteria -->
@@ -578,8 +590,6 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Active timers tracking to prevent overlapping
   let countdownTimer: any = null
-  let latestState: any = null
-
   let clearActiveTimer = () => {
     if (countdownTimer) {
       clearInterval(countdownTimer)
@@ -596,7 +606,6 @@ import ZapIcon from "~icons/lucide/zap"
   // Core Room State Listener
   socket.on("room:state", (state: any) => {
     console.log("Active Game Room State:", state)
-    latestState = state
     clearActiveTimer()
 
     syncLiveHostForm(state)
@@ -737,9 +746,6 @@ import ZapIcon from "~icons/lucide/zap"
   const timerTeamB = document.getElementById("timer-team-b") as HTMLDivElement
   const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
   const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
-  const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
-  const hostNextSeatLabel = document.getElementById("host-next-seat-label") as HTMLSpanElement
-
   // Submit block references
   const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
   const submitStatusBanner = document.getElementById("submit-status-banner") as HTMLDivElement
@@ -833,17 +839,8 @@ import ZapIcon from "~icons/lucide/zap"
       } else {
         skipTeamBBtn?.classList.add("hidden")
       }
-      if (canHostAdvanceSeat(state)) {
-        if (hostNextSeatLabel) {
-          hostNextSeatLabel.textContent = areAllTeamsDone(state) ? "進入評分" : "進入下一棒"
-        }
-        hostNextSeatBtn?.classList.remove("hidden")
-      } else {
-        hostNextSeatBtn?.classList.add("hidden")
-      }
     } else {
       hostTopicHint?.classList.add("hidden")
-      hostNextSeatBtn?.classList.add("hidden")
     }
 
     // Render team chain blocks
@@ -906,17 +903,16 @@ import ZapIcon from "~icons/lucide/zap"
           if (topStatusNote)
             topStatusNote.textContent = "本隊所有棒次已完成，等待另一隊完成後進入評審。"
         } else if (hasSubmittedCurrentSeat(currentTeamState)) {
-          submitStatusText.textContent = "本棒次已送出，等待另一隊完成並由主持人切換下一棒。"
+          submitStatusText.textContent = "本棒次已送出，系統正在切換本隊下一棒。"
           if (topStatusKicker) topStatusKicker.textContent = "WAITING"
           if (topStatusNote) {
-            topStatusNote.textContent =
-              "本隊這一棒已提交，現在等待另一隊完成，之後由主持人手動切換下一棒。"
+            topStatusNote.textContent = "本隊已完成這一棒，系統會依本隊進度直接切到下一棒。"
           }
         } else {
           submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
           if (topStatusKicker) topStatusKicker.textContent = "STANDBY"
           if (topStatusNote) {
-            topStatusNote.textContent = "請留意本隊棒次順序，主持人切到你的棒次後即可直接作答。"
+            topStatusNote.textContent = "請留意本隊棒次順序，系統會依本隊進度自動切到你的棒次。"
           }
         }
       }
@@ -925,11 +921,9 @@ import ZapIcon from "~icons/lucide/zap"
       submitPanel?.classList.add("hidden")
       if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
       if (topStatusNote) {
-        topStatusNote.textContent = canHostAdvanceSeat(state)
-          ? areAllTeamsDone(state)
-            ? "兩隊都已完成所有棒次，請由主持人進入評分。"
-            : "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
-          : "等待雙方完成目前棒次。"
+        topStatusNote.textContent = areAllTeamsDone(state)
+          ? "兩隊都已完成所有棒次，系統將自動進入評分。"
+          : "兩隊會依各自進度獨立作答，全部完成後自動進入評分。"
       }
     }
   }
@@ -1025,14 +1019,6 @@ import ZapIcon from "~icons/lucide/zap"
     return (teamState?.segments?.length ?? 0) >= (teamState?.currentSeat ?? 0)
   }
 
-  function canHostAdvanceSeat(state: any) {
-    return (
-      state?.phase === "CHAINING" &&
-      hasSubmittedCurrentSeat(state.teams.A) &&
-      hasSubmittedCurrentSeat(state.teams.B)
-    )
-  }
-
   function areAllTeamsDone(state: any) {
     return Boolean(state?.teams?.A?.done && state?.teams?.B?.done)
   }
@@ -1072,6 +1058,8 @@ import ZapIcon from "~icons/lucide/zap"
   const resultWinnerLine = document.getElementById("result-winner-text") as HTMLHeadingElement
   const resultScoreA = document.getElementById("result-score-a") as HTMLSpanElement
   const resultScoreB = document.getElementById("result-score-b") as HTMLSpanElement
+  const resultAnswerA = document.getElementById("result-answer-a") as HTMLParagraphElement
+  const resultAnswerB = document.getElementById("result-answer-b") as HTMLParagraphElement
   const criteriaBreakdownA = document.getElementById("criteria-breakdown-a") as HTMLDivElement
   const criteriaBreakdownB = document.getElementById("criteria-breakdown-b") as HTMLDivElement
   const resultReason = document.getElementById("result-reason") as HTMLQuoteElement
@@ -1107,6 +1095,8 @@ import ZapIcon from "~icons/lucide/zap"
 
     if (resultScoreA) resultScoreA.textContent = `${lastResult.scoreA} 分`
     if (resultScoreB) resultScoreB.textContent = `${lastResult.scoreB} 分`
+    if (resultAnswerA) resultAnswerA.textContent = lastResult.answerA || "本隊本回合未留下完整答案。"
+    if (resultAnswerB) resultAnswerB.textContent = lastResult.answerB || "本隊本回合未留下完整答案。"
 
     // Populate Sliders criteria A & B
     populateCriteria(lastResult.breakdown.A, criteriaBreakdownA, "info")
@@ -1351,19 +1341,6 @@ import ZapIcon from "~icons/lucide/zap"
     socket.emit("host:skip_intro", {}, (res: any) => {
       if (!res.ok) setIntroHostStatus(`跳過失敗：${res.error}`, true)
       else setIntroHostStatus("已跳過等待，進入作答階段")
-    })
-  })
-
-  hostNextSeatBtn?.addEventListener("click", () => {
-    const eventName = areAllTeamsDone(latestState) ? "host:force_judge" : "host:advance_seat"
-    socket.emit(eventName, {}, (res: any) => {
-      if (!res.ok) {
-        alert(
-          eventName === "host:force_judge"
-            ? `無法進入評分：${res.error}`
-            : `無法進入下一棒：${res.error}`
-        )
-      }
     })
   })
 

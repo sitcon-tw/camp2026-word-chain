@@ -7,7 +7,6 @@ import {
   appendSegment,
   applyJudge,
   bothTeamsDone,
-  canAdvanceSeatManually,
   currentMatchup,
   hasSubmittedCurrentSeat,
   createRoom,
@@ -331,18 +330,9 @@ export class GameEngine {
   }
 
   async advanceSeat(): Promise<boolean> {
-    if (this.state.phase !== 'CHAINING' || !canAdvanceSeatManually(this.state)) return false;
+    if (this.state.phase !== 'CHAINING') return false;
     await this.log({ ts: Date.now(), type: 'host_action', detail: 'advance_seat' });
-
-    if (bothTeamsDone(this.state)) {
-      await this.toJudging();
-    } else {
-      this.state = advanceSeatWhenReady(this.state);
-      await this.save();
-      this.emitTurnChanged('A');
-      this.emitTurnChanged('B');
-      this.broadcastState();
-    }
+    await this.progressChainingIfReady();
     return true;
   }
 
@@ -368,10 +358,7 @@ export class GameEngine {
       seat,
       text,
     });
-
-    await this.save();
-    this.emitTurnChanged(p.team);
-    this.broadcastState();
+    await this.progressChainingIfReady();
     return { ok: true };
   }
 
@@ -422,9 +409,20 @@ export class GameEngine {
       team,
       detail: kind,
     });
+    await this.progressChainingIfReady();
+  }
+
+  private async progressChainingIfReady(): Promise<void> {
+    this.state = advanceSeatWhenReady(this.state);
+
+    if (bothTeamsDone(this.state)) {
+      await this.toJudging();
+      return;
+    }
 
     await this.save();
-    this.emitTurnChanged(team);
+    this.emitTurnChanged('A');
+    this.emitTurnChanged('B');
     this.broadcastState();
   }
 
