@@ -3,9 +3,10 @@ import "@/styles/global.css"
 
 interface Props {
   title?: string
+  fitViewport?: boolean
 }
 
-const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
+const { title = "SITCON Camp 2026 AI 謎題接龍", fitViewport = false } = Astro.props
 ---
 
 <!doctype html>
@@ -23,9 +24,77 @@ const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
       <div class="site-glow site-glow-left"></div>
       <div class="site-glow site-glow-right"></div>
       <div class="site-ribbon" aria-hidden="true"></div>
-      <main class="site-main">
-        <slot />
+      <main class:list={["site-main", fitViewport && "site-main-fit-stage"]}>
+        {
+          fitViewport ? (
+            <div id="page-fit-viewport" class="page-fit-viewport">
+              <div id="page-fit-canvas" class="page-fit-canvas">
+                <slot />
+              </div>
+            </div>
+          ) : (
+            <slot />
+          )
+        }
       </main>
     </div>
+    {fitViewport && (
+      <script>
+      const siteMain = document.querySelector(".site-main")
+      const pageFitViewport = document.getElementById("page-fit-viewport")
+      const pageFitCanvas = document.getElementById("page-fit-canvas")
+      let pageFitFrame: number | null = null
+
+      function updatePageScale() {
+        pageFitFrame = null
+
+        if (!siteMain || !pageFitViewport || !pageFitCanvas) return
+
+        const naturalWidth = pageFitCanvas.scrollWidth
+        const naturalHeight = pageFitCanvas.scrollHeight
+
+        if (!naturalWidth || !naturalHeight) return
+
+        const availableWidth = Math.max(window.innerWidth - 24, 0)
+        const availableHeight = Math.max(window.innerHeight - 24, 0)
+        const scale = Math.min(1, availableWidth / naturalWidth, availableHeight / naturalHeight)
+
+        pageFitViewport.dataset.scaleMode = "fit"
+        pageFitViewport.style.setProperty("--page-canvas-width", `${naturalWidth}px`)
+        pageFitViewport.style.setProperty("--page-canvas-height", `${naturalHeight}px`)
+        pageFitViewport.style.setProperty("--page-scale", scale.toFixed(4))
+        document.documentElement.style.overflow = "hidden"
+        document.body.style.overflow = "hidden"
+      }
+
+      function schedulePageScale() {
+        if (pageFitFrame !== null) cancelAnimationFrame(pageFitFrame)
+        pageFitFrame = requestAnimationFrame(updatePageScale)
+      }
+
+      schedulePageScale()
+      window.addEventListener("resize", schedulePageScale)
+      window.addEventListener("load", schedulePageScale)
+
+      if ("fonts" in document) {
+        void document.fonts.ready.then(schedulePageScale)
+      }
+
+      if ("ResizeObserver" in window && pageFitCanvas) {
+        const resizeObserver = new ResizeObserver(() => schedulePageScale())
+        resizeObserver.observe(pageFitCanvas)
+      }
+
+      if ("MutationObserver" in window && pageFitCanvas) {
+        const mutationObserver = new MutationObserver(() => schedulePageScale())
+        mutationObserver.observe(pageFitCanvas, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+        })
+      }
+      </script>
+    )}
   </body>
 </html>
