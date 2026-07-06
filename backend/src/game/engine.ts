@@ -335,11 +335,12 @@ export class GameEngine {
 
   async advanceSeat(): Promise<boolean> {
     if (this.state.phase !== 'CHAINING' || !canAdvanceSeatManually(this.state)) return false;
-    this.state = advanceSeatWhenReady(this.state);
     await this.log({ ts: Date.now(), type: 'host_action', detail: 'advance_seat' });
+
     if (bothTeamsDone(this.state)) {
       await this.toJudging();
     } else {
+      this.state = advanceSeatWhenReady(this.state);
       await this.save();
       this.emitTurnChanged('A');
       this.emitTurnChanged('B');
@@ -370,11 +371,6 @@ export class GameEngine {
       seat,
       text,
     });
-
-    if (bothTeamsDone(this.state)) {
-      await this.toJudging();
-      return { ok: true };
-    }
 
     await this.save();
     this.emitTurnChanged(p.team);
@@ -429,11 +425,6 @@ export class GameEngine {
       team,
       detail: kind,
     });
-
-    if (bothTeamsDone(this.state)) {
-      await this.toJudging();
-      return;
-    }
 
     await this.save();
     this.emitTurnChanged(team);
