@@ -185,6 +185,14 @@ import ZapIcon from "~icons/lucide/zap"
               </div>
             </div>
           </div>
+          <div
+            id="host-topic-hint"
+            class="mt-3 hidden rounded-[1.2rem] border border-[#2464ea]/14 bg-[#eef4ff] p-4 text-left">
+            <p class="text-xs font-black tracking-[0.22em] text-[#2464ea]">HOST HINT</p>
+            <p
+              id="host-topic-hint-text"
+              class="mt-2 text-sm leading-7 whitespace-pre-wrap text-[#24272e]"></p>
+          </div>
         </div>
 
         <div id="player-stage" class="hidden space-y-5 md:space-y-6">
@@ -660,6 +668,8 @@ import ZapIcon from "~icons/lucide/zap"
   const firstSeatTopicHintText = document.getElementById(
     "first-seat-topic-hint-text"
   ) as HTMLParagraphElement
+  const hostTopicHint = document.getElementById("host-topic-hint") as HTMLDivElement
+  const hostTopicHintText = document.getElementById("host-topic-hint-text") as HTMLParagraphElement
   const topStatusKicker = document.getElementById("top-status-kicker") as HTMLParagraphElement
   const topStatusNote = document.getElementById("top-status-note") as HTMLParagraphElement
   const topStatusSideLabel = document.getElementById(
@@ -753,6 +763,7 @@ import ZapIcon from "~icons/lucide/zap"
     }
 
     if (role === "host") {
+      syncHostTopicHint(state.topic)
       if (!state.teams.A.done && !hasSubmittedCurrentSeat(state.teams.A)) {
         skipTeamABtn?.classList.remove("hidden")
       } else {
@@ -772,6 +783,7 @@ import ZapIcon from "~icons/lucide/zap"
         hostNextSeatBtn?.classList.add("hidden")
       }
     } else {
+      hostTopicHint?.classList.add("hidden")
       hostNextSeatBtn?.classList.add("hidden")
     }
 
@@ -888,6 +900,16 @@ import ZapIcon from "~icons/lucide/zap"
     firstSeatTopicHint?.classList.toggle("hidden", !showHint)
     if (showHint && firstSeatTopicHintText) {
       firstSeatTopicHintText.textContent = hint
+    }
+  }
+
+  function syncHostTopicHint(topic: string) {
+    const hint = TOPIC_HINTS[topic]
+    const showHint = Boolean(hint)
+
+    hostTopicHint?.classList.toggle("hidden", !showHint)
+    if (showHint && hostTopicHintText) {
+      hostTopicHintText.textContent = hint
     }
   }
 
