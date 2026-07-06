@@ -163,7 +163,7 @@ export function validateSubmit(
 ): SubmitError | null {
   if (team.done || seat !== team.currentSeat) return 'NOT_YOUR_TURN';
   if (hasSubmittedCurrentSeat(team)) return 'NOT_YOUR_TURN';
-  const legalChars = /^[\p{Script=Han}A-Za-z0-9]+$/u;
+  const legalChars = /^[\p{Script=Han}A-Za-z0-9]*$/u;
   if (!legalChars.test(text)) return 'BAD_CHARACTER';
   if (charCount(text) !== SEGMENT_LEN) return 'BAD_LENGTH';
   return null;
