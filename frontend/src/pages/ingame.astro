@@ -91,6 +91,35 @@ import ZapIcon from "~icons/lucide/zap"
         </div>
         <span class="text-neutral-content/50 text-xs font-bold">倒數結束後自動開始接龍</span>
       </div>
+
+      <div
+        id="intro-host-controls"
+        class="hidden w-full max-w-2xl rounded-[1.25rem] border border-[#d97706]/12 bg-white/72 p-4 text-left">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-black tracking-[0.22em] text-[#d97706]">INTRO CONTROLS</p>
+            <h3 class="mt-1.5 text-lg font-black">開場控制</h3>
+          </div>
+          <p id="intro-host-status" class="min-h-5 text-right text-xs text-[#5f6673]"></p>
+        </div>
+        <div class="mt-4 grid gap-2.5 md:grid-cols-3">
+          <button
+            id="intro-host-pause-btn"
+            class="btn btn-warning w-full rounded-full whitespace-nowrap">
+            <PauseIcon class="size-4" />暫停
+          </button>
+          <button
+            id="intro-host-resume-btn"
+            class="btn btn-success hidden w-full rounded-full whitespace-nowrap">
+            <PlayIcon class="size-4" />繼續
+          </button>
+          <button
+            id="intro-host-skip-btn"
+            class="btn btn-outline btn-primary w-full rounded-full whitespace-nowrap">
+            跳過等待
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ================= PHASE 2: CHAINING (The main gameplay) ================= -->
@@ -476,6 +505,11 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Host live setup
   const hostLiveSetupPanel = document.getElementById("host-live-setup-panel") as HTMLElement
+  const introHostControls = document.getElementById("intro-host-controls") as HTMLElement
+  const introHostPauseBtn = document.getElementById("intro-host-pause-btn") as HTMLButtonElement
+  const introHostResumeBtn = document.getElementById("intro-host-resume-btn") as HTMLButtonElement
+  const introHostSkipBtn = document.getElementById("intro-host-skip-btn") as HTMLButtonElement
+  const introHostStatus = document.getElementById("intro-host-status") as HTMLParagraphElement
   const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
   const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
   const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
@@ -632,6 +666,18 @@ import ZapIcon from "~icons/lucide/zap"
   function renderRoundIntro(state: any) {
     hostApiToast?.classList.add("hidden")
     phaseIntro?.classList.remove("hidden")
+    if (role === "host") {
+      introHostControls?.classList.remove("hidden")
+      if (state.paused) {
+        introHostPauseBtn?.classList.add("hidden")
+        introHostResumeBtn?.classList.remove("hidden")
+      } else {
+        introHostPauseBtn?.classList.remove("hidden")
+        introHostResumeBtn?.classList.add("hidden")
+      }
+    } else {
+      introHostControls?.classList.add("hidden")
+    }
     if (introRoundNum) introRoundNum.textContent = state.round
     if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
 
@@ -1258,6 +1304,14 @@ import ZapIcon from "~icons/lucide/zap"
       : "text-success min-h-[1.25rem] text-xs font-bold"
   }
 
+  function setIntroHostStatus(message: string, isError = false) {
+    if (!introHostStatus) return
+    introHostStatus.textContent = message
+    introHostStatus.className = isError
+      ? "text-error min-h-[1.25rem] text-xs font-bold"
+      : "text-success min-h-[1.25rem] text-xs font-bold"
+  }
+
   // ================= HOST CONTROL ACTIONS EVENT LISTENERS =================
   hostPauseBtn?.addEventListener("click", () => {
     socket.emit("host:pause", {}, (res: any) => {
@@ -1277,6 +1331,27 @@ import ZapIcon from "~icons/lucide/zap"
         if (!res.ok) alert(`操作失敗：${res.error}`)
       })
     }
+  })
+
+  introHostPauseBtn?.addEventListener("click", () => {
+    socket.emit("host:pause", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`暫停失敗：${res.error}`, true)
+      else setIntroHostStatus("已暫停開場倒數")
+    })
+  })
+
+  introHostResumeBtn?.addEventListener("click", () => {
+    socket.emit("host:resume", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`繼續失敗：${res.error}`, true)
+      else setIntroHostStatus("已繼續開場倒數")
+    })
+  })
+
+  introHostSkipBtn?.addEventListener("click", () => {
+    socket.emit("host:skip_intro", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`跳過失敗：${res.error}`, true)
+      else setIntroHostStatus("已跳過等待，進入作答階段")
+    })
   })
 
   hostNextSeatBtn?.addEventListener("click", () => {
