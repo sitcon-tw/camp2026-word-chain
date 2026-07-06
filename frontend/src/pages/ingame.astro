@@ -67,7 +67,7 @@ import ZapIcon from "~icons/lucide/zap"
     <div
       id="phase-intro"
       class="card bg-base-300 border-primary/20 flex hidden flex-col items-center gap-y-6 border p-8 text-center shadow-2xl">
-      <div class="text-primary animate-bounce text-5xl font-black tracking-widest"
+      <div class="text-primary mt-3 animate-bounce text-5xl font-black tracking-widest"
         >第 <span id="intro-round-num">-</span> 回合即將開始</div
       >
       <div class="divider mx-auto my-0 max-w-md"></div>
@@ -82,7 +82,7 @@ import ZapIcon from "~icons/lucide/zap"
       <div class="mt-4 flex flex-col items-center gap-y-2">
         <div
           id="intro-radial"
-          class="radial-progress bg-primary/10 text-primary border-primary/20 border-4 font-mono text-3xl font-black shadow-lg"
+          class="radial-progress intro-radial-clean bg-primary/10 text-primary border-primary/20 border-4 font-mono text-3xl font-black shadow-lg"
           style="--value:100; --size:7rem; --thickness: 6px;"
           role="progressbar">
           30s
@@ -303,7 +303,7 @@ import ZapIcon from "~icons/lucide/zap"
         <div class="flex justify-center">
           <button id="host-next-seat-btn" class="btn btn-primary hidden px-10">
             <PlayIcon class="mr-1 h-5 w-5" />
-            <span>進入下一棒</span>
+            <span id="host-next-seat-label">進入下一棒</span>
           </button>
         </div>
       </div>
@@ -472,20 +472,6 @@ import ZapIcon from "~icons/lucide/zap"
     window.location.href = "/"
   }
 
-  if (role === "host" || role === "observer") {
-    const siteMain = document.querySelector<HTMLElement>(".site-main")
-    if (siteMain) {
-      Object.assign(siteMain.style, {
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "12px 20px",
-      })
-    }
-    document.documentElement.style.overflow = "hidden"
-    document.body.style.overflow = "hidden"
-  }
-
   // Connect to socket
   const socket = getSocket()
   if (!socket.connected) {
@@ -527,6 +513,7 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Active timers tracking to prevent overlapping
   let countdownTimer: any = null
+  let latestState: any = null
 
   let clearActiveTimer = () => {
     if (countdownTimer) {
@@ -544,6 +531,7 @@ import ZapIcon from "~icons/lucide/zap"
   // Core Room State Listener
   socket.on("room:state", (state: any) => {
     console.log("Active Game Room State:", state)
+    latestState = state
     clearActiveTimer()
 
     syncLiveHostForm(state)
@@ -665,6 +653,7 @@ import ZapIcon from "~icons/lucide/zap"
   const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
   const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
   const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
+  const hostNextSeatLabel = document.getElementById("host-next-seat-label") as HTMLSpanElement
 
   // Submit block references
   const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
@@ -739,6 +728,9 @@ import ZapIcon from "~icons/lucide/zap"
         skipTeamBBtn?.classList.add("hidden")
       }
       if (canHostAdvanceSeat(state)) {
+        if (hostNextSeatLabel) {
+          hostNextSeatLabel.textContent = areAllTeamsDone(state) ? "進入評分" : "進入下一棒"
+        }
         hostNextSeatBtn?.classList.remove("hidden")
       } else {
         hostNextSeatBtn?.classList.add("hidden")
@@ -827,7 +819,9 @@ import ZapIcon from "~icons/lucide/zap"
       if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
       if (topStatusNote) {
         topStatusNote.textContent = canHostAdvanceSeat(state)
-          ? "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
+          ? areAllTeamsDone(state)
+            ? "兩隊都已完成所有棒次，請由主持人進入評分。"
+            : "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
           : "等待雙方完成目前棒次。"
       }
     }
@@ -909,6 +903,10 @@ import ZapIcon from "~icons/lucide/zap"
       hasSubmittedCurrentSeat(state.teams.A) &&
       hasSubmittedCurrentSeat(state.teams.B)
     )
+  }
+
+  function areAllTeamsDone(state: any) {
+    return Boolean(state?.teams?.A?.done && state?.teams?.B?.done)
   }
 
   // Answer Submission Event
@@ -1161,8 +1159,15 @@ import ZapIcon from "~icons/lucide/zap"
   })
 
   hostNextSeatBtn?.addEventListener("click", () => {
-    socket.emit("host:advance_seat", {}, (res: any) => {
-      if (!res.ok) alert(`無法進入下一棒：${res.error}`)
+    const eventName = areAllTeamsDone(latestState) ? "host:force_judge" : "host:advance_seat"
+    socket.emit(eventName, {}, (res: any) => {
+      if (!res.ok) {
+        alert(
+          eventName === "host:force_judge"
+            ? `無法進入評分：${res.error}`
+            : `無法進入下一棒：${res.error}`
+        )
+      }
     })
   })
 

@@ -130,6 +130,39 @@ a {
   padding: 24px 20px 56px;
 }
 
+.site-main-fit-stage {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.page-fit-viewport {
+  width: 100%;
+}
+
+.page-fit-canvas {
+  width: 100%;
+}
+
+.page-fit-viewport[data-scale-mode="fit"] {
+  width: calc(var(--page-canvas-width, 0px) * var(--page-scale, 1));
+  height: calc(var(--page-canvas-height, 0px) * var(--page-scale, 1));
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.page-fit-viewport[data-scale-mode="fit"] .page-fit-canvas {
+  width: var(--page-canvas-width, 1280px);
+  max-width: none;
+  transform: scale(var(--page-scale, 1));
+  transform-origin: top center;
+}
+
 .wc-page {
   display: grid;
   gap: 20px;
@@ -285,6 +318,11 @@ a {
   background-color: rgba(36, 39, 46, 0.1);
 }
 
+.intro-radial-clean::before,
+.intro-radial-clean::after {
+  display: none;
+}
+
 /* 移除上下箭頭 */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -320,6 +358,11 @@ input[type="number"] {
   .site-main {
     min-height: auto;
     padding: 16px 14px 40px;
+  }
+
+  .site-main-fit-stage {
+    min-height: 100dvh;
+    padding: 8px;
   }
 
   .wc-page {
