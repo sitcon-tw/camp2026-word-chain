@@ -107,6 +107,9 @@ export const areBothTeamsReadyForNextSeat = (state: RoomState): boolean =>
 export const canAdvanceSeatManually = (state: RoomState): boolean =>
   areBothTeamsReadyForNextSeat(state);
 
+export const isTeamReadyForNextSeat = (team: TeamState): boolean =>
+  hasSubmittedCurrentSeat(team) && !team.done;
+
 /** Append a validated segment for the current seat. Caller must validate first. */
 export function appendSegment(state: RoomState, team: TeamId, text: string): RoomState {
   const prev = state.teams[team];
@@ -134,12 +137,11 @@ export function timeoutSegment(state: RoomState, team: TeamId): RoomState {
 }
 
 export function advanceSeatWhenReady(state: RoomState): RoomState {
-  if (!areBothTeamsReadyForNextSeat(state)) return state;
   return {
     ...state,
     teams: {
-      A: advance(state.teams.A, state.rules.seats),
-      B: advance(state.teams.B, state.rules.seats),
+      A: isTeamReadyForNextSeat(state.teams.A) ? advance(state.teams.A, state.rules.seats) : state.teams.A,
+      B: isTeamReadyForNextSeat(state.teams.B) ? advance(state.teams.B, state.rules.seats) : state.teams.B,
     },
   };
 }

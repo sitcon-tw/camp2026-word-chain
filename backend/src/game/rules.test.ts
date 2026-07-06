@@ -3,12 +3,11 @@ import {
   advanceSeatWhenReady,
   appendSegment,
   applyJudge,
-  areBothTeamsReadyForNextSeat,
   bothTeamsDone,
-  canAdvanceSeatManually,
   charCount,
   FALLBACK_MATCHUP,
   createRoom,
+  isTeamReadyForNextSeat,
   isMatchOver,
   startRound,
   timeoutSegment,
@@ -45,60 +44,60 @@ describe('validateSubmit', () => {
 });
 
 describe('chaining', () => {
-  it('waits for both teams to finish the same seat before advancing', () => {
+  it('advances a team immediately after that team completes its current seat', () => {
     let s = startRound(createRoom('r', null), 'topic', FALLBACK_MATCHUP);
     s = appendSegment(s, 'A', '一二三四五');
-    expect(areBothTeamsReadyForNextSeat(s)).toBe(false);
-    expect(canAdvanceSeatManually(s)).toBe(false);
+    expect(isTeamReadyForNextSeat(s.teams.A)).toBe(true);
     expect(s.teams.A.currentSeat).toBe(1);
     expect(s.teams.B.currentSeat).toBe(1);
 
-    s = appendSegment(s, 'B', '甲乙丙丁戊');
-    expect(areBothTeamsReadyForNextSeat(s)).toBe(true);
-    expect(canAdvanceSeatManually(s)).toBe(true);
-
     s = advanceSeatWhenReady(s);
     expect(s.teams.A.currentSeat).toBe(2);
-    expect(s.teams.B.currentSeat).toBe(2);
+    expect(s.teams.B.currentSeat).toBe(1);
   });
 
-  it('advances seat and marks done after 6 paired segments', () => {
+  it('advances each team independently and marks done after 6 segments', () => {
     let s = startRound(createRoom('r', null), 'topic', FALLBACK_MATCHUP);
     for (let i = 0; i < 6; i++) {
       s = appendSegment(s, 'A', '一二三四五');
+      s = advanceSeatWhenReady(s);
       s = appendSegment(s, 'B', '甲乙丙丁戊');
       s = advanceSeatWhenReady(s);
     }
     expect(s.teams.A.done).toBe(true);
     expect(s.teams.B.done).toBe(true);
     expect(s.teams.A.segments).toHaveLength(6);
-    expect(s.teams.A.currentSeat).toBe(7);
+    expect(s.teams.A.currentSeat).toBe(6);
   });
 
-  it('bothTeamsDone only when both reach 6', () => {
+  it('bothTeamsDone only when both teams finish all seats', () => {
     let s = startRound(createRoom('r', null), 'topic', FALLBACK_MATCHUP);
     for (let i = 0; i < 5; i++) {
       s = appendSegment(s, 'A', '一二三四五');
+      s = advanceSeatWhenReady(s);
       s = appendSegment(s, 'B', '甲乙丙丁戊');
       s = advanceSeatWhenReady(s);
     }
     expect(bothTeamsDone(s)).toBe(false);
 
     s = appendSegment(s, 'A', '一二三四五');
+    s = advanceSeatWhenReady(s);
+    expect(bothTeamsDone(s)).toBe(false);
+
     s = appendSegment(s, 'B', '甲乙丙丁戊');
     s = advanceSeatWhenReady(s);
     expect(bothTeamsDone(s)).toBe(true);
   });
 
-  it('timeout records an empty segment and waits for the other team before advancing', () => {
+  it('timeout records an empty segment and advances only that team', () => {
     let s = startRound(createRoom('r', null), 'topic', FALLBACK_MATCHUP);
     s = timeoutSegment(s, 'A');
     expect(s.teams.A.segments).toEqual(['']);
     expect(s.teams.A.currentSeat).toBe(1);
 
-    s = timeoutSegment(s, 'B');
     s = advanceSeatWhenReady(s);
     expect(s.teams.A.currentSeat).toBe(2);
+    expect(s.teams.B.currentSeat).toBe(1);
   });
 });
 

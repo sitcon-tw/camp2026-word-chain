@@ -37,6 +37,8 @@ export interface RoundResult {
   reason: string;
   breakdown: JudgeBreakdown;
   degraded?: boolean;
+  degradedReason?: string;
+  degradedMessage?: string;
 }
 
 /** Per-room, host-editable rules. Seeded from env defaults on room creation. */

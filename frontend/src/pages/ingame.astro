@@ -91,6 +91,35 @@ import ZapIcon from "~icons/lucide/zap"
         </div>
         <span class="text-neutral-content/50 text-xs font-bold">倒數結束後自動開始接龍</span>
       </div>
+
+      <div
+        id="intro-host-controls"
+        class="hidden w-full max-w-2xl rounded-[1.25rem] border border-[#d97706]/12 bg-white/72 p-4 text-left">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-black tracking-[0.22em] text-[#d97706]">INTRO CONTROLS</p>
+            <h3 class="mt-1.5 text-lg font-black">開場控制</h3>
+          </div>
+          <p id="intro-host-status" class="min-h-5 text-right text-xs text-[#5f6673]"></p>
+        </div>
+        <div class="mt-4 grid gap-2.5 md:grid-cols-3">
+          <button
+            id="intro-host-pause-btn"
+            class="btn btn-warning w-full rounded-full whitespace-nowrap">
+            <PauseIcon class="size-4" />暫停
+          </button>
+          <button
+            id="intro-host-resume-btn"
+            class="btn btn-success hidden w-full rounded-full whitespace-nowrap">
+            <PlayIcon class="size-4" />繼續
+          </button>
+          <button
+            id="intro-host-skip-btn"
+            class="btn btn-outline btn-primary w-full rounded-full whitespace-nowrap">
+            跳過等待
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ================= PHASE 2: CHAINING (The main gameplay) ================= -->
@@ -318,12 +347,6 @@ import ZapIcon from "~icons/lucide/zap"
           </div>
         </div>
 
-        <div class="flex justify-center">
-          <button id="host-next-seat-btn" class="btn btn-primary hidden px-10">
-            <PlayIcon class="mr-1 h-5 w-5" />
-            <span id="host-next-seat-label">進入下一棒</span>
-          </button>
-        </div>
       </div>
     </div>
     <!-- ================= PHASE 3: JUDGING ================= -->
@@ -365,6 +388,15 @@ import ZapIcon from "~icons/lucide/zap"
               <span id="result-score-a" class="text-info font-mono text-3xl font-black">0 分</span>
             </div>
 
+            <div class="bg-base-100 border-info/10 mb-4 rounded-2xl border px-4 py-3">
+              <p class="text-info text-[11px] font-black tracking-[0.22em]">FULL ANSWER</p>
+              <p
+                id="result-answer-a"
+                class="mt-2 break-all text-base leading-7 font-bold text-[#24272e]">
+                載入答案中...
+              </p>
+            </div>
+
             <!-- Progress sliders for criteria -->
             <div class="space-y-3" id="criteria-breakdown-a">
               <!-- Dynamically populated -->
@@ -382,6 +414,15 @@ import ZapIcon from "~icons/lucide/zap"
               <span id="result-score-b" class="text-secondary font-mono text-3xl font-black"
                 >0 分</span
               >
+            </div>
+
+            <div class="bg-base-100 border-secondary/10 mb-4 rounded-2xl border px-4 py-3">
+              <p class="text-secondary text-[11px] font-black tracking-[0.22em]">FULL ANSWER</p>
+              <p
+                id="result-answer-b"
+                class="mt-2 break-all text-base leading-7 font-bold text-[#24272e]">
+                載入答案中...
+              </p>
             </div>
 
             <!-- Progress sliders for criteria -->
@@ -448,6 +489,16 @@ import ZapIcon from "~icons/lucide/zap"
       </div>
     </div>
   </div>
+
+  <div
+    id="host-api-toast"
+    class="pointer-events-none fixed right-6 bottom-6 z-50 hidden max-w-[24rem] rounded-[1.2rem] border border-[#cc4c3f]/18 bg-white/95 p-4 text-left shadow-[0_24px_80px_rgba(36,39,46,0.16)] backdrop-blur">
+    <p class="text-[11px] font-black tracking-[0.22em] text-[#cc4c3f]">API ERROR</p>
+    <p id="host-api-toast-title" class="mt-2 text-sm font-black text-[#24272e]">
+      Gemini 評審已切換為備援模式
+    </p>
+    <p id="host-api-toast-message" class="mt-2 text-sm leading-6 text-[#5f6673]"></p>
+  </div>
 </Layout>
 
 <script>
@@ -466,6 +517,11 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Host live setup
   const hostLiveSetupPanel = document.getElementById("host-live-setup-panel") as HTMLElement
+  const introHostControls = document.getElementById("intro-host-controls") as HTMLElement
+  const introHostPauseBtn = document.getElementById("intro-host-pause-btn") as HTMLButtonElement
+  const introHostResumeBtn = document.getElementById("intro-host-resume-btn") as HTMLButtonElement
+  const introHostSkipBtn = document.getElementById("intro-host-skip-btn") as HTMLButtonElement
+  const introHostStatus = document.getElementById("intro-host-status") as HTMLParagraphElement
   const hostPauseBtn = document.getElementById("host-pause-btn") as HTMLButtonElement
   const hostResumeBtn = document.getElementById("host-resume-btn") as HTMLButtonElement
   const hostForceJudgeBtn = document.getElementById("host-force-judge-btn") as HTMLButtonElement
@@ -534,8 +590,6 @@ import ZapIcon from "~icons/lucide/zap"
 
   // Active timers tracking to prevent overlapping
   let countdownTimer: any = null
-  let latestState: any = null
-
   let clearActiveTimer = () => {
     if (countdownTimer) {
       clearInterval(countdownTimer)
@@ -552,7 +606,6 @@ import ZapIcon from "~icons/lucide/zap"
   // Core Room State Listener
   socket.on("room:state", (state: any) => {
     console.log("Active Game Room State:", state)
-    latestState = state
     clearActiveTimer()
 
     syncLiveHostForm(state)
@@ -600,6 +653,7 @@ import ZapIcon from "~icons/lucide/zap"
         break
 
       case "JUDGING":
+        hostApiToast?.classList.add("hidden")
         phaseJudging?.classList.remove("hidden")
         break
 
@@ -619,7 +673,20 @@ import ZapIcon from "~icons/lucide/zap"
   const introRadial = document.getElementById("intro-radial") as HTMLDivElement
 
   function renderRoundIntro(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseIntro?.classList.remove("hidden")
+    if (role === "host") {
+      introHostControls?.classList.remove("hidden")
+      if (state.paused) {
+        introHostPauseBtn?.classList.add("hidden")
+        introHostResumeBtn?.classList.remove("hidden")
+      } else {
+        introHostPauseBtn?.classList.remove("hidden")
+        introHostResumeBtn?.classList.add("hidden")
+      }
+    } else {
+      introHostControls?.classList.add("hidden")
+    }
     if (introRoundNum) introRoundNum.textContent = state.round
     if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
 
@@ -679,9 +746,6 @@ import ZapIcon from "~icons/lucide/zap"
   const timerTeamB = document.getElementById("timer-team-b") as HTMLDivElement
   const skipTeamABtn = document.getElementById("skip-team-a-btn") as HTMLButtonElement
   const skipTeamBBtn = document.getElementById("skip-team-b-btn") as HTMLButtonElement
-  const hostNextSeatBtn = document.getElementById("host-next-seat-btn") as HTMLButtonElement
-  const hostNextSeatLabel = document.getElementById("host-next-seat-label") as HTMLSpanElement
-
   // Submit block references
   const submitPanel = document.getElementById("submit-panel") as HTMLDivElement
   const submitStatusBanner = document.getElementById("submit-status-banner") as HTMLDivElement
@@ -711,6 +775,7 @@ import ZapIcon from "~icons/lucide/zap"
   }
 
   function renderChaining(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseChaining?.classList.remove("hidden")
     if (chainingTopic) chainingTopic.textContent = state.topic
     if (hostChainingTopic) hostChainingTopic.textContent = state.topic
@@ -774,17 +839,8 @@ import ZapIcon from "~icons/lucide/zap"
       } else {
         skipTeamBBtn?.classList.add("hidden")
       }
-      if (canHostAdvanceSeat(state)) {
-        if (hostNextSeatLabel) {
-          hostNextSeatLabel.textContent = areAllTeamsDone(state) ? "進入評分" : "進入下一棒"
-        }
-        hostNextSeatBtn?.classList.remove("hidden")
-      } else {
-        hostNextSeatBtn?.classList.add("hidden")
-      }
     } else {
       hostTopicHint?.classList.add("hidden")
-      hostNextSeatBtn?.classList.add("hidden")
     }
 
     // Render team chain blocks
@@ -847,17 +903,16 @@ import ZapIcon from "~icons/lucide/zap"
           if (topStatusNote)
             topStatusNote.textContent = "本隊所有棒次已完成，等待另一隊完成後進入評審。"
         } else if (hasSubmittedCurrentSeat(currentTeamState)) {
-          submitStatusText.textContent = "本棒次已送出，等待另一隊完成並由主持人切換下一棒。"
+          submitStatusText.textContent = "本棒次已送出，系統正在切換本隊下一棒。"
           if (topStatusKicker) topStatusKicker.textContent = "WAITING"
           if (topStatusNote) {
-            topStatusNote.textContent =
-              "本隊這一棒已提交，現在等待另一隊完成，之後由主持人手動切換下一棒。"
+            topStatusNote.textContent = "本隊已完成這一棒，系統會依本隊進度直接切到下一棒。"
           }
         } else {
           submitStatusText.textContent = "您小隊正在等待下一棒作答中... ⏳"
           if (topStatusKicker) topStatusKicker.textContent = "STANDBY"
           if (topStatusNote) {
-            topStatusNote.textContent = "請留意本隊棒次順序，主持人切到你的棒次後即可直接作答。"
+            topStatusNote.textContent = "請留意本隊棒次順序，系統會依本隊進度自動切到你的棒次。"
           }
         }
       }
@@ -866,11 +921,9 @@ import ZapIcon from "~icons/lucide/zap"
       submitPanel?.classList.add("hidden")
       if (topStatusKicker) topStatusKicker.textContent = "GAME STATUS"
       if (topStatusNote) {
-        topStatusNote.textContent = canHostAdvanceSeat(state)
-          ? areAllTeamsDone(state)
-            ? "兩隊都已完成所有棒次，請由主持人進入評分。"
-            : "兩隊都已完成本棒次，請由主持人決定進入下一棒。"
-          : "等待雙方完成目前棒次。"
+        topStatusNote.textContent = areAllTeamsDone(state)
+          ? "兩隊都已完成所有棒次，系統將自動進入評分。"
+          : "兩隊會依各自進度獨立作答，全部完成後自動進入評分。"
       }
     }
   }
@@ -966,14 +1019,6 @@ import ZapIcon from "~icons/lucide/zap"
     return (teamState?.segments?.length ?? 0) >= (teamState?.currentSeat ?? 0)
   }
 
-  function canHostAdvanceSeat(state: any) {
-    return (
-      state?.phase === "CHAINING" &&
-      hasSubmittedCurrentSeat(state.teams.A) &&
-      hasSubmittedCurrentSeat(state.teams.B)
-    )
-  }
-
   function areAllTeamsDone(state: any) {
     return Boolean(state?.teams?.A?.done && state?.teams?.B?.done)
   }
@@ -1013,12 +1058,19 @@ import ZapIcon from "~icons/lucide/zap"
   const resultWinnerLine = document.getElementById("result-winner-text") as HTMLHeadingElement
   const resultScoreA = document.getElementById("result-score-a") as HTMLSpanElement
   const resultScoreB = document.getElementById("result-score-b") as HTMLSpanElement
+  const resultAnswerA = document.getElementById("result-answer-a") as HTMLParagraphElement
+  const resultAnswerB = document.getElementById("result-answer-b") as HTMLParagraphElement
   const criteriaBreakdownA = document.getElementById("criteria-breakdown-a") as HTMLDivElement
   const criteriaBreakdownB = document.getElementById("criteria-breakdown-b") as HTMLDivElement
   const resultReason = document.getElementById("result-reason") as HTMLQuoteElement
   const hostNextRoundBtn = document.getElementById("host-next-round-btn") as HTMLButtonElement
   const playerWaitingBanner = document.getElementById("player-waiting-banner") as HTMLDivElement
   const degradedBadge = document.getElementById("degraded-badge") as HTMLSpanElement
+  const hostApiToast = document.getElementById("host-api-toast") as HTMLDivElement
+  const hostApiToastTitle = document.getElementById("host-api-toast-title") as HTMLParagraphElement
+  const hostApiToastMessage = document.getElementById(
+    "host-api-toast-message"
+  ) as HTMLParagraphElement
 
   function renderRoundResult(state: any) {
     phaseResult?.classList.remove("hidden")
@@ -1043,6 +1095,8 @@ import ZapIcon from "~icons/lucide/zap"
 
     if (resultScoreA) resultScoreA.textContent = `${lastResult.scoreA} 分`
     if (resultScoreB) resultScoreB.textContent = `${lastResult.scoreB} 分`
+    if (resultAnswerA) resultAnswerA.textContent = lastResult.answerA || "本隊本回合未留下完整答案。"
+    if (resultAnswerB) resultAnswerB.textContent = lastResult.answerB || "本隊本回合未留下完整答案。"
 
     // Populate Sliders criteria A & B
     populateCriteria(lastResult.breakdown.A, criteriaBreakdownA, "info")
@@ -1058,6 +1112,8 @@ import ZapIcon from "~icons/lucide/zap"
       degradedBadge.classList.add("hidden")
     }
 
+    syncHostApiToast(lastResult)
+
     // Role actions
     if (role === "host") {
       hostNextRoundBtn?.classList.remove("hidden")
@@ -1066,6 +1122,37 @@ import ZapIcon from "~icons/lucide/zap"
       hostNextRoundBtn?.classList.add("hidden")
       playerWaitingBanner?.classList.remove("hidden")
     }
+  }
+
+  function syncHostApiToast(lastResult: any) {
+    if (role !== "host") {
+      hostApiToast?.classList.add("hidden")
+      return
+    }
+
+    if (!lastResult?.degraded) {
+      hostApiToast?.classList.add("hidden")
+      return
+    }
+
+    const titleByReason: Record<string, string> = {
+      quota: "Gemini 額度不足",
+      rate_limit: "Gemini 請求過於頻繁",
+      timeout: "Gemini 評審逾時",
+      auth: "Gemini 驗證失敗",
+      invalid_response: "Gemini 回傳格式異常",
+      unknown: "Gemini 發生未知錯誤",
+    }
+
+    if (hostApiToastTitle) {
+      hostApiToastTitle.textContent =
+        titleByReason[lastResult.degradedReason ?? "unknown"] ?? "Gemini 評審已切換為備援模式"
+    }
+    if (hostApiToastMessage) {
+      hostApiToastMessage.textContent =
+        lastResult.degradedMessage ?? "本回合已改用本地備援評分，請留意 Gemini 狀態。"
+    }
+    hostApiToast?.classList.remove("hidden")
   }
 
   function populateCriteria(breakdown: any, container: HTMLDivElement, colorClass: string) {
@@ -1112,6 +1199,7 @@ import ZapIcon from "~icons/lucide/zap"
   ) as HTMLDivElement
 
   function renderMatchOver(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseMatchover?.classList.remove("hidden")
     const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
     const groupA = matchup?.groupA ?? 1
@@ -1206,6 +1294,14 @@ import ZapIcon from "~icons/lucide/zap"
       : "text-success min-h-[1.25rem] text-xs font-bold"
   }
 
+  function setIntroHostStatus(message: string, isError = false) {
+    if (!introHostStatus) return
+    introHostStatus.textContent = message
+    introHostStatus.className = isError
+      ? "text-error min-h-[1.25rem] text-xs font-bold"
+      : "text-success min-h-[1.25rem] text-xs font-bold"
+  }
+
   // ================= HOST CONTROL ACTIONS EVENT LISTENERS =================
   hostPauseBtn?.addEventListener("click", () => {
     socket.emit("host:pause", {}, (res: any) => {
@@ -1227,16 +1323,24 @@ import ZapIcon from "~icons/lucide/zap"
     }
   })
 
-  hostNextSeatBtn?.addEventListener("click", () => {
-    const eventName = areAllTeamsDone(latestState) ? "host:force_judge" : "host:advance_seat"
-    socket.emit(eventName, {}, (res: any) => {
-      if (!res.ok) {
-        alert(
-          eventName === "host:force_judge"
-            ? `無法進入評分：${res.error}`
-            : `無法進入下一棒：${res.error}`
-        )
-      }
+  introHostPauseBtn?.addEventListener("click", () => {
+    socket.emit("host:pause", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`暫停失敗：${res.error}`, true)
+      else setIntroHostStatus("已暫停開場倒數")
+    })
+  })
+
+  introHostResumeBtn?.addEventListener("click", () => {
+    socket.emit("host:resume", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`繼續失敗：${res.error}`, true)
+      else setIntroHostStatus("已繼續開場倒數")
+    })
+  })
+
+  introHostSkipBtn?.addEventListener("click", () => {
+    socket.emit("host:skip_intro", {}, (res: any) => {
+      if (!res.ok) setIntroHostStatus(`跳過失敗：${res.error}`, true)
+      else setIntroHostStatus("已跳過等待，進入作答階段")
     })
   })
 

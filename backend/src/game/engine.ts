@@ -7,7 +7,6 @@ import {
   appendSegment,
   applyJudge,
   bothTeamsDone,
-  canAdvanceSeatManually,
   currentMatchup,
   hasSubmittedCurrentSeat,
   createRoom,
@@ -193,6 +192,7 @@ export class GameEngine {
   async endGame(): Promise<boolean> {
     if (this.state.phase !== 'MATCH_OVER') return false;
     this.clearTimers();
+    const finishedMatchup = this.state.activeMatchup;
     if (this.state.matchMode === 'formal' && this.state.activeMatchup) {
       this.state.matchupCursor += 1;
     }
@@ -207,7 +207,7 @@ export class GameEngine {
       A: { currentSeat: 1, segments: [], done: false, turnEndsAt: null },
       B: { currentSeat: 1, segments: [], done: false, turnEndsAt: null },
     };
-    await this.resetAssignedPlayers();
+    await this.removePlayersForMatchup(finishedMatchup);
     await this.save();
     await this.log({ ts: Date.now(), type: 'host_action', detail: 'end_game' });
     this.broadcastState();
@@ -275,6 +275,16 @@ export class GameEngine {
     return true;
   }
 
+  async skipIntro(): Promise<boolean> {
+    if (this.state.phase !== 'ROUND_INTRO') return false;
+    this.clearTimers();
+    this.state.phaseEndsAt = null;
+    await this.save();
+    await this.log({ ts: Date.now(), type: 'host_action', detail: 'skip_intro' });
+    await this.beginChaining();
+    return true;
+  }
+
   /** Host chooses the next round's topic — an explicit topic or a random pick from the built-in pool. */
   async setTopic(opts: { topic?: string; random?: boolean }): Promise<boolean> {
     const topic = opts.random ? await pickTopic() : opts.topic;
@@ -320,18 +330,9 @@ export class GameEngine {
   }
 
   async advanceSeat(): Promise<boolean> {
-    if (this.state.phase !== 'CHAINING' || !canAdvanceSeatManually(this.state)) return false;
+    if (this.state.phase !== 'CHAINING') return false;
     await this.log({ ts: Date.now(), type: 'host_action', detail: 'advance_seat' });
-
-    if (bothTeamsDone(this.state)) {
-      await this.toJudging();
-    } else {
-      this.state = advanceSeatWhenReady(this.state);
-      await this.save();
-      this.emitTurnChanged('A');
-      this.emitTurnChanged('B');
-      this.broadcastState();
-    }
+    await this.progressChainingIfReady();
     return true;
   }
 
@@ -357,10 +358,7 @@ export class GameEngine {
       seat,
       text,
     });
-
-    await this.save();
-    this.emitTurnChanged(p.team);
-    this.broadcastState();
+    await this.progressChainingIfReady();
     return { ok: true };
   }
 
@@ -411,9 +409,20 @@ export class GameEngine {
       team,
       detail: kind,
     });
+    await this.progressChainingIfReady();
+  }
+
+  private async progressChainingIfReady(): Promise<void> {
+    this.state = advanceSeatWhenReady(this.state);
+
+    if (bothTeamsDone(this.state)) {
+      await this.toJudging();
+      return;
+    }
 
     await this.save();
-    this.emitTurnChanged(team);
+    this.emitTurnChanged('A');
+    this.emitTurnChanged('B');
     this.broadcastState();
   }
 
@@ -428,7 +437,7 @@ export class GameEngine {
     this.broadcastState();
 
     const token = ++this.judgeToken;
-    const { result, degraded } = await judge({
+    const { result, degraded, degradedInfo } = await judge({
       topic: this.state.topic ?? '',
       answerA: this.state.teams.A.segments.join(''),
       answerB: this.state.teams.B.segments.join(''),
@@ -437,6 +446,8 @@ export class GameEngine {
     this.state = applyJudge(this.state, result);
     const last = this.state.rounds[this.state.rounds.length - 1]!;
     last.degraded = degraded;
+    last.degradedReason = degradedInfo?.reason;
+    last.degradedMessage = degradedInfo?.message;
     await this.log({ ts: Date.now(), type: 'judge_result', detail: { ...last } });
     await this.toRoundResult();
   }
@@ -459,6 +470,8 @@ export class GameEngine {
       reason: last.reason,
       breakdown: last.breakdown,
       degraded: last.degraded,
+      degradedReason: last.degradedReason,
+      degradedMessage: last.degradedMessage,
     });
     this.broadcastState();
 
@@ -644,6 +657,27 @@ export class GameEngine {
       await repo.savePlayer(this.state.roomId, player);
       this.moveSocketToTeam(player.socketId, null);
       if (player.socketId) this.io.to(player.socketId).emit('room:state', this.fullSnapshot());
+    }
+  }
+
+  private async removePlayersForMatchup(matchup: GroupMatchup | null): Promise<void> {
+    if (!matchup) return;
+
+    const removedPlayerIds = [...this.players.values()]
+      .filter((player) => player.groupNumber === matchup.groupA || player.groupNumber === matchup.groupB)
+      .map((player) => player.playerId);
+
+    for (const playerId of removedPlayerIds) {
+      const player = this.players.get(playerId);
+      if (!player) continue;
+
+      this.players.delete(playerId);
+      await repo.deletePlayer(this.state.roomId, playerId);
+      this.moveSocketToTeam(player.socketId, null);
+      if (player.socketId) {
+        this.io.to(player.socketId).emit('room:kicked', { playerId });
+        this.io.sockets.sockets.get(player.socketId)?.disconnect(true);
+      }
     }
   }
 
