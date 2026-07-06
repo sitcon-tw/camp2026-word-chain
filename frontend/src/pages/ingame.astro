@@ -211,6 +211,14 @@ import ZapIcon from "~icons/lucide/zap"
                   </h3>
                 </div>
               </div>
+              <div
+                id="first-seat-topic-hint"
+                class="hidden w-full max-w-[56rem] rounded-[1.2rem] border border-[#2464ea]/14 bg-[#eef4ff] p-4 text-left">
+                <p class="text-xs font-black tracking-[0.22em] text-[#2464ea]">FIRST SEAT HINT</p>
+                <p
+                  id="first-seat-topic-hint-text"
+                  class="mt-2 text-sm leading-7 whitespace-pre-wrap text-[#24272e]"></p>
+              </div>
               <div id="player-own-chain" class="grid w-full max-w-[56rem] gap-3"></div>
             </div>
           </div>
@@ -648,6 +656,10 @@ import ZapIcon from "~icons/lucide/zap"
   const staffStage = document.getElementById("staff-stage") as HTMLDivElement
   const playerOwnTitle = document.getElementById("player-own-title") as HTMLHeadingElement
   const playerOwnChain = document.getElementById("player-own-chain") as HTMLDivElement
+  const firstSeatTopicHint = document.getElementById("first-seat-topic-hint") as HTMLDivElement
+  const firstSeatTopicHintText = document.getElementById(
+    "first-seat-topic-hint-text"
+  ) as HTMLParagraphElement
   const topStatusKicker = document.getElementById("top-status-kicker") as HTMLParagraphElement
   const topStatusNote = document.getElementById("top-status-note") as HTMLParagraphElement
   const topStatusSideLabel = document.getElementById(
@@ -668,6 +680,25 @@ import ZapIcon from "~icons/lucide/zap"
   const answerInput = document.getElementById("answer-input") as HTMLInputElement
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement
   const submitError = document.getElementById("submit-error") as HTMLSpanElement
+
+  const TOPIC_HINTS: Record<string, string> = {
+    冒煙測試:
+      "在程式和軟件測試中，冒煙測試指初步進行快速測試，了解一個軟體的主要功能是否能夠正常運行。",
+    蜜罐:
+      "網管人員會故意在網路上架設一個看起來很有價值、防禦力很低的虛擬伺服器，用來吸引黑客前來攻擊。當黑客誤入這個陷阱時，資安人員就可以在不損害真實系統的情況下，偷偷觀察黑客的攻擊手法、收集他們的 IP 和工具。",
+    小鴨測試:
+      "當程式員遇到解不開的 Bug 時，會試著向一隻放在桌上的軟體橡膠小鴨，逐行解釋自己的程式碼在做什麼。神奇的是，在「向別人解釋」的過程中，大腦會重新理清邏輯，程式員往往講到一半就會自己發現錯誤在哪裡。",
+    金絲雀部署:
+      "當工程師開發了新功能，他們不會一次開放給所有用戶，而是先更新給極少數（例如 1%）的用戶試用。如果這 1% 的用戶沒有回報重大 Bug，才會逐步推廣到 100%。",
+    九頭蛇漏洞:
+      "有時候工程師為了修補一個底層的 A 漏洞，改動了核心程式碼，結果導致依賴這個底層的 B、C、D 功能同時崩潰，就像砍了一個頭卻長出更多頭一樣，讓人非常頭痛。",
+    義大利麵條程式碼:
+      "這通常是因為開發者大量使用不恰當的跳躍語句（如 goto），或者沒有做好模組化，導致邏輯像一盤攪在一起的義大利麵。你想拉出其中一根麵條（改動一個小功能），整盤麵都會跟著動（導致其他幾十個地方一起壞掉）。",
+    守門狗定時器:
+      "當系統正常運作時，程式必須定時去「餵狗」。如果系統因為當機（死鎖）而停止運作，沒人去餵狗，這隻狗倒數計時到零就會「咬人」——也就是直接強制把整台電腦硬體重啟（Reset），讓設備從當機中恢復。",
+    上帝物件:
+      "有些工程師喜歡把「所有功能」都寫在同一個檔案、同一個 Class 裡。這個 Class 無所不知、無所不能，既要處理使用者登入、又要控制資料庫、還要繪製介面，就像「上帝」一樣掌控一切。這種代碼極其臃腫，任何人想改動其中一小個功能，都要承受全盤崩潰的風險。",
+  }
 
   function renderChaining(state: any) {
     phaseChaining?.classList.remove("hidden")
@@ -846,7 +877,18 @@ import ZapIcon from "~icons/lucide/zap"
           : (headerGroupB.textContent ?? "第 2 組")
     }
 
+    syncFirstSeatTopicHint(state.topic, ownState)
     populateChainList(ownTeam, ownState, playerOwnChain, ownColor, state.rules?.seats ?? 6)
+  }
+
+  function syncFirstSeatTopicHint(topic: string, ownState: any) {
+    const hint = TOPIC_HINTS[topic]
+    const showHint = Boolean(hint && ownState && !ownState.done && ownState.currentSeat === 1)
+
+    firstSeatTopicHint?.classList.toggle("hidden", !showHint)
+    if (showHint && firstSeatTopicHintText) {
+      firstSeatTopicHintText.textContent = hint
+    }
   }
 
   function populateChainList(
