@@ -153,7 +153,7 @@ function advance(t: TeamState, seats: number): TeamState {
   return { ...t, currentSeat: seat, done: t.segments.length >= seats };
 }
 
-export type SubmitError = 'NOT_YOUR_TURN' | 'BAD_LENGTH';
+export type SubmitError = 'NOT_YOUR_TURN' | 'BAD_LENGTH' | 'BAD_CHARACTER';
 
 /** Pure validation for a player's submission attempt. */
 export function validateSubmit(
@@ -163,6 +163,8 @@ export function validateSubmit(
 ): SubmitError | null {
   if (team.done || seat !== team.currentSeat) return 'NOT_YOUR_TURN';
   if (hasSubmittedCurrentSeat(team)) return 'NOT_YOUR_TURN';
+  const legalChars = /^[\p{Script=Han}A-Za-z0-9]+$/u;
+  if (!legalChars.test(text)) return 'BAD_CHARACTER';
   if (charCount(text) !== SEGMENT_LEN) return 'BAD_LENGTH';
   return null;
 }
