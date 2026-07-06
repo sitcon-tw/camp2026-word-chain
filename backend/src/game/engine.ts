@@ -57,7 +57,6 @@ export class GameEngine {
       seats: SEATS,
       winsToTakeMatch: WINS_TO_TAKE_MATCH,
     };
-    state.questions ??= [];
     state.nextTopic ??= null;
     state.matchMode ??= 'formal';
     state.currentGameNumber ??= 0;
@@ -133,14 +132,6 @@ export class GameEngine {
     const id = this.state.roomId;
     this.io.in(socketId).socketsLeave([teamRoom(id, 'A'), teamRoom(id, 'B')]);
     if (team) this.io.in(socketId).socketsJoin(teamRoom(id, team));
-  }
-
-  /** Host loads / replaces the question bank. */
-  async setQuestions(questions: string[]): Promise<void> {
-    this.state.questions = questions;
-    await this.save();
-    await this.log({ ts: Date.now(), type: 'host_action', detail: { setQuestions: questions.length } });
-    this.broadcastState();
   }
 
   async clearHistory(): Promise<void> {
@@ -284,10 +275,10 @@ export class GameEngine {
     return true;
   }
 
-  /** Host chooses the next round's topic — an explicit question or a random pick from the bank. */
+  /** Host chooses the next round's topic — an explicit topic or a random pick from the built-in pool. */
   async setTopic(opts: { topic?: string; random?: boolean }): Promise<boolean> {
-    const topic = opts.random ? this.randomQuestion() : opts.topic;
-    if (!topic) return false; // random requested but bank empty
+    const topic = opts.random ? await pickTopic() : opts.topic;
+    if (!topic) return false;
 
     this.state.nextTopic = topic;
     if (this.state.phase === 'ROUND_INTRO') {
@@ -299,11 +290,6 @@ export class GameEngine {
     this.broadcastState();
     await this.log({ ts: Date.now(), type: 'host_action', detail: { setTopic: topic } });
     return true;
-  }
-
-  private randomQuestion(): string | null {
-    const q = this.state.questions ?? [];
-    return q.length ? q[Math.floor(Math.random() * q.length)]! : null;
   }
 
   /** Host edits rules; takes effect immediately, rescheduling any active timer. */
@@ -381,7 +367,7 @@ export class GameEngine {
   // ---------- phase transitions ----------
   private async toRoundIntro(): Promise<void> {
     // Topic priority: host's explicit/random pick → random from bank → AI/fallback generator.
-    const topic = this.state.nextTopic ?? this.randomQuestion() ?? (await pickTopic());
+    const topic = this.state.nextTopic ?? (await pickTopic());
     const matchup = this.resolveUpcomingMatchup();
     if (!matchup) return;
     if (this.state.phase === 'LOBBY') {
@@ -594,7 +580,6 @@ export class GameEngine {
       nextMatchup: s.nextMatchup,
       currentMatchup: currentMatchup(s),
       rules: s.rules,
-      questions: s.questions,
       nextTopic: s.nextTopic,
     };
   }

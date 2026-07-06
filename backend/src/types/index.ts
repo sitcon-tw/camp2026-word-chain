@@ -64,7 +64,6 @@ export interface RoomState {
   matchups: GroupMatchup[];
   nextMatchup: GroupMatchup | null;
   rules: RoomRules;
-  questions: string[]; // host-curated question bank
   nextTopic: string | null; // host-selected topic for the next round
   hostId: string | null;
   createdAt: number;
@@ -155,10 +154,6 @@ export const roomIdSchema = z.object({
   roomId: z.string().min(1).max(64),
 });
 
-export const setQuestionsSchema = z.object({
-  questions: z.array(z.string().min(1).max(60)).max(200),
-});
-
 export const rejoinSchema = z.object({
   roomId: z.string().min(1).max(64),
   playerId: z.string().min(1).max(64),
@@ -168,7 +163,7 @@ export const rejoinSchema = z.object({
 export const submitSchema = z.object({ text: z.string() });
 export const teamSchema = z.object({ team: z.enum(['A', 'B']) });
 
-// Host chooses the next round's topic: an explicit question, or a random pick from the bank.
+// Host chooses the next round's topic: an explicit topic, or a random pick from the built-in pool.
 export const setTopicSchema = z
   .object({
     topic: z.string().min(1).max(60).optional(),
@@ -199,5 +194,4 @@ export type ErrorCode =
   | 'FORBIDDEN'
   | 'INVALID_PAYLOAD'
   | 'WRONG_PHASE'
-  | 'NO_QUESTIONS'
   | 'NO_MATCHUPS';
