@@ -69,7 +69,9 @@ a {
 .site-shell {
   position: relative;
   min-height: 100dvh;
-  overflow: hidden;
+  display: grid;
+  place-items: center;
+  overflow: auto;
 }
 
 .site-glow {
@@ -125,15 +127,18 @@ a {
   position: relative;
   z-index: 1;
   width: min(100%, 1280px);
-  margin: 0 auto;
-  min-height: 100dvh;
-  padding: 24px 20px 56px;
+  margin: auto;
+  min-height: calc(100dvh - 48px);
+  padding: 40px 20px;
+  display: grid;
+  align-content: center;
 }
 
 .wc-page {
   display: grid;
   gap: 20px;
-  min-height: calc(100dvh - 80px);
+  min-height: auto;
+  align-content: center;
 }
 
 .wc-page-full {
@@ -325,15 +330,12 @@ input[type="number"] {
   .site-main {
     min-height: auto;
     padding: 16px 14px 40px;
-  }
-
-  .site-main-fit-stage {
-    min-height: 100dvh;
-    padding: 8px;
+    display: block;
   }
 
   .wc-page {
     min-height: auto;
+    align-content: start;
   }
 
   .wc-page-full {
