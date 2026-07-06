@@ -281,7 +281,6 @@ import ZapIcon from "~icons/lucide/zap"
                   id="answer-input"
                   type="text"
                   required
-                  maxlength="5"
                   placeholder="請輸入剛好 5 個字"
                   class="input input-primary input-lg h-14 w-full rounded-[1rem] border-none text-center text-xl font-extrabold tracking-[0.24em] uppercase"
                 />
@@ -1034,11 +1033,6 @@ import ZapIcon from "~icons/lucide/zap"
   function performSubmit() {
     if (submitError) submitError.textContent = ""
     const text = answerInput.value.trim()
-
-    if ([...text].length !== 5) {
-      if (submitError) submitError.textContent = "答案必須剛好是 5 個字！"
-      return
-    }
 
     if (answerInput) answerInput.disabled = true
     if (submitBtn) submitBtn.disabled = true

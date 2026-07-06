@@ -192,6 +192,7 @@ export type ErrorCode =
   | 'SEAT_TAKEN'
   | 'NOT_YOUR_TURN'
   | 'BAD_LENGTH'
+  | 'BAD_CHARACTER'
   | 'ALREADY_SUBMITTED'
   | 'FORBIDDEN'
   | 'INVALID_PAYLOAD'

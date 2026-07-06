@@ -340,7 +340,7 @@ export class GameEngine {
   async submit(
     playerId: string,
     text: string,
-  ): Promise<{ ok: true } | { ok: false; code: 'WRONG_PHASE' | 'FORBIDDEN' | 'NOT_YOUR_TURN' | 'BAD_LENGTH' }> {
+  ): Promise<{ ok: true } | { ok: false; code: 'WRONG_PHASE' | 'FORBIDDEN' | 'NOT_YOUR_TURN' | 'BAD_LENGTH' | 'BAD_CHARACTER' }> {
     if (this.state.phase !== 'CHAINING') return { ok: false, code: 'WRONG_PHASE' };
     const p = this.players.get(playerId);
     if (!p || !p.team) return { ok: false, code: 'FORBIDDEN' };
