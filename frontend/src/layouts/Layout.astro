@@ -3,9 +3,10 @@ import "@/styles/global.css"
 
 interface Props {
   title?: string
+  fitViewport?: boolean
 }
 
-const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
+const { title = "SITCON Camp 2026 AI 謎題接龍", fitViewport = false } = Astro.props
 ---
 
 <!doctype html>
@@ -23,15 +24,22 @@ const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
       <div class="site-glow site-glow-left"></div>
       <div class="site-glow site-glow-right"></div>
       <div class="site-ribbon" aria-hidden="true"></div>
-      <main class="site-main">
-        <div id="page-fit-viewport" class="page-fit-viewport">
-          <div id="page-fit-canvas" class="page-fit-canvas">
+      <main class:list={["site-main", fitViewport && "site-main-fit-stage"]}>
+        {
+          fitViewport ? (
+            <div id="page-fit-viewport" class="page-fit-viewport">
+              <div id="page-fit-canvas" class="page-fit-canvas">
+                <slot />
+              </div>
+            </div>
+          ) : (
             <slot />
-          </div>
-        </div>
+          )
+        }
       </main>
     </div>
-    <script>
+    {fitViewport && (
+      <script>
       const siteMain = document.querySelector(".site-main")
       const pageFitViewport = document.getElementById("page-fit-viewport")
       const pageFitCanvas = document.getElementById("page-fit-canvas")
@@ -51,7 +59,6 @@ const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
         const availableHeight = Math.max(window.innerHeight - 24, 0)
         const scale = Math.min(1, availableWidth / naturalWidth, availableHeight / naturalHeight)
 
-        siteMain.classList.add("site-main-fit-stage")
         pageFitViewport.dataset.scaleMode = "fit"
         pageFitViewport.style.setProperty("--page-canvas-width", `${naturalWidth}px`)
         pageFitViewport.style.setProperty("--page-canvas-height", `${naturalHeight}px`)
@@ -87,6 +94,7 @@ const { title = "SITCON Camp 2026 AI 謎題接龍" } = Astro.props
           attributes: true,
         })
       }
-    </script>
+      </script>
+    )}
   </body>
 </html>
