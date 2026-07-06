@@ -428,7 +428,7 @@ export class GameEngine {
     this.broadcastState();
 
     const token = ++this.judgeToken;
-    const { result, degraded } = await judge({
+    const { result, degraded, degradedInfo } = await judge({
       topic: this.state.topic ?? '',
       answerA: this.state.teams.A.segments.join(''),
       answerB: this.state.teams.B.segments.join(''),
@@ -437,6 +437,8 @@ export class GameEngine {
     this.state = applyJudge(this.state, result);
     const last = this.state.rounds[this.state.rounds.length - 1]!;
     last.degraded = degraded;
+    last.degradedReason = degradedInfo?.reason;
+    last.degradedMessage = degradedInfo?.message;
     await this.log({ ts: Date.now(), type: 'judge_result', detail: { ...last } });
     await this.toRoundResult();
   }
@@ -459,6 +461,8 @@ export class GameEngine {
       reason: last.reason,
       breakdown: last.breakdown,
       degraded: last.degraded,
+      degradedReason: last.degradedReason,
+      degradedMessage: last.degradedMessage,
     });
     this.broadcastState();
 

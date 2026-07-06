@@ -448,6 +448,16 @@ import ZapIcon from "~icons/lucide/zap"
       </div>
     </div>
   </div>
+
+  <div
+    id="host-api-toast"
+    class="pointer-events-none fixed right-6 bottom-6 z-50 hidden max-w-[24rem] rounded-[1.2rem] border border-[#cc4c3f]/18 bg-white/95 p-4 text-left shadow-[0_24px_80px_rgba(36,39,46,0.16)] backdrop-blur">
+    <p class="text-[11px] font-black tracking-[0.22em] text-[#cc4c3f]">API ERROR</p>
+    <p id="host-api-toast-title" class="mt-2 text-sm font-black text-[#24272e]">
+      Gemini 評審已切換為備援模式
+    </p>
+    <p id="host-api-toast-message" class="mt-2 text-sm leading-6 text-[#5f6673]"></p>
+  </div>
 </Layout>
 
 <script>
@@ -600,6 +610,7 @@ import ZapIcon from "~icons/lucide/zap"
         break
 
       case "JUDGING":
+        hostApiToast?.classList.add("hidden")
         phaseJudging?.classList.remove("hidden")
         break
 
@@ -619,6 +630,7 @@ import ZapIcon from "~icons/lucide/zap"
   const introRadial = document.getElementById("intro-radial") as HTMLDivElement
 
   function renderRoundIntro(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseIntro?.classList.remove("hidden")
     if (introRoundNum) introRoundNum.textContent = state.round
     if (introTopic) introTopic.textContent = state.topic || "AI 命題官正在生成謎語主題..."
@@ -711,6 +723,7 @@ import ZapIcon from "~icons/lucide/zap"
   }
 
   function renderChaining(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseChaining?.classList.remove("hidden")
     if (chainingTopic) chainingTopic.textContent = state.topic
     if (hostChainingTopic) hostChainingTopic.textContent = state.topic
@@ -1019,6 +1032,11 @@ import ZapIcon from "~icons/lucide/zap"
   const hostNextRoundBtn = document.getElementById("host-next-round-btn") as HTMLButtonElement
   const playerWaitingBanner = document.getElementById("player-waiting-banner") as HTMLDivElement
   const degradedBadge = document.getElementById("degraded-badge") as HTMLSpanElement
+  const hostApiToast = document.getElementById("host-api-toast") as HTMLDivElement
+  const hostApiToastTitle = document.getElementById("host-api-toast-title") as HTMLParagraphElement
+  const hostApiToastMessage = document.getElementById(
+    "host-api-toast-message"
+  ) as HTMLParagraphElement
 
   function renderRoundResult(state: any) {
     phaseResult?.classList.remove("hidden")
@@ -1058,6 +1076,8 @@ import ZapIcon from "~icons/lucide/zap"
       degradedBadge.classList.add("hidden")
     }
 
+    syncHostApiToast(lastResult)
+
     // Role actions
     if (role === "host") {
       hostNextRoundBtn?.classList.remove("hidden")
@@ -1066,6 +1086,37 @@ import ZapIcon from "~icons/lucide/zap"
       hostNextRoundBtn?.classList.add("hidden")
       playerWaitingBanner?.classList.remove("hidden")
     }
+  }
+
+  function syncHostApiToast(lastResult: any) {
+    if (role !== "host") {
+      hostApiToast?.classList.add("hidden")
+      return
+    }
+
+    if (!lastResult?.degraded) {
+      hostApiToast?.classList.add("hidden")
+      return
+    }
+
+    const titleByReason: Record<string, string> = {
+      quota: "Gemini 額度不足",
+      rate_limit: "Gemini 請求過於頻繁",
+      timeout: "Gemini 評審逾時",
+      auth: "Gemini 驗證失敗",
+      invalid_response: "Gemini 回傳格式異常",
+      unknown: "Gemini 發生未知錯誤",
+    }
+
+    if (hostApiToastTitle) {
+      hostApiToastTitle.textContent =
+        titleByReason[lastResult.degradedReason ?? "unknown"] ?? "Gemini 評審已切換為備援模式"
+    }
+    if (hostApiToastMessage) {
+      hostApiToastMessage.textContent =
+        lastResult.degradedMessage ?? "本回合已改用本地備援評分，請留意 Gemini 狀態。"
+    }
+    hostApiToast?.classList.remove("hidden")
   }
 
   function populateCriteria(breakdown: any, container: HTMLDivElement, colorClass: string) {
@@ -1112,6 +1163,7 @@ import ZapIcon from "~icons/lucide/zap"
   ) as HTMLDivElement
 
   function renderMatchOver(state: any) {
+    hostApiToast?.classList.add("hidden")
     phaseMatchover?.classList.remove("hidden")
     const matchup = state.currentMatchup ?? state.rounds?.[state.rounds.length - 1]?.matchup
     const groupA = matchup?.groupA ?? 1
