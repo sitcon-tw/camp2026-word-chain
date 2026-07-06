@@ -53,7 +53,6 @@ export function createRoom(roomId: string, hostId: string | null): RoomState {
       seats: SEATS,
       winsToTakeMatch: WINS_TO_TAKE_MATCH,
     },
-    questions: [],
     nextTopic: null,
     hostId,
     createdAt: now,

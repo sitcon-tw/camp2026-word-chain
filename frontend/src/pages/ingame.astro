@@ -33,7 +33,7 @@ import ZapIcon from "~icons/lucide/zap"
 
         <div class="justify-self-center lg:justify-self-end">
           <p
-            class="text-center text-[11px] font-black tracking-[0.2em] text-[#7b8190] lg:text-right"
+            class="text-left text-[11px] font-black tracking-[0.2em] text-[#7b8190]"
             id="top-status-side-label">
             LIVE SCORE
           </p>
@@ -1123,7 +1123,7 @@ import ZapIcon from "~icons/lucide/zap"
   liveRandomTopicBtn?.addEventListener("click", () => {
     socket.emit("host:set_topic", { random: true }, (res: any) => {
       if (!res.ok) setLiveHostStatus(`隨機題目失敗：${res.error}`, true)
-      else setLiveHostStatus("已從題庫隨機選題")
+      else setLiveHostStatus("已從內建題目池隨機選題")
     })
   })
 

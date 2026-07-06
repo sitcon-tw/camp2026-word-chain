@@ -10,7 +10,6 @@ import {
   roomIdSchema,
   setMatchConfigSchema,
   setNextMatchupSchema,
-  setQuestionsSchema,
   setRulesSchema,
   setTopicSchema,
   submitSchema,
@@ -226,15 +225,6 @@ export function registerGateway(io: Server): RoomManager {
       ack?.({ ok: true });
     });
 
-    socket.on('host:set_questions', async (payload: unknown, ack?: Ack) => {
-      const parsed = setQuestionsSchema.safeParse(payload);
-      if (!parsed.success) return fail(ack, 'INVALID_PAYLOAD');
-      const eng = await requireHost(manager, data);
-      if (!eng) return fail(ack, 'FORBIDDEN');
-      await eng.setQuestions(parsed.data.questions);
-      ack?.({ ok: true });
-    });
-
     socket.on('host:clear_history', async (_payload: unknown, ack?: Ack) => {
       const eng = await requireHost(manager, data);
       if (!eng) return fail(ack, 'FORBIDDEN');
@@ -267,7 +257,7 @@ export function registerGateway(io: Server): RoomManager {
       const eng = await requireHost(manager, data);
       if (!eng) return fail(ack, 'FORBIDDEN');
       const ok = await eng.setTopic(parsed.data);
-      if (!ok) return fail(ack, 'NO_QUESTIONS');
+      if (!ok) return fail(ack, 'INVALID_PAYLOAD');
       ack?.({ ok: true });
     });
 
