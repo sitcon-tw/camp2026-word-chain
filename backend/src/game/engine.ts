@@ -456,6 +456,7 @@ export class GameEngine {
     const last = this.state.rounds[this.state.rounds.length - 1]!;
     if (isMatchOver(this.state)) {
       this.state.phase = 'ROUND_RESULT';
+      this.state.phaseEndsAt = null;
     } else {
       this.state.phase = 'ROUND_RESULT';
       this.state.phaseEndsAt = Date.now() + this.state.rules.resultMs;
@@ -473,6 +474,7 @@ export class GameEngine {
       degradedReason: last.degradedReason,
       degradedMessage: last.degradedMessage,
     });
+    this.scheduleAll();
     this.broadcastState();
 
     if (isMatchOver(this.state)) await this.toMatchOver();

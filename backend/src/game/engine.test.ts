@@ -101,6 +101,38 @@ describe('GameEngine chaining completion', () => {
     expect(engine.state.phase).toBe('CHAINING');
   });
 
+  it('auto-starts the next round after round-result countdown ends', async () => {
+    vi.useFakeTimers();
+    try {
+      const io = createIoStub();
+      const engine = await GameEngine.create('room-4', null, io as any);
+
+      engine.state.phase = 'CHAINING';
+      engine.state.round = 1;
+      engine.state.topic = '結果倒數';
+      engine.state.rules.seats = 1;
+      engine.state.rules.resultMs = 1_000;
+      engine.state.matchups = [
+        { groupA: 1, groupB: 2 },
+        { groupA: 3, groupB: 4 },
+      ];
+      engine.state.matchupCursor = 0;
+      engine.state.activeMatchup = { groupA: 1, groupB: 2 };
+
+      expect(await engine.skipTurn('A')).toBe(true);
+      expect(await engine.skipTurn('B')).toBe(true);
+      expect(engine.state.phase).toBe('ROUND_RESULT');
+      expect(engine.state.phaseEndsAt).not.toBeNull();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+
+      expect(engine.state.phase).toBe('ROUND_INTRO');
+      expect(engine.state.round).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('removes the finished matchup players instead of moving them back to waiting on endGame', async () => {
     const io = createIoStub();
     const engine = await GameEngine.create('room-2', null, io as any);
