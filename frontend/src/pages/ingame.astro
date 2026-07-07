@@ -596,10 +596,39 @@ import ZapIcon from "~icons/lucide/zap"
     }
   }
 
+  let submitPending = false
+  let activeSubmitRequestId = 0
+  let submitAckTimer: ReturnType<typeof setTimeout> | null = null
+
+  function clearSubmitAckTimer() {
+    if (submitAckTimer) {
+      clearTimeout(submitAckTimer)
+      submitAckTimer = null
+    }
+  }
+
+  function recoverPendingSubmit(message: string) {
+    if (!submitPending) return
+    submitPending = false
+    activeSubmitRequestId = 0
+    clearSubmitAckTimer()
+    if (submitError) submitError.textContent = message
+    if (answerInput) answerInput.disabled = false
+    if (submitBtn) submitBtn.disabled = false
+  }
+
   socket.on("presence:update", ({ players }: { players: any[] }) => {
     const currentSession = getSession()
     const me = currentSession ? players.find((p) => p.playerId === currentSession.playerId) : null
     if (me) updateSessionAssignment(me.team ?? null, me.groupNumber ?? null)
+  })
+
+  socket.on("disconnect", () => {
+    recoverPendingSubmit("連線中斷，答案尚未送出，請重新連線後再試。")
+  })
+
+  socket.on("connect_error", () => {
+    recoverPendingSubmit("目前無法連線到伺服器，請稍後再試。")
   })
 
   // Core Room State Listener
@@ -1067,10 +1096,29 @@ import ZapIcon from "~icons/lucide/zap"
       return
     }
 
+    if (submitPending) return
+
+    if (!socket.connected) {
+      setSubmitError("目前與伺服器中斷連線，請稍後再試。")
+      return
+    }
+
     if (answerInput) answerInput.disabled = true
     if (submitBtn) submitBtn.disabled = true
+    submitPending = true
+    const requestId = Date.now()
+    activeSubmitRequestId = requestId
+    clearSubmitAckTimer()
+    submitAckTimer = setTimeout(() => {
+      if (activeSubmitRequestId !== requestId) return
+      recoverPendingSubmit("送出逾時，可能是網路異常，請再試一次。")
+    }, 8000)
 
     socket.emit("segment:submit", { text }, (res: any) => {
+      if (activeSubmitRequestId !== requestId) return
+      submitPending = false
+      activeSubmitRequestId = 0
+      clearSubmitAckTimer()
       if (res.ok) {
         answerInput.value = ""
         clearSubmitError()
