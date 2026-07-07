@@ -291,10 +291,10 @@ import ZapIcon from "~icons/lucide/zap"
                 </button>
               </div>
             </div>
-            <span
+            <div
               id="submit-error"
-              class="text-error pointer-events-none absolute right-4 bottom-3 left-4 text-center text-xs font-medium"
-            ></span>
+              class="alert alert-error pointer-events-none absolute right-4 bottom-3 left-4 hidden min-h-0 justify-center px-3 py-2 text-center text-xs font-bold"
+              aria-live="polite"></div>
           </div>
         </div>
 
@@ -752,7 +752,7 @@ import ZapIcon from "~icons/lucide/zap"
   const submitActionRow = document.getElementById("submit-action-row") as HTMLDivElement
   const answerInput = document.getElementById("answer-input") as HTMLInputElement
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement
-  const submitError = document.getElementById("submit-error") as HTMLSpanElement
+  const submitError = document.getElementById("submit-error") as HTMLDivElement
 
   const TOPIC_HINTS: Record<string, string> = {
     冒煙測試:
@@ -865,7 +865,7 @@ import ZapIcon from "~icons/lucide/zap"
       if (!myTeam) {
         submitStatusBanner?.classList.remove("hidden")
         submitActionRow?.classList.add("hidden")
-        submitPanel?.classList.remove("border-success/40", "bg-success/5")
+        submitPanel?.classList.remove("border-success/40", "bg-success/5", "border-error/40", "bg-error/5")
         submitPanel?.classList.add("border-primary/20")
         submitStatusText.textContent = "尚未選擇隊伍，請回首頁重新登入。"
         return
@@ -878,6 +878,7 @@ import ZapIcon from "~icons/lucide/zap"
         // Activate Submission Row
         submitStatusBanner?.classList.add("hidden")
         submitActionRow?.classList.remove("hidden")
+        submitPanel?.classList.remove("border-error/40", "bg-error/5")
         submitPanel?.classList.add("border-success/40", "bg-success/5")
         submitPanel?.classList.remove("border-primary/20")
 
@@ -893,7 +894,7 @@ import ZapIcon from "~icons/lucide/zap"
         // Standby / Wait screen
         submitStatusBanner?.classList.remove("hidden")
         submitActionRow?.classList.add("hidden")
-        submitPanel?.classList.remove("border-success/40", "bg-success/5")
+        submitPanel?.classList.remove("border-success/40", "bg-success/5", "border-error/40", "bg-error/5")
         submitPanel?.classList.add("border-primary/20")
 
         if (currentTeamState.done) {
@@ -1022,8 +1023,34 @@ import ZapIcon from "~icons/lucide/zap"
     return Boolean(state?.teams?.A?.done && state?.teams?.B?.done)
   }
 
+  function charCount(text: string) {
+    return [...text].length
+  }
+
+  function setSubmitError(message: string) {
+    if (submitError) {
+      submitError.textContent = message
+      submitError.classList.remove("hidden")
+    }
+    submitPanel?.classList.add("border-error/40", "bg-error/5")
+    submitPanel?.classList.remove("border-success/40", "bg-success/5")
+    answerInput?.classList.add("input-error")
+  }
+
+  function clearSubmitError() {
+    if (submitError) {
+      submitError.textContent = ""
+      submitError.classList.add("hidden")
+    }
+    submitPanel?.classList.remove("border-error/40", "bg-error/5")
+    answerInput?.classList.remove("input-error")
+  }
+
   // Answer Submission Event
   submitBtn?.addEventListener("click", performSubmit)
+  answerInput?.addEventListener("input", () => {
+    clearSubmitError()
+  })
   answerInput?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       performSubmit()
@@ -1031,8 +1058,14 @@ import ZapIcon from "~icons/lucide/zap"
   })
 
   function performSubmit() {
-    if (submitError) submitError.textContent = ""
     const text = answerInput.value.trim()
+    clearSubmitError()
+
+    if (charCount(text) !== 5) {
+      setSubmitError("請輸入剛好 5 個字後再送出。")
+      answerInput?.focus()
+      return
+    }
 
     if (answerInput) answerInput.disabled = true
     if (submitBtn) submitBtn.disabled = true
@@ -1040,8 +1073,9 @@ import ZapIcon from "~icons/lucide/zap"
     socket.emit("segment:submit", { text }, (res: any) => {
       if (res.ok) {
         answerInput.value = ""
+        clearSubmitError()
       } else {
-        if (submitError) submitError.textContent = `提交失敗：${res.error}`
+        setSubmitError(`提交失敗：${res.error}`)
         if (answerInput) answerInput.disabled = false
         if (submitBtn) submitBtn.disabled = false
       }
