@@ -1,7 +1,7 @@
 import type { Server } from 'socket.io';
 import { config, SEATS, WINS_TO_TAKE_MATCH } from '../config.js';
 import * as repo from '../state/roomRepo.js';
-import { pickTopic, judge } from '../ai/gemini.js';
+import { pickTopic, judge } from '../ai/openai.js';
 import {
   advanceSeatWhenReady,
   appendSegment,
