@@ -148,10 +148,19 @@
     "schemas": {
       "Health": {
         "type": "object",
-        "required": ["ok", "ts"],
+        "required": ["ok", "ts", "services"],
         "properties": {
           "ok": { "type": "boolean" },
-          "ts": { "type": "integer", "description": "epoch ms" }
+          "ts": { "type": "integer", "description": "epoch ms" },
+          "services": {
+            "type": "object",
+            "required": ["redis", "openai"],
+            "properties": {
+              "redis": { "type": "string", "description": "ioredis connection status" },
+              "openai": { "type": "string", "enum": ["configured", "fallback"] }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "Phase": {

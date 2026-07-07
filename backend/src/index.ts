@@ -11,6 +11,8 @@ async function main() {
   console.log(`[redis] connected → ${config.redisUrl}`);
   if (!config.openai.enabled) {
     console.warn('[openai] OPENAI_API_KEY not set — using fallback topics & judge.');
+  } else {
+    console.log(`[openai] configured → model ${config.openai.model}`);
   }
 
   const httpServer = createServer((req, res) => {
@@ -23,7 +25,16 @@ async function main() {
     }
     if (req.url === '/health') {
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, ts: Date.now() }));
+      res.end(
+        JSON.stringify({
+          ok: true,
+          ts: Date.now(),
+          services: {
+            redis: redis.status,
+            openai: config.openai.enabled ? 'configured' : 'fallback',
+          },
+        }),
+      );
       return;
     }
     const match = req.url?.match(/^\/(?:api\/)?rooms\/([^/]+)$/);

@@ -12,8 +12,11 @@ const schema = z.object({
   PORT: intFromEnv(3001),
   CORS_ORIGIN: z.string().default('*'),
   REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
-  OPENAI_API_KEY: z.string().optional().default(''),
-  OPENAI_MODEL: z.string().default('gpt-5.5'),
+  OPENAI_API_KEY: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() ?? ''),
+  OPENAI_MODEL: z.string().trim().min(1).default('gpt-5.5'),
   INTRO_MS: intFromEnv(30_000),
   RESULT_MS: intFromEnv(30_000),
 });
