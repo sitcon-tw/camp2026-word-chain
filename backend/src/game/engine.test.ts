@@ -9,7 +9,7 @@ vi.mock('../state/roomRepo.js', () => ({
   pushEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../ai/gemini.js', () => ({
+vi.mock('../ai/openai.js', () => ({
   pickTopic: vi.fn().mockResolvedValue('測試題目'),
   judge: vi.fn().mockResolvedValue({
     result: {

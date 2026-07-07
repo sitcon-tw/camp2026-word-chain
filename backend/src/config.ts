@@ -12,8 +12,8 @@ const schema = z.object({
   PORT: intFromEnv(3001),
   CORS_ORIGIN: z.string().default('*'),
   REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
-  GEMINI_API_KEY: z.string().optional().default(''),
-  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+  OPENAI_API_KEY: z.string().optional().default(''),
+  OPENAI_MODEL: z.string().default('gpt-5.5'),
   INTRO_MS: intFromEnv(30_000),
   RESULT_MS: intFromEnv(30_000),
 });
@@ -30,10 +30,10 @@ export const config = {
   port: env.PORT,
   corsOrigin: env.CORS_ORIGIN,
   redisUrl: env.REDIS_URL,
-  gemini: {
-    apiKey: env.GEMINI_API_KEY,
-    model: env.GEMINI_MODEL,
-    enabled: env.GEMINI_API_KEY.length > 0,
+  openai: {
+    apiKey: env.OPENAI_API_KEY,
+    model: env.OPENAI_MODEL,
+    enabled: env.OPENAI_API_KEY.length > 0,
   },
   durations: {
     introMs: env.INTRO_MS,

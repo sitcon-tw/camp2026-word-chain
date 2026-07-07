@@ -9,8 +9,8 @@ import { registerGateway } from './socket/gateway.js';
 async function main() {
   await redis.connect();
   console.log(`[redis] connected → ${config.redisUrl}`);
-  if (!config.gemini.enabled) {
-    console.warn('[gemini] GEMINI_API_KEY not set — using fallback topics & judge.');
+  if (!config.openai.enabled) {
+    console.warn('[openai] OPENAI_API_KEY not set — using fallback topics & judge.');
   }
 
   const httpServer = createServer((req, res) => {

@@ -3,7 +3,7 @@
   "info": {
     "title": "SITCON Camp 2026 AI 謎語接龍 — Backend API",
     "version": "0.2.0",
-    "description": "Contract for the word-chain battle backend.\n\n**Transport:** the gameplay API is **Socket.IO** (WebSocket), not REST. The only plain HTTP endpoint is `GET /health`. All realtime events are documented under the top-level `x-socketio` extension, and every payload lives in `components.schemas` so the frontend can generate types.\n\n**Game model (v0.2):** one device per team. A device joins **unassigned** (`team: null`) and waits; the **host** switches it onto team A or B via `host:assign_team`. The host also curates a question bank (`host:set_questions`), picks/randomises the topic (`host:set_topic`), and edits rules live (`host:set_rules`). Deployment only needs `GEMINI_API_KEY`; rules and questions are set at runtime, not in env.\n\n**Connecting (frontend):**\n```ts\nimport { io } from 'socket.io-client';\nconst socket = io('http://localhost:3001'); // default Socket.IO path /socket.io\nsocket.emit('room:join', { roomId, role: 'player', name }, (ack) => {\n  if (ack.ok) localStorage.setItem('playerId', ack.playerId); // team is null until the host assigns it\n});\nsocket.on('presence:update', ({ players }) => { /* find self; team !== null => assigned */ });\nsocket.on('room:state', (s) => render(s));\n```\nEvery client→server event takes an optional ack callback returning `AckOk` or `AckErr`."
+    "description": "Contract for the word-chain battle backend.\n\n**Transport:** the gameplay API is **Socket.IO** (WebSocket), not REST. The only plain HTTP endpoint is `GET /health`. All realtime events are documented under the top-level `x-socketio` extension, and every payload lives in `components.schemas` so the frontend can generate types.\n\n**Game model (v0.2):** one device per team. A device joins **unassigned** (`team: null`) and waits; the **host** switches it onto team A or B via `host:assign_team`. The host also curates a question bank (`host:set_questions`), picks/randomises the topic (`host:set_topic`), and edits rules live (`host:set_rules`). Deployment only needs `OPENAI_API_KEY`; rules and questions are set at runtime, not in env.\n\n**Connecting (frontend):**\n```ts\nimport { io } from 'socket.io-client';\nconst socket = io('http://localhost:3001'); // default Socket.IO path /socket.io\nsocket.emit('room:join', { roomId, role: 'player', name }, (ack) => {\n  if (ack.ok) localStorage.setItem('playerId', ack.playerId); // team is null until the host assigns it\n});\nsocket.on('presence:update', ({ players }) => { /* find self; team !== null => assigned */ });\nsocket.on('room:state', (s) => render(s));\n```\nEvery client→server event takes an optional ack callback returning `AckOk` or `AckErr`."
   },
   "servers": [
     {
@@ -334,7 +334,7 @@
           "winner": { "$ref": "#/components/schemas/Winner" },
           "reason": { "type": "string" },
           "breakdown": { "$ref": "#/components/schemas/JudgeBreakdown" },
-          "degraded": { "type": "boolean", "description": "true = fallback judge (no Gemini)" }
+          "degraded": { "type": "boolean", "description": "true = fallback judge (no OpenAI)" }
         }
       },
       "RoomSnapshot": {

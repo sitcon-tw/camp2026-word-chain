@@ -97,7 +97,7 @@ export interface EventLogEntry {
   detail?: unknown;
 }
 
-// ---- Gemini judge output ----
+// ---- AI judge output ----
 const criteria = z.object({
   logic: z.number().min(0).max(100),
   relevance: z.number().min(0).max(100),
