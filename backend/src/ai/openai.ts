@@ -69,10 +69,15 @@ export interface JudgeArgs {
   answerB: string;
 }
 
+export interface DegradedInfo {
+  reason: 'quota' | 'rate_limit' | 'timeout' | 'auth' | 'invalid_response' | 'unknown';
+  message: string;
+}
+
 /** Judge both answers. Returns { result, degraded } - never throws. */
 export async function judge(
   args: JudgeArgs,
-): Promise<{ result: JudgeOutput; degraded: boolean }> {
+): Promise<{ result: JudgeOutput; degraded: boolean; degradedInfo?: DegradedInfo }> {
   if (config.openai.enabled) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -80,10 +85,21 @@ export async function judge(
         return { result, degraded: false };
       } catch (err) {
         console.warn(`[openai] judge attempt ${attempt + 1} failed:`, String(err));
+        if (attempt === 1) {
+          const degradedInfo = classifyJudgeError(err);
+          return { result: fallbackJudge(args), degraded: true, degradedInfo };
+        }
       }
     }
   }
-  return { result: fallbackJudge(args), degraded: true };
+  return {
+    result: fallbackJudge(args),
+    degraded: true,
+    degradedInfo: {
+      reason: 'auth',
+      message: 'OpenAI API 未啟用或金鑰缺失，已改用本地備援評分。',
+    },
+  };
 }
 
 async function callJudge(args: JudgeArgs): Promise<JudgeOutput> {
@@ -160,6 +176,52 @@ function extractErrorMessage(body: unknown): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+function classifyJudgeError(error: unknown): DegradedInfo {
+  const text = String(error).toLowerCase();
+
+  if (text.includes('timeout') || text.includes('abort')) {
+    return {
+      reason: 'timeout',
+      message: 'OpenAI 評審逾時，已改用本地備援評分。',
+    };
+  }
+  if (text.includes('429') || text.includes('rate limit')) {
+    return {
+      reason: 'rate_limit',
+      message: 'OpenAI 請求過於頻繁，已改用本地備援評分。',
+    };
+  }
+  if (text.includes('quota') || text.includes('insufficient_quota')) {
+    return {
+      reason: 'quota',
+      message: 'OpenAI 額度不足，已改用本地備援評分。',
+    };
+  }
+  if (
+    text.includes('api key') ||
+    text.includes('permission') ||
+    text.includes('unauthorized') ||
+    text.includes('403') ||
+    text.includes('401')
+  ) {
+    return {
+      reason: 'auth',
+      message: 'OpenAI 驗證失敗或權限不足，已改用本地備援評分。',
+    };
+  }
+  if (text.includes('json') || text.includes('schema') || text.includes('parse')) {
+    return {
+      reason: 'invalid_response',
+      message: 'OpenAI 回傳格式異常，已改用本地備援評分。',
+    };
+  }
+
+  return {
+    reason: 'unknown',
+    message: 'OpenAI 發生未知錯誤，已改用本地備援評分。',
+  };
 }
 
 /** Deterministic tiebreak so a judging failure never stalls the match. */

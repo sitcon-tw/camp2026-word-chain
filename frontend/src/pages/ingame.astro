@@ -494,7 +494,7 @@ import ZapIcon from "~icons/lucide/zap"
     class="pointer-events-none fixed right-6 bottom-6 z-50 hidden max-w-[24rem] rounded-[1.2rem] border border-[#cc4c3f]/18 bg-white/95 p-4 text-left shadow-[0_24px_80px_rgba(36,39,46,0.16)] backdrop-blur">
     <p class="text-[11px] font-black tracking-[0.22em] text-[#cc4c3f]">API ERROR</p>
     <p id="host-api-toast-title" class="mt-2 text-sm font-black text-[#24272e]">
-      Gemini 評審已切換為備援模式
+      OpenAI 評審已切換為備援模式
     </p>
     <p id="host-api-toast-message" class="mt-2 text-sm leading-6 text-[#5f6673]"></p>
   </div>
@@ -1212,21 +1212,21 @@ import ZapIcon from "~icons/lucide/zap"
     }
 
     const titleByReason: Record<string, string> = {
-      quota: "Gemini 額度不足",
-      rate_limit: "Gemini 請求過於頻繁",
-      timeout: "Gemini 評審逾時",
-      auth: "Gemini 驗證失敗",
-      invalid_response: "Gemini 回傳格式異常",
-      unknown: "Gemini 發生未知錯誤",
+      quota: "OpenAI 額度不足",
+      rate_limit: "OpenAI 請求過於頻繁",
+      timeout: "OpenAI 評審逾時",
+      auth: "OpenAI 驗證失敗",
+      invalid_response: "OpenAI 回傳格式異常",
+      unknown: "OpenAI 發生未知錯誤",
     }
 
     if (hostApiToastTitle) {
       hostApiToastTitle.textContent =
-        titleByReason[lastResult.degradedReason ?? "unknown"] ?? "Gemini 評審已切換為備援模式"
+        titleByReason[lastResult.degradedReason ?? "unknown"] ?? "OpenAI 評審已切換為備援模式"
     }
     if (hostApiToastMessage) {
       hostApiToastMessage.textContent =
-        lastResult.degradedMessage ?? "本回合已改用本地備援評分，請留意 Gemini 狀態。"
+        lastResult.degradedMessage ?? "本回合已改用本地備援評分，請留意 OpenAI 狀態。"
     }
     hostApiToast?.classList.remove("hidden")
   }
