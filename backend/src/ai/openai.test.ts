@@ -19,6 +19,13 @@ describe('OpenAI AI adapter', () => {
     vi.resetModules();
   });
 
+  it('keeps a non-empty topic description for every built-in topic', async () => {
+    const { TOPICS, TOPIC_DESCRIPTIONS } = await import('./openai.js');
+
+    expect(TOPICS.length).toBeGreaterThan(0);
+    expect(TOPICS.filter((topic) => !TOPIC_DESCRIPTIONS[topic]?.trim())).toEqual([]);
+  });
+
   it('calls the Responses API with the configured model and JSON schema format', async () => {
     vi.stubEnv('OPENAI_API_KEY', 'sk-test');
     vi.stubEnv('OPENAI_MODEL', 'gpt-5.5');
@@ -48,6 +55,8 @@ describe('OpenAI AI adapter', () => {
     const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
     const body = JSON.parse(init.body as string) as Record<string, any>;
     expect(body.model).toBe('gpt-5.5');
+    expect(body.input[0].content).toContain('題目說明：在程式和軟件測試中，冒煙測試指初步進行快速測試');
+    expect(body.input[0].content).toContain('題目符合度必須優先根據「題目說明」評估答案');
     expect(body.text.format).toMatchObject({
       type: 'json_schema',
       name: 'word_chain_judge',
